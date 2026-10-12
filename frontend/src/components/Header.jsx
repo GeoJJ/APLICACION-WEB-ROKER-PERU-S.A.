@@ -1,106 +1,106 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { Search, ShoppingCart, CircleUser, Menu, X } from "lucide-react";
+import logo from "../assets/logo.png";
 
-export default function Header() {
-  const [empresaOpen, setEmpresaOpen] = useState(false);
-  const [productosOpen, setProductosOpen] = useState(false);
+// Rutas que ya existen en tu App.jsx
+export const NAV_LINKS = [
+  { label: "Inicio", to: "/" },
+  {
+    label: "Productos",
+    children: [
+      { label: "Línea Hospitalaria", to: "/productos/hospitalaria" },
+      { label: "Línea Horeca", to: "/productos/horeca" },
+    ],
+  },
+  { label: "Servicios", to: "/servicios" },
+  { label: "Nosotros", to: "/nosotros" },
+  { label: "Contacto", href: "#contacto" }, // baja hasta el footer
+];
+
+const linkClass = ({ isActive }) =>
+  `hover:text-[#00468c] ${isActive ? "font-medium text-[#00468c]" : ""}`;
+
+export default function Header({ cartCount = 0 }) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
 
   return (
-    <header className="bg-[#a3d8f4] py-3 px-6 md:px-12 shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
-        <Link to="/" className="flex items-center cursor-pointer">
-          <img src={logo} alt="Roker Perú Logo" className="h-10 md:h-12 w-auto object-contain" />
+    <header className="sticky top-0 z-20 bg-white">
+      <div className="flex items-center justify-between gap-6 px-6 py-3.5">
+        <Link to="/" aria-label="Rocket Peru S.A. - Inicio">
+          <img src={logo} alt="Rocket Peru S.A." className="h-[52px] w-auto" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-white">
-          <Link to="/" className="hover:text-[#003875] transition">
-            Inicio
-          </Link>
-
-          <div 
-            className="relative cursor-pointer py-2"
-            onMouseEnter={() => setEmpresaOpen(true)}
-            onMouseLeave={() => setEmpresaOpen(false)}
-          >
-            <div className="flex items-center gap-1 hover:text-[#003875] transition">
-              <span>Empresa</span>
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-              </svg>
-            </div>
-
-            {empresaOpen && (
-              <div className="absolute top-full left-0 w-64 bg-white text-gray-600 rounded-2xl shadow-xl py-3 z-50 border border-gray-100">
-                <Link 
-                  to="/nosotros" 
-                  className="block px-5 py-2.5 hover:bg-gray-50 text-xs font-semibold leading-snug transition text-[#1a2530]"
-                >
-                  Propósito, Cultura, Principios
-                </Link>
-                <div className="px-5 py-2.5 text-xs text-gray-400 cursor-not-allowed">
-                  Certificaciones
-                </div>
-                <div className="px-5 py-2.5 text-xs text-gray-400 cursor-not-allowed flex items-center justify-between">
-                  <span>Sistema Integrado de Gestión</span>
-                  <span>∨</span>
-                </div>
-                <div className="px-5 py-2.5 text-xs text-gray-400 cursor-not-allowed flex items-center justify-between">
-                  <span>Sistema de Gestión Antisoborno</span>
-                  <span>∨</span>
-                </div>
-                <div className="px-5 py-2.5 text-xs text-gray-400 cursor-not-allowed">
-                  S.G.C Dispositivos Médicos
+        {/* Menú escritorio */}
+        <nav className="hidden items-center gap-8 text-[17px] md:flex lg:gap-[52px]" aria-label="Principal">
+          {NAV_LINKS.map((item) =>
+            item.children ? (
+              <div key={item.label} className="group relative">
+                <span className="cursor-pointer hover:text-[#00468c]">{item.label}</span>
+                <div className="invisible absolute left-0 top-full min-w-[200px] rounded-xl bg-white py-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
+                  {item.children.map((c) => (
+                    <NavLink key={c.to} to={c.to} className={(s) => `block px-4 py-2 ${linkClass(s)}`}>
+                      {c.label}
+                    </NavLink>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
-
-          <Link to="/servicios" className="hover:text-[#003875] transition">
-            Servicios
-          </Link>
-
-          <div 
-            className="relative cursor-pointer py-2"
-            onMouseEnter={() => setProductosOpen(true)}
-            onMouseLeave={() => setProductosOpen(false)}
-          >
-            <div className="flex items-center gap-1 hover:text-[#003875] transition">
-              <span>Productos</span>
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-              </svg>
-            </div>
-
-            {productosOpen && (
-              <div className="absolute top-full left-0 w-56 bg-white text-gray-600 rounded-2xl shadow-xl py-3 z-50 border border-gray-100">
-                <Link 
-                  to="/productos/hospitalaria" 
-                  className="block px-5 py-2.5 hover:bg-gray-50 text-xs font-bold text-[#1a2530] transition"
-                >
-                  Línea Hospitalaria
-                </Link>
-                <Link 
-                  to="/productos/horeca" 
-                  className="block px-5 py-2.5 hover:bg-gray-50 text-xs font-bold text-[#1a2530] transition"
-                >
-                  Línea Horeca
-                </Link>
-              </div>
-            )}
-          </div>
+            ) : item.to ? (
+              <NavLink key={item.label} to={item.to} end={item.to === "/"} className={linkClass}>
+                {item.label}
+              </NavLink>
+            ) : (
+              <a key={item.label} href={item.href} className="hover:text-[#00468c]">{item.label}</a>
+            )
+          )}
         </nav>
 
-        {/* Acciones */}
-        <div className="flex items-center gap-5">
-          <button className="text-white hover:text-[#003875] transition text-base">🔍</button>
-          <button className="hidden sm:inline-block bg-white text-[#555] font-semibold px-6 py-2 rounded-xl text-sm hover:bg-gray-50 shadow-sm transition">
-            Contáctenos
+        <div className="flex items-center gap-4 md:gap-6">
+          <button aria-label="Buscar"><Search size={26} /></button>
+          <button aria-label="Carrito" className="relative">
+            <ShoppingCart size={26} />
+            {cartCount > 0 && (
+              <span className="absolute -right-2 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#00468c] px-1 text-[11px] font-semibold text-white">
+                {cartCount}
+              </span>
+            )}
+          </button>
+          <button aria-label="Mi cuenta" className="text-[#00468c]"><CircleUser size={30} /></button>
+          <button
+            className="md:hidden"
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
-
       </div>
+
+      {/* Menú móvil */}
+      {open && (
+        <nav className="border-t border-gray-100 bg-white shadow-lg md:hidden" aria-label="Principal móvil">
+          {NAV_LINKS.map((item) =>
+            item.children ? (
+              <div key={item.label} className="border-b border-gray-100">
+                <p className="px-6 pt-4 text-gray-500">{item.label}</p>
+                {item.children.map((c) => (
+                  <Link key={c.to} to={c.to} onClick={close} className="block px-10 py-3">{c.label}</Link>
+                ))}
+              </div>
+            ) : item.to ? (
+              <Link key={item.label} to={item.to} onClick={close} className="block border-b border-gray-100 px-6 py-4">
+                {item.label}
+              </Link>
+            ) : (
+              <a key={item.label} href={item.href} onClick={close} className="block border-b border-gray-100 px-6 py-4">
+                {item.label}
+              </a>
+            )
+          )}
+        </nav>
+      )}
     </header>
   );
 }
