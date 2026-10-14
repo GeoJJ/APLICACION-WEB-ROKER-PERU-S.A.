@@ -3,6 +3,7 @@ import { Search, ChevronDown } from "lucide-react";
 import Breadcrumb from "@/components/shared/Breadcrumb";
 import PageTitle from "@/components/shared/PageTitle";
 import ServiceCard from "@/components/features/catalog/ServiceCard";
+import RangeSlider from "@/components/ui/RangeSlider";
 import { SERVICES } from "@/data/services";
 
 export default function ServicesPage() {

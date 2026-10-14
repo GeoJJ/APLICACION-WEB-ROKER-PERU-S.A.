@@ -21,7 +21,7 @@ export default function PublicHeader({ cartCount = 0 }) {
         {/* Menú escritorio */}
         <nav className="hidden items-center gap-8 text-[17px] md:flex lg:gap-[52px]" aria-label="Principal">
           {NAV_LINKS.map((item) =>
-            item.children ? (
+            item.children?.length ? (
               <div key={item.label} className="group relative">
                 <span className="cursor-pointer hover:text-brand">{item.label}</span>
                 <div className="invisible absolute left-0 top-full min-w-[200px] rounded-xl bg-white py-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
@@ -68,7 +68,7 @@ export default function PublicHeader({ cartCount = 0 }) {
       {open && (
         <nav className="border-t border-gray-100 bg-white shadow-lg md:hidden" aria-label="Principal móvil">
           {NAV_LINKS.map((item) =>
-            item.children ? (
+            item.children?.length ? (
               <div key={item.label} className="border-b border-gray-100">
                 <p className="px-6 pt-4 text-gray-500">{item.label}</p>
                 {item.children.map((c) => (

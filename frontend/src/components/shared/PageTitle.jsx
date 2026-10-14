@@ -3,9 +3,20 @@ const SIZES = {
     md: "text-2xl",
 };
 
-export default function PageTitle({ as: Tag = "h1", size = "lg", className = "", children }) {
+const WEIGHTS = {
+    medium: "font-medium",
+    bold: "font-bold",
+};
+
+export default function PageTitle({
+    as: Tag = "h1",
+    size = "lg",
+    weight = "medium",
+    className = "",
+    children,
+}) {
     return (
-        <Tag className={`font-medium text-black ${SIZES[size]} ${className}`}>
+        <Tag className={`text-black ${WEIGHTS[weight]} ${SIZES[size]} ${className}`}>
             {children}
         </Tag>
     );

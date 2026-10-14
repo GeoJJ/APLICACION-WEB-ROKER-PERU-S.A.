@@ -1,4 +1,4 @@
-const SERVICES = [
+export const SERVICES = [
     {
         id: 1,
         name: "Limpieza de Oficinas",
