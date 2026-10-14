@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  /* Colores de marca: ajústalos con el cuentagotas de Canva/Figma */
+  --color-brand: #00428a;
+  --color-brand-dark: #001526;
+  --color-surface: #ffffff;
+}
