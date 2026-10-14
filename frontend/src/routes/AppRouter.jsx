@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import PublicLayout from '@/components/layout/storefront/PublicLayout';
+import AuthLayout from '@/components/layout/auth/AuthLayout';
 import HomePage from '@/pages/storefront/HomePage';
 import CatalogPage from '@/pages/storefront/CatalogPage';
 import ServicesPage from '@/pages/storefront/ServicesPage';

@@ -6,7 +6,6 @@ export default function AuthLayout() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
             <div className="mb-8 text-center">
                 <img src={logo} alt="Rocker Peru S.A." className="mx-auto h-16 w-auto" />
-                <p className="mt-2 text-sm text-gray-500">Sistema de Gestión Integral</p>
             </div>
             <Outlet />
         </div>

@@ -43,18 +43,31 @@ export default function PublicHeader({ cartCount = 0 }) {
         </nav>
 
         <div className="flex items-center gap-4 md:gap-6">
-          <button aria-label="Buscar"><Search size={26} /></button>
-          <button aria-label="Carrito" className="relative">
+          <button aria-label="Buscar" className="hover:text-brand transition">
+            <Search size={26} />
+          </button>
+          
+          <Link to="/carrito" aria-label="Carrito" className="relative hover:text-brand transition">
             <ShoppingCart size={26} />
             {cartCount > 0 && (
               <span className="absolute -right-2 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brand px-1 text-[11px] font-semibold text-white">
                 {cartCount}
               </span>
             )}
-          </button>
-          <button aria-label="Mi cuenta" className="text-brand"><CircleUser size={30} /></button>
+          </Link>
+
+          {/* ✅ CAMBIO PRINCIPAL AQUÍ: De <button> a <Link> */}
+          <Link 
+            to="/login" 
+            aria-label="Mi cuenta / Iniciar sesión" 
+            className="flex items-center gap-2 text-brand hover:text-brand/80 transition"
+          >
+            <CircleUser size={30} />
+            <span className="hidden text-sm font-semibold md:inline"></span>
+          </Link>
+
           <button
-            className="md:hidden"
+            className="md:hidden hover:text-brand transition"
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
             onClick={() => setOpen(!open)}
@@ -67,20 +80,32 @@ export default function PublicHeader({ cartCount = 0 }) {
       {/* Menú móvil */}
       {open && (
         <nav className="border-t border-gray-100 bg-white shadow-lg md:hidden" aria-label="Principal móvil">
+          {/* ✅ Agregamos el acceso a Login también en el menú móvil */}
+          <Link 
+            to="/login" 
+            onClick={close} 
+            className="flex items-center gap-3 border-b border-gray-100 px-6 py-4 font-medium text-brand hover:bg-gray-50"
+          >
+            <CircleUser size={24} />
+            Iniciar Sesión / Registrarse
+          </Link>
+
           {NAV_LINKS.map((item) =>
             item.children?.length ? (
               <div key={item.label} className="border-b border-gray-100">
                 <p className="px-6 pt-4 text-gray-500">{item.label}</p>
                 {item.children.map((c) => (
-                  <Link key={c.to} to={c.to} onClick={close} className="block px-10 py-3">{c.label}</Link>
+                  <Link key={c.to} to={c.to} onClick={close} className="block px-10 py-3 hover:bg-gray-50">
+                    {c.label}
+                  </Link>
                 ))}
               </div>
             ) : item.to ? (
-              <Link key={item.label} to={item.to} onClick={close} className="block border-b border-gray-100 px-6 py-4">
+              <Link key={item.label} to={item.to} onClick={close} className="block border-b border-gray-100 px-6 py-4 hover:bg-gray-50">
                 {item.label}
               </Link>
             ) : (
-              <a key={item.label} href={item.href} onClick={close} className="block border-b border-gray-100 px-6 py-4">
+              <a key={item.label} href={item.href} onClick={close} className="block border-b border-gray-100 px-6 py-4 hover:bg-gray-50">
                 {item.label}
               </a>
             )
