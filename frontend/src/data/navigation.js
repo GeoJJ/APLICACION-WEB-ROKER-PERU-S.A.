@@ -1,7 +1,7 @@
 export const NAV_LINKS = [
     { label: "Inicio", to: "/" },
     {
-        label: "Productos",
+        label: "Productos", to:"/productos",
         children: [], //luego agrego mas tipos de productos 
     },
     { label: "Servicios", to: "/servicios" },
