@@ -5,7 +5,7 @@ import logo from "@/assets/logos/logo.png";
 import { NAV_LINKS } from "@/data/navigation";
 
 const linkClass = ({ isActive }) =>
-  `hover:text-[#00468c] ${isActive ? "font-medium text-[#00468c]" : ""}`;
+  `hover:text-brand ${isActive ? "font-medium text-brand" : ""}`;
 
 export default function PublicHeader({ cartCount = 0 }) {
   const [open, setOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function PublicHeader({ cartCount = 0 }) {
           {NAV_LINKS.map((item) =>
             item.children ? (
               <div key={item.label} className="group relative">
-                <span className="cursor-pointer hover:text-[#00468c]">{item.label}</span>
+                <span className="cursor-pointer hover:text-brand">{item.label}</span>
                 <div className="invisible absolute left-0 top-full min-w-[200px] rounded-xl bg-white py-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
                   {item.children.map((c) => (
                     <NavLink key={c.to} to={c.to} className={(s) => `block px-4 py-2 ${linkClass(s)}`}>
@@ -37,7 +37,7 @@ export default function PublicHeader({ cartCount = 0 }) {
                 {item.label}
               </NavLink>
             ) : (
-              <a key={item.label} href={item.href} className="hover:text-[#00468c]">{item.label}</a>
+              <a key={item.label} href={item.href} className="hover:text-brand">{item.label}</a>
             )
           )}
         </nav>
@@ -47,12 +47,12 @@ export default function PublicHeader({ cartCount = 0 }) {
           <button aria-label="Carrito" className="relative">
             <ShoppingCart size={26} />
             {cartCount > 0 && (
-              <span className="absolute -right-2 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#00468c] px-1 text-[11px] font-semibold text-white">
+              <span className="absolute -right-2 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brand px-1 text-[11px] font-semibold text-white">
                 {cartCount}
               </span>
             )}
           </button>
-          <button aria-label="Mi cuenta" className="text-[#00468c]"><CircleUser size={30} /></button>
+          <button aria-label="Mi cuenta" className="text-brand"><CircleUser size={30} /></button>
           <button
             className="md:hidden"
             aria-label={open ? "Cerrar menú" : "Abrir menú"}

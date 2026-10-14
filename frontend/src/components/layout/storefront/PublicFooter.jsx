@@ -33,7 +33,7 @@ const COLUMNS = [
 
 export default function PublicFooter() {
   return (
-    <footer id="contacto" className="bg-[#020f2e] text-white">
+    <footer id="contacto" className="bg-brand-dark text-white">
       <div className="mx-auto grid max-w-[1280px] gap-8 px-6 pb-10 pt-9 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
           <Link to="/" aria-label="Roker Perú S.A. - Inicio">

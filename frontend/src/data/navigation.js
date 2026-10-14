@@ -2,12 +2,9 @@ export const NAV_LINKS = [
     { label: "Inicio", to: "/" },
     {
         label: "Productos",
-        children: [
-            { label: "Línea Hospitalaria", to: "/productos/hospitalaria" },
-            { label: "Línea Horeca", to: "/productos/horeca" },
-        ],
+        children: [], //luego agrego mas tipos de productos 
     },
     { label: "Servicios", to: "/servicios" },
     { label: "Nosotros", to: "/nosotros" },
-    { label: "Contacto", href: "#contacto" },
+    { label: "Contacto", href: "/contacto" },
 ];
