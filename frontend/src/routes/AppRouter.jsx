@@ -9,6 +9,12 @@ import ContactPage from '@/pages/storefront/ContactPage';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 
+import BackOfficeLayout from '@/components/layout/backoffice/BackOfficeLayout';
+import AdminDashboardPage from '@/pages/backoffice/admin/AdminDashboardPage';
+import WarehouseStockPage from '@/pages/backoffice/warehouse/WarehouseStockPage';
+import SellerOrdersPage from '@/pages/backoffice/seller/SellerOrdersPage';
+import DeliveryPage from '@/pages/backoffice/delivery/DeliveryPage';
+
 export default function AppRouter() {
     return (
         <Routes>
@@ -22,6 +28,23 @@ export default function AppRouter() {
             <Route element={<AuthLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+            </Route>
+
+            {/* Rutas Backoffice */}
+            <Route element={<BackOfficeLayout role="admin" />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+            </Route>
+
+            <Route element={<BackOfficeLayout role="warehouse" />}>
+                <Route path="/warehouse" element={<WarehouseStockPage />} />
+            </Route>
+
+            <Route element={<BackOfficeLayout role="seller" />}>
+                <Route path="/seller" element={<SellerOrdersPage />} />
+            </Route>
+
+            <Route element={<BackOfficeLayout role="delivery" />}>
+                <Route path="/delivery" element={<DeliveryPage />} />
             </Route>
         </Routes>
     );
