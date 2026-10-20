@@ -11,7 +11,6 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "rol")
-@Data
 @NoArgsConstructor
 @Getter
 @Setter

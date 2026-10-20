@@ -1,5 +1,7 @@
 package RokerPeru.demo.controller;
+import RokerPeru.demo.dto.RolResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,17 +11,13 @@ import RokerPeru.demo.services.RolService;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/roles")
 public class RolController {
     @Autowired
     private RolService rolService;
-    
-    @GetMapping 
-    public String listarServicios(Model model){
-        List<Rol> roles = rolService.Listar();
-        model.addAttribute("listarRoles", roles);
-        return "listar";
+    @GetMapping
+    public List<RolResponseDTO> listar() {
+        return rolService.listarRol();
     }
-
 }

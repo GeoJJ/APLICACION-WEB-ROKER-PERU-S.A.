@@ -1,26 +1,60 @@
 package RokerPeru.demo.services;
-import RokerPeru.demo.entities.Producto;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import RokerPeru.demo.dto.ProductoRequestDTO;
+import RokerPeru.demo.dto.ProductoResponseDTO;
+import RokerPeru.demo.entities.Producto;
+import RokerPeru.demo.entities.Proveedores;
+import RokerPeru.demo.repository.ProductoRepository;
+import RokerPeru.demo.repository.ProveedoresRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import RokerPeru.demo.repository.ProductoRepository;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductoService {
-    @Autowired
-    private ProductoRepository productoRepository;
 
-    public List<Producto> listar() {
-        return productoRepository.findAll();
+    private final ProductoRepository productoRepository;
+    private final ProveedoresRepository proveedoresRepository;
+
+    public ProductoResponseDTO crear(ProductoRequestDTO dto) {
+        Producto p = new Producto();
+        p.setCodigoProducto(dto.getCodigoProducto());
+        p.setNombreProducto(dto.getNombreProducto());
+        p.setCategoriaProducto(dto.getCategoriaProducto());
+        p.setPrecioProducto(dto.getPrecioProducto());
+        p.setStockProducto(dto.getStockProducto());
+        p.setEstadoProducto(dto.getEstadoProducto());
+
+        if (dto.getIdProveedor() != null) {
+            Proveedores proveedor = proveedoresRepository.findById(dto.getIdProveedor())
+                    .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + dto.getIdProveedor()));
+            p.setProveedor(proveedor);
+        }
+
+        return aDto(productoRepository.save(p));
     }
 
-    public Producto guardar(Producto producto) {
-        return productoRepository.save(producto);
+    public List<ProductoResponseDTO> listar() {
+        return productoRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public void eliminar(Long id) {
-        productoRepository.deleteById(id);
+    public ProductoResponseDTO buscarPorId(Long id) {
+        return aDto(productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id)));
+    }
+
+    private ProductoResponseDTO aDto(Producto p) {
+        return new ProductoResponseDTO(
+                p.getIdProducto(),
+                p.getCodigoProducto(),
+                p.getNombreProducto(),
+                p.getCategoriaProducto(),
+                p.getPrecioProducto(),
+                p.getStockProducto(),
+                p.getEstadoProducto(),
+                p.getProveedor() != null ? p.getProveedor().getNombreProveedor() : null
+        );
     }
 }

@@ -2,7 +2,9 @@ package RokerPeru.demo.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,9 +12,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "pedidos")
-@Data
 @NoArgsConstructor
-
+@Getter
+@Setter
 public class Pedidos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,15 +68,15 @@ public class Pedidos {
     // cascade + orphanRemoval: el detalle no existe sin su pedido.    
     // Dependencia fuerte: si se borra un pedido, sus detalles tambien se borran
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetallePedido> detalle_pedidos = new ArrayList<>();
+    private List<DetallePedido> detallePedidos = new ArrayList<>();
     // Sincroniza ambos lados, si no la FK queda en NULL.
     public void agregarDetalle(DetallePedido detalle) {
-        detalle_pedidos.add(detalle);
+        detallePedidos.add(detalle);
         detalle.setPedido(this);
     }
 
     public void quitarDetalle(DetallePedido detalle) {
-        detalle_pedidos.remove(detalle);
+        detallePedidos.remove(detalle);
         detalle.setPedido(null);
     }
 }

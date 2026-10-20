@@ -1,10 +1,45 @@
 package RokerPeru.demo.services;
+
+import RokerPeru.demo.dto.ProveedorRequestDTO;
+import RokerPeru.demo.dto.ProveedorResponseDTO;
+import RokerPeru.demo.entities.Proveedores;
+import RokerPeru.demo.repository.ProveedoresRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-import RokerPeru.demo.entities.Proveedores;
+@Service
+@RequiredArgsConstructor
+public class ProveedorService {
 
-public interface ProveedorService {
-    List<Proveedores> Listar();
-    Proveedores guardar(Proveedores proveedor);
-    void eliminar(Long id);
+    private final ProveedoresRepository proveedoresRepository;
+
+    public ProveedorResponseDTO crear(ProveedorRequestDTO dto) {
+        Proveedores p = new Proveedores();
+        p.setNombreProveedor(dto.getNombreProveedor());
+        p.setRucProveedor(dto.getRucProveedor());
+        p.setTelefonoProveedor(dto.getTelefonoProveedor());
+        p.setCorreoProveedor(dto.getCorreoProveedor());
+        return aDto(proveedoresRepository.save(p));
+    }
+
+    public List<ProveedorResponseDTO> listar() {
+        return proveedoresRepository.findAll().stream().map(this::aDto).toList();
+    }
+
+    public ProveedorResponseDTO buscarPorId(Long id) {
+        return aDto(proveedoresRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id)));
+    }
+
+    private ProveedorResponseDTO aDto(Proveedores p) {
+        return new ProveedorResponseDTO(
+                p.getIdProveedor(),
+                p.getNombreProveedor(),
+                p.getRucProveedor(),
+                p.getTelefonoProveedor(),
+                p.getCorreoProveedor()
+        );
+    }
 }
