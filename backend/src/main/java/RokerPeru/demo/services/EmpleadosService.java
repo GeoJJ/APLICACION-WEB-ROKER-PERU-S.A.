@@ -1,10 +1,24 @@
 package RokerPeru.demo.services;
+
+import RokerPeru.demo.entities.EmpleadosServicio;
+import RokerPeru.demo.repository.EmpleadosServicioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
-import RokerPeru.demo.entities.Empleados_Servicio;
+public class EmpleadosService {
+    @Autowired
+    private EmpleadosServicioRepository empleados_ServicioRepository;
 
-public interface EmpleadosService {
-    List<Empleados_Servicio> listar();
-    Empleados_Servicio guardar(Empleados_Servicio empleados_servicio);
-    void eliminar(Long id);
+    public List<EmpleadosServicio> listar() {
+        return empleados_ServicioRepository.findAll();
+    }
+
+    public EmpleadosServicio guardar(EmpleadosServicio empleados_Servicio) {
+        return empleados_ServicioRepository.save(empleados_Servicio);
+    }
+
+    public void eliminar(Long id) {
+        empleados_ServicioRepository.deleteById(id);
+    }
 }

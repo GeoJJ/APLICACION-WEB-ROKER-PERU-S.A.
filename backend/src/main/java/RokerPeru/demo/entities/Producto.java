@@ -42,11 +42,11 @@ public class Producto {
     private Proveedores proveedor;
 
     @OneToMany(mappedBy = "producto")
-    private List<Detalle_Pedido> detallePedidos = new ArrayList<>();
+    private List<DetallePedido> detallePedidos = new ArrayList<>();
 
     //EN DUDA AUN
     //Es necesario que el movimiento de un producto se borre si se borra el producto?
     //pero este podria mantenerse como para el historial tambien
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Movimientos_Producto> movimientos = new ArrayList<>();
+    private List<MovimientosProducto> movimientos = new ArrayList<>();
 }

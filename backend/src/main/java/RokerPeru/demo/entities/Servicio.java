@@ -41,5 +41,5 @@ public class Servicio {
     private String cantidadPersonalServicio;
 
     @OneToMany(mappedBy = "servicio")
-    private List<Ordenes_Servicio> ordenesServicio = new ArrayList<>();
+    private List<OrdenesServicio> ordenesServicio = new ArrayList<>();
 }

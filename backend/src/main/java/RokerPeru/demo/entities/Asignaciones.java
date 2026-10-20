@@ -29,9 +29,9 @@ public class Asignaciones {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_empleado", nullable = false)
-    private Empleados_Servicio empleado;
+    private EmpleadosServicio empleado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_orden_servicio", nullable = false)
-    private Ordenes_Servicio ordenServicio;
+    private OrdenesServicio ordenServicio;
 }

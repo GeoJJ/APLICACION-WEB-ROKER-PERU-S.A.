@@ -1,11 +1,26 @@
 package RokerPeru.demo.services;
-import java.util.List;
-
 import RokerPeru.demo.entities.Producto;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import RokerPeru.demo.repository.ProductoRepository;
 
-public interface ProductoService {
-    List<Producto> listar();
-    Producto guardar(Producto producto);
-    void eliminar(Long id);
+@Service
+public class ProductoService {
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    public List<Producto> listar() {
+        return productoRepository.findAll();
+    }
+
+    public Producto guardar(Producto producto) {
+        return productoRepository.save(producto);
+    }
+
+    public void eliminar(Long id) {
+        productoRepository.deleteById(id);
+    }
 }

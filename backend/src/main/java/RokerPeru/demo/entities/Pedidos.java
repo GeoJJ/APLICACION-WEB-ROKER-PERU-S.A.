@@ -66,14 +66,14 @@ public class Pedidos {
     // cascade + orphanRemoval: el detalle no existe sin su pedido.    
     // Dependencia fuerte: si se borra un pedido, sus detalles tambien se borran
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Detalle_Pedido> detalle_pedidos = new ArrayList<>();
+    private List<DetallePedido> detalle_pedidos = new ArrayList<>();
     // Sincroniza ambos lados, si no la FK queda en NULL.
-    public void agregarDetalle(Detalle_Pedido detalle) {
+    public void agregarDetalle(DetallePedido detalle) {
         detalle_pedidos.add(detalle);
         detalle.setPedido(this);
     }
 
-    public void quitarDetalle(Detalle_Pedido detalle) {
+    public void quitarDetalle(DetallePedido detalle) {
         detalle_pedidos.remove(detalle);
         detalle.setPedido(null);
     }
