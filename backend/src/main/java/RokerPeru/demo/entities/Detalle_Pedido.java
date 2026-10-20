@@ -1,36 +1,35 @@
 package RokerPeru.demo.entities;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;  
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Setter;
 
 @Entity
-@Table(name="detalle_pedido")
-@Data
-@AllArgsConstructor
+@Table(name = "detalle_pedido")
+@Getter
+@Setter
 @NoArgsConstructor
-
 public class Detalle_Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_detalle_pedido;
-    private Long id_pedido;
+    @Column(name = "id_detalle_pedido")
+    private Long idDetallePedido;
 
-    private Integer cantidad_producto;
+    @Column(name = "cantidad_producto", nullable = false)
+    private Integer cantidadProducto;
 
-    private double precio_unitario_producto;
+    @Column(name = "precio_unitario_producto", nullable = false)
+    private double precioUnitarioProducto;
 
+    @Column(name = "subtotal", nullable = false)
     private double subtotal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="id_pedido")
+    @JoinColumn(name = "id_pedido", nullable = false)
     private Pedidos pedido;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="id_producto")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;
-
-
 }

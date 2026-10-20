@@ -1,45 +1,65 @@
 package RokerPeru.demo.entities;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="ordenes_servicio")
-@Data
-@AllArgsConstructor
+@Table(name = "ordenes_servicio")
+@Getter
+@Setter
 @NoArgsConstructor
-
 public class Ordenes_Servicio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_orden_servicio;
+    @Column(name = "id_orden_servicio")
+    private Long idOrdenServicio;
 
-    private LocalDateTime fecha_orden_servicio;
-    private LocalDateTime fecha_programada_servicio;
-    private String serie_comprobante_servicio;
-    private String numero_comprobante_servicio;
-    private String estado_servicio;
-    private double monto_total_servicio;
-    private String metodo_pago_servicio;
-    private String incidencia_servicio;
+    @Column(name = "fecha_orden_servicio", nullable = false)
+    private LocalDateTime fechaOrdenServicio;
+
+    @Column(name = "fecha_programada_servicio")
+    private LocalDateTime fechaProgramadaServicio;
+
+    @Column(name = "serie_comprobante_servicio", length = 10)
+    private String serieComprobanteServicio;
+
+    @Column(name = "numero_comprobante_servicio", length = 20)
+    private String numeroComprobanteServicio;
+
+    @Column(name = "estado_servicio", nullable = false, length = 30)
+    private String estadoServicio;
+
+    @Column(name = "monto_total_servicio", nullable = false)
+    private double montoTotalServicio;
+
+    @Column(name = "metodo_pago_servicio", length = 30)
+    private String metodoPagoServicio;
+
+    @Column(name = "incidencia_servicio", columnDefinition = "TEXT")
+    private String incidenciaServicio;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="id_servicio")
+    @JoinColumn(name = "id_servicio", nullable = false)
     private Servicio servicio;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="id_cliente")
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Usuario cliente;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="id_vendedor")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_vendedor")
     private Usuario vendedor;
 
-    @OneToMany (mappedBy = "orden_servicio", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_auxiliar")
+    private Usuario auxiliar;
+
+    @OneToMany(mappedBy = "ordenServicio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Asignaciones> asignaciones = new ArrayList<>();
 }
