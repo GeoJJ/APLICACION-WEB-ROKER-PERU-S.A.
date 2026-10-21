@@ -5,7 +5,6 @@ import RokerPeru.demo.dto.DetallePedidoResponseDTO;
 import RokerPeru.demo.dto.PedidoRequestDTO;
 import RokerPeru.demo.dto.PedidoResponseDTO;
 import RokerPeru.demo.entities.*;
-import RokerPeru.demo.repository.MovimientosProductoRepository;
 import RokerPeru.demo.repository.PedidosRepository;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -23,9 +22,8 @@ public class PedidoService {
     private final PedidosRepository pedidosRepository;
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
-    private final MovimientosProductoRepository movimientosRepository;
 
-    public PedidoResponseDTO crear(PedidoRequestDTO dto) {
+    public PedidoResponseDTO crearPedido(PedidoRequestDTO dto) {
         if (dto.getDetalles() == null || dto.getDetalles().isEmpty()) {
             throw new RuntimeException("El pedido debe tener al menos un producto");
         }
@@ -71,14 +69,6 @@ public class PedidoService {
             // Descontar stock (Hibernate lo guarda solo al cerrar la transacción)
             producto.setStockProducto(producto.getStockProducto() - d.getCantidadProducto());
 
-            // Registrar el movimiento de inventario
-            MovimientosProducto mov = new MovimientosProducto();
-            mov.setProducto(producto);
-            mov.setTipoMovimientoProducto("SALIDA");
-            mov.setCantidadMovimientoProducto(d.getCantidadProducto());
-            mov.setFechaMovimientoProducto(LocalDateTime.now());
-            movimientosRepository.save(mov);
-
             total += subtotal;
         }
 
@@ -87,16 +77,16 @@ public class PedidoService {
         return aDto(pedidosRepository.save(pedido));
     }
 
-    public List<PedidoResponseDTO> listar() {
+    public List<PedidoResponseDTO> listarPedido() {
         return pedidosRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public PedidoResponseDTO buscarPorId(Long id) {
+    public PedidoResponseDTO buscarPorIdPedido(Long id) {
         return aDto(pedidosRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id)));
     }
 
-    public PedidoResponseDTO cambiarEstado(Long id, String nuevoEstado) {
+    public PedidoResponseDTO cambiarEstadoPedido(Long id, String nuevoEstado) {
         Pedidos pedido = pedidosRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id));
         pedido.setEstadoPedido(nuevoEstado);

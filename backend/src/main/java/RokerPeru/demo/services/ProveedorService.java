@@ -15,7 +15,7 @@ public class ProveedorService {
 
     private final ProveedoresRepository proveedoresRepository;
 
-    public ProveedorResponseDTO crear(ProveedorRequestDTO dto) {
+    public ProveedorResponseDTO crearProveedor(ProveedorRequestDTO dto) {
         Proveedores p = new Proveedores();
         p.setNombreProveedor(dto.getNombreProveedor());
         p.setRucProveedor(dto.getRucProveedor());
@@ -24,11 +24,11 @@ public class ProveedorService {
         return aDto(proveedoresRepository.save(p));
     }
 
-    public List<ProveedorResponseDTO> listar() {
+    public List<ProveedorResponseDTO> listarProveedor() {
         return proveedoresRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public ProveedorResponseDTO buscarPorId(Long id) {
+    public ProveedorResponseDTO buscarPorIdProveedor(Long id) {
         return aDto(proveedoresRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id)));
     }

@@ -15,7 +15,7 @@ public class ServicioService {
 
     private final ServicioRepository servicioRepository;
 
-    public ServicioResponseDTO crear(ServicioRequestDTO dto) {
+    public ServicioResponseDTO crearServicio(ServicioRequestDTO dto) {
         Servicio s = new Servicio();
         s.setCategoriaServicio(dto.getCategoriaServicio());
         s.setNombreServicio(dto.getNombreServicio());
@@ -27,11 +27,11 @@ public class ServicioService {
         return aDto(servicioRepository.save(s));
     }
 
-    public List<ServicioResponseDTO> listar() {
+    public List<ServicioResponseDTO> listarServicio() {
         return servicioRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public ServicioResponseDTO buscarPorId(Long id) {
+    public ServicioResponseDTO buscarPorIdServicio(Long id) {
         return aDto(servicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + id)));
     }

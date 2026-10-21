@@ -18,7 +18,7 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
     private final ProveedoresRepository proveedoresRepository;
 
-    public ProductoResponseDTO crear(ProductoRequestDTO dto) {
+    public ProductoResponseDTO crearProducto(ProductoRequestDTO dto) {
         Producto p = new Producto();
         p.setCodigoProducto(dto.getCodigoProducto());
         p.setNombreProducto(dto.getNombreProducto());
@@ -36,11 +36,11 @@ public class ProductoService {
         return aDto(productoRepository.save(p));
     }
 
-    public List<ProductoResponseDTO> listar() {
+    public List<ProductoResponseDTO> listarProducto() {
         return productoRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public ProductoResponseDTO buscarPorId(Long id) {
+    public ProductoResponseDTO buscarPorIdProducto(Long id) {
         return aDto(productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id)));
     }

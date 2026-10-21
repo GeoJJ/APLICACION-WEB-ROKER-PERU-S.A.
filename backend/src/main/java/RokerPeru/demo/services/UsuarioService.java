@@ -18,7 +18,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
 
-    public UsuarioResponseDTO crear(UsuarioRequestDTO dto) {
+    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + dto.getIdRol()));
 
@@ -34,12 +34,12 @@ public class UsuarioService {
         return aDto(usuarioRepository.save(usuario));
     }
 
-    public UsuarioResponseDTO buscarPorId(Long id) {
+    public UsuarioResponseDTO buscarPorIdUsuario(Long id) {
         return aDto(usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id)));
     }
 
-    public List<UsuarioResponseDTO> listar() {
+    public List<UsuarioResponseDTO> listarUsuario() {
         return usuarioRepository.findAll().stream().map(this::aDto).toList();
     }
 

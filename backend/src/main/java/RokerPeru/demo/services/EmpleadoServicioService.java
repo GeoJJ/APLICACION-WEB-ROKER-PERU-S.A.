@@ -15,7 +15,7 @@ public class EmpleadoServicioService {
 
     private final EmpleadosServicioRepository empleadosRepository;
 
-    public EmpleadoResponseDTO crear(EmpleadoRequestDTO dto) {
+    public EmpleadoResponseDTO crearEmpleadoServicio(EmpleadoRequestDTO dto) {
         EmpleadosServicio e = new EmpleadosServicio();
         e.setNombreEmpleadoServicio(dto.getNombreEmpleadoServicio());
         e.setApellidoEmpleadoServicio(dto.getApellidoEmpleadoServicio());
@@ -24,11 +24,11 @@ public class EmpleadoServicioService {
         return aDto(empleadosRepository.save(e));
     }
 
-    public List<EmpleadoResponseDTO> listar() {
+    public List<EmpleadoResponseDTO> listarEmpleadoServicio() {
         return empleadosRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public EmpleadoResponseDTO buscarPorId(Long id) {
+    public EmpleadoResponseDTO buscarPorIdEmpleadoServicio(Long id) {
         return aDto(empleadosRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado: " + id)));
     }

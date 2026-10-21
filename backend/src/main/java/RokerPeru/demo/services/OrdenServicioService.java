@@ -22,7 +22,7 @@ public class OrdenServicioService {
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public OrdenServicioResponseDTO crear(OrdenServicioRequestDTO dto) {
+    public OrdenServicioResponseDTO crearOrdenServicio(OrdenServicioRequestDTO dto) {
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + dto.getIdServicio()));
 
@@ -43,21 +43,21 @@ public class OrdenServicioService {
         return aDto(ordenesRepository.save(orden));
     }
 
-    public List<OrdenServicioResponseDTO> listar() {
+    public List<OrdenServicioResponseDTO> listarOrdenServicio() {
         return ordenesRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public OrdenServicioResponseDTO buscarPorId(Long id) {
+    public OrdenServicioResponseDTO buscarPorIdOrdenServicio(Long id) {
         return aDto(buscarOrden(id));
     }
 
-    public OrdenServicioResponseDTO cambiarEstado(Long id, String nuevoEstado) {
+    public OrdenServicioResponseDTO cambiarEstadoOrdenServicio(Long id, String nuevoEstado) {
         OrdenesServicio orden = buscarOrden(id);
         orden.setEstadoServicio(nuevoEstado);
         return aDto(orden);
     }
 
-    public OrdenServicioResponseDTO registrarIncidencia(Long id, String incidencia) {
+    public OrdenServicioResponseDTO registrarIncidenciaOrdenServicio(Long id, String incidencia) {
         OrdenesServicio orden = buscarOrden(id);
         orden.setIncidenciaServicio(incidencia);
         return aDto(orden);

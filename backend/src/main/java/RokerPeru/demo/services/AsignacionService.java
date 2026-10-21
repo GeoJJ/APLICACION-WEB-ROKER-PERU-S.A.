@@ -22,7 +22,7 @@ public class AsignacionService {
     private final OrdenesServicioRepository ordenesRepository;
     private final EmpleadosServicioRepository empleadosRepository;
 
-    public AsignacionResponseDTO crear(AsignacionRequestDTO dto) {
+    public AsignacionResponseDTO crearAsignacion(AsignacionRequestDTO dto) {
         OrdenesServicio orden = ordenesRepository.findById(dto.getIdOrdenServicio())
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada: " + dto.getIdOrdenServicio()));
 
@@ -39,11 +39,11 @@ public class AsignacionService {
         return aDto(asignacionesRepository.save(a));
     }
 
-    public List<AsignacionResponseDTO> listar() {
+    public List<AsignacionResponseDTO> listarAsignacion() {
         return asignacionesRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public AsignacionResponseDTO buscarPorId(Long id) {
+    public AsignacionResponseDTO buscarPorIdAsignacion(Long id) {
         return aDto(asignacionesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Asignación no encontrada: " + id)));
     }
