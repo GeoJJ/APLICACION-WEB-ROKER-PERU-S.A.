@@ -13,20 +13,5 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductoController {
 
-    private final ProductoService productoService;
 
-    @PostMapping("/crear")
-    public ProductoResponseDTO crearProducto(@RequestBody ProductoRequestDTO dto) {
-        return productoService.crearProducto(dto);
-    }
-
-    @GetMapping("/listar")
-    public List<ProductoResponseDTO> listarProducto() {
-        return productoService.listarProducto();
-    }
-
-    @GetMapping("/buscar/{id}")
-    public ProductoResponseDTO buscarPorIdProducto(@PathVariable Long id) {
-        return productoService.buscarPorIdProducto(id);
-    }
 }

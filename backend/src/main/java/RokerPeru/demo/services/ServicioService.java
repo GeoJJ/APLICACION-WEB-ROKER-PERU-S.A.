@@ -13,39 +13,4 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServicioService {
 
-    private final ServicioRepository servicioRepository;
-
-    public ServicioResponseDTO crearServicio(ServicioRequestDTO dto) {
-        Servicio s = new Servicio();
-        s.setCategoriaServicio(dto.getCategoriaServicio());
-        s.setNombreServicio(dto.getNombreServicio());
-        s.setTipoServicio(dto.getTipoServicio());
-        s.setDescripcionServicio(dto.getDescripcionServicio());
-        s.setPrecioServicio(dto.getPrecioServicio());
-        s.setDuracionEstimadaServicio(dto.getDuracionEstimadaServicio());
-        s.setCantidadPersonalServicio(dto.getCantidadPersonalServicio());
-        return aDto(servicioRepository.save(s));
-    }
-
-    public List<ServicioResponseDTO> listarServicio() {
-        return servicioRepository.findAll().stream().map(this::aDto).toList();
-    }
-
-    public ServicioResponseDTO buscarPorIdServicio(Long id) {
-        return aDto(servicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + id)));
-    }
-
-    private ServicioResponseDTO aDto(Servicio s) {
-        return new ServicioResponseDTO(
-                s.getIdServicio(),
-                s.getCategoriaServicio(),
-                s.getNombreServicio(),
-                s.getTipoServicio(),
-                s.getDescripcionServicio(),
-                s.getPrecioServicio(),
-                s.getDuracionEstimadaServicio(),
-                s.getCantidadPersonalServicio()
-        );
-    }
 }

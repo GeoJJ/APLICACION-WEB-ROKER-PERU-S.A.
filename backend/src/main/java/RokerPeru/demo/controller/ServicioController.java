@@ -13,20 +13,4 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServicioController {
 
-    private final ServicioService servicioService;
-
-    @PostMapping("/crear")
-    public ServicioResponseDTO crearServicio(@RequestBody ServicioRequestDTO dto) {
-        return servicioService.crearServicio(dto);
-    }
-
-    @GetMapping("/listar")
-    public List<ServicioResponseDTO> listarServicio() {
-        return servicioService.listarServicio();
-    }
-
-    @GetMapping("/buscar/{id}")
-    public ServicioResponseDTO buscarPorIdServicio(@PathVariable Long id) {
-        return servicioService.buscarPorIdServicio(id);
-    }
 }

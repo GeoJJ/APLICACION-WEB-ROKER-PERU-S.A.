@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,9 +27,6 @@ public class Servicio {
     @Column(name = "nombre_servicio", nullable = false, length = 150)
     private String nombreServicio;
 
-    @Column(name = "tipo_servicio", length = 50)
-    private String tipoServicio;
-
     @Column(name = "descripcion_servicio", columnDefinition = "TEXT")
     private String descripcionServicio;
 
@@ -40,6 +39,14 @@ public class Servicio {
     @Column(name = "cantidad_personal_servicio", length = 50)
     private String cantidadPersonalServicio;
 
+    @Column(name = "fecha_inicio")
+    private LocalDateTime fechaInicio;
+
+    @Column(name = "fecha_fin")
+    private LocalDateTime fechaFin;
+
     @OneToMany(mappedBy = "servicio")
     private List<OrdenesServicio> ordenesServicio = new ArrayList<>();
+
+
 }

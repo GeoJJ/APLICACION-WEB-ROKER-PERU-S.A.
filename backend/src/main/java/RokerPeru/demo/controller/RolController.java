@@ -1,8 +1,9 @@
 package RokerPeru.demo.controller;
-import RokerPeru.demo.dto.RolRequestDTO;
-import RokerPeru.demo.dto.RolResponseDTO;
+
+import RokerPeru.demo.dto.rol.RolRequestDTO;
+import RokerPeru.demo.dto.rol.RolResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import RokerPeru.demo.services.RolService;
@@ -13,21 +14,26 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/roles")
 public class RolController {
-
     private final RolService rolService;
+
+    @PostMapping
+    public RolResponseDTO crearRol(@Valid @RequestBody RolRequestDTO dto) {
+        return rolService.crearRol(dto);
+    }
 
     @GetMapping("/listar")
     public List<RolResponseDTO> listarRol() {
         return rolService.listarRol();
     }
 
-    @PostMapping("/crear")
-    public RolResponseDTO crearRol(@RequestBody RolRequestDTO rol){
-        return rolService.crearRol(rol);
-    }
+    // GET /roles/buscar?nombre=adm
+    @GetMapping("/buscar")
+        public List<RolResponseDTO> buscarRol(@RequestParam String nombre) {
+            return rolService.buscarRol(nombre);
+        }
 
-    @GetMapping("/buscar/{id}")
-    public RolResponseDTO buscarPorId(@PathVariable Long id){
-        return rolService.buscarPorId(id);
+    @PutMapping("/{id}")
+    public RolResponseDTO actualizarRol(@PathVariable Long id, @Valid @RequestBody RolRequestDTO dto) {
+        return rolService.actualizarRol(id, dto);
     }
 }

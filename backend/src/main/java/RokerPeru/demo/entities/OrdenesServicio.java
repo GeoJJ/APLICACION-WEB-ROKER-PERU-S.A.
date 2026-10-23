@@ -23,9 +23,6 @@ public class OrdenesServicio {
     @Column(name = "fecha_orden_servicio", nullable = false)
     private LocalDateTime fechaOrdenServicio;
 
-    @Column(name = "fecha_programada_servicio")
-    private LocalDateTime fechaProgramadaServicio;
-
     @Column(name = "serie_comprobante_servicio", length = 10)
     private String serieComprobanteServicio;
 
