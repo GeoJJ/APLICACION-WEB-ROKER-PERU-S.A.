@@ -21,7 +21,7 @@ public class RolController {
         return rolService.crearRol(dto);
     }
 
-    @GetMapping("/listar")
+    @GetMapping
     public List<RolResponseDTO> listarRol() {
         return rolService.listarRol();
     }

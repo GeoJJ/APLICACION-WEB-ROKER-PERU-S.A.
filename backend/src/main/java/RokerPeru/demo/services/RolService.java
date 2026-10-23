@@ -49,7 +49,7 @@ public class RolService {
     }
 
     public List<RolResponseDTO> buscarRol(String texto) {
-        return rolRepository.findByNombreRolContainingIgnoreCaseOrderByNombreRolAsc(texto.trim())
+        return rolRepository.buscarRolPorNombre(texto.trim())
                 .stream().map(this::aDto).toList();
     }
 
@@ -58,7 +58,7 @@ public class RolService {
     }
 
     private String normalizar(String nombre) {
-        return nombre.trim().toUpperCase();
+        return nombre.trim();
     }
 
     private Rol obtenerRol(Long id) {
