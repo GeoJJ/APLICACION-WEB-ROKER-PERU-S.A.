@@ -28,7 +28,7 @@ public class RolService {
         rol.setNombreRol(nombre);
         return aDto(rolRepository.save(rol));
     }
-
+    @Transactional(readOnly = true)
     public List<RolResponseDTO> listarRol() {
         return rolRepository.findAll().stream()
                 .map(this::aDto)
@@ -47,7 +47,7 @@ public class RolService {
         rol.setNombreRol(nombre);
         return aDto(rol);
     }
-
+    @Transactional(readOnly = true)
     public List<RolResponseDTO> buscarRol(String texto) {
         return rolRepository.buscarRolPorNombre(texto.trim())
                 .stream().map(this::aDto).toList();
