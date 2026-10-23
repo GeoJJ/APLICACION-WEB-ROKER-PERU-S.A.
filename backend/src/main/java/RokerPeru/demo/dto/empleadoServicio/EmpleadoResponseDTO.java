@@ -1,4 +1,4 @@
-package RokerPeru.demo.dto;
+package RokerPeru.demo.dto.empleadoServicio;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,5 +12,4 @@ public class EmpleadoResponseDTO {
     private String nombreEmpleadoServicio;
     private String apellidoEmpleadoServicio;
     private String telefonoEmpleadoServicio;
-    private String cargoEmpleadoServicio;
 }

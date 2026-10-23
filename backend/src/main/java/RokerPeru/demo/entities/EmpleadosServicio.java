@@ -28,9 +28,6 @@ public class EmpleadosServicio {
     @Column(name = "telefono_empleado_servicio", length = 20)
     private String telefonoEmpleadoServicio;
 
-    @Column(name = "cargo_empleado_servicio", length = 100)
-    private String cargoEmpleadoServicio;
-
     @OneToMany(mappedBy = "empleado")
     private List<Asignaciones> asignaciones = new ArrayList<>();
 }
