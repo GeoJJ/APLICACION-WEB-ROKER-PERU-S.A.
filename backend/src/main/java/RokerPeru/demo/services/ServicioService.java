@@ -1,10 +1,16 @@
 package RokerPeru.demo.services;
+
+import RokerPeru.demo.dto.ServicioRequestDTO;
+import RokerPeru.demo.dto.ServicioResponseDTO;
+import RokerPeru.demo.entities.Servicio;
+import RokerPeru.demo.repository.ServicioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-import RokerPeru.demo.entities.Servicio;
+@Service
+@RequiredArgsConstructor
+public class ServicioService {
 
-public interface ServicioService {
-    List<Servicio> listar();
-    Servicio guardar(Servicio servicio);
-    void eliminar(Long id);
 }

@@ -1,50 +1,82 @@
 package RokerPeru.demo.entities;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="pedidos")
-@Data
-@AllArgsConstructor
+@Table(name = "pedidos")
 @NoArgsConstructor
-
+@Getter
+@Setter
 public class Pedidos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_pedido;
+    @Column(name = "id_pedido")
+    private Long idPedido;
 
-    private LocalDateTime fecha_pedido;
-    private String serie_comprobante_pedido;
-    private String numero_comprobante_pedido;
-    private LocalDateTime fecha_salida_pedido;
-    private LocalDateTime fecha_entrega_pedido;
-    private String incidente_pedido;
-    private String estado_pedido;
-    private double monto_total_pedido;
-    private String metodo_pago_pedido;
+    @Column(name = "fecha_pedido", nullable = false)
+    private LocalDateTime fechaPedido;
+
+    @Column(name = "serie_comprobante_pedido", length = 10)
+    private String serieComprobantePedido;
+
+    @Column(name = "numero_comprobante_pedido", length = 20)
+    private String numeroComprobantePedido;
+
+    @Column(name = "fecha_salida_pedido")
+    private LocalDateTime fechaSalidaPedido;
+
+    @Column(name = "fecha_entrega_pedido")
+    private LocalDateTime fechaEntregaPedido;
+
+    @Column(name = "incidente_pedido", columnDefinition = "TEXT")
+    private String incidentePedido;
+
+    @Column(name = "estado_pedido", nullable = false, length = 30)
+    private String estadoPedido;
+
+    @Column(name = "monto_total_pedido", nullable = false)
+    private double montoTotalPedido;
+
+    @Column(name = "metodo_pago_pedido", length = 30)
+    private String metodoPagoPedido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="id_cliente")
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Usuario cliente;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="id_vendedor")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_vendedor")
     private Usuario vendedor;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="id_delivery")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_delivery")
     private Usuario delivery;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="id_auxiliar")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_auxiliar")
     private Usuario auxiliar;
 
+    // 1 pedido -> N detalles. El dueño de la FK es Detalle_Pedido.pedido.
+    // cascade + orphanRemoval: el detalle no existe sin su pedido.    
+    // Dependencia fuerte: si se borra un pedido, sus detalles tambien se borran
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Detalle_Pedido> detalle_pedidos = new ArrayList<>();
+    private List<DetallePedido> detallePedidos = new ArrayList<>();
+    // Sincroniza ambos lados, si no la FK queda en NULL.
+    public void agregarDetalle(DetallePedido detalle) {
+        detallePedidos.add(detalle);
+        detalle.setPedido(this);
+    }
+
+    public void quitarDetalle(DetallePedido detalle) {
+        detallePedidos.remove(detalle);
+        detalle.setPedido(null);
+    }
 }

@@ -1,38 +1,49 @@
 package RokerPeru.demo.entities;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;  
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="usuario")
-@Data
-@AllArgsConstructor
+@Table(name = "usuario")
+@Getter
+@Setter
 @NoArgsConstructor
-
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_usuario;
+    @Column(name = "id_usuario")
+    private Long idUsuario;
 
-    private String nombre_usuario;
+    @Column(name = "nombre_usuario", nullable = false, length = 150)
+    private String nombreUsuario;
 
-    private String correo_usuario;
+    @Column(name = "correo_usuario", unique = true, length = 150)
+    private String correoUsuario;
 
-    private String tipopersona_usuario;
+    @Column(name = "tipopersona_usuario", length = 30)
+    private String tipoPersonaUsuario;
 
-    private String numero_documento_usuario;
+    @Column(name = "numero_documento_usuario", length = 20)
+    private String numeroDocumentoUsuario;
 
-    private String telefono_usuario;
+    @Column(name = "telefono_usuario", length = 20)
+    private String telefonoUsuario;
 
-    private String direccion_usuario;
+    @Column(name = "direccion_usuario", length = 255)
+    private String direccionUsuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="id_rol")
+    @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 
-    @OneToMany (mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Pedidos> pedidos = new ArrayList<>();
+    @OneToMany(mappedBy = "cliente")
+    private List<Pedidos> pedidosComoCliente = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vendedor")
+    private List<Pedidos> pedidosComoVendedor = new ArrayList<>();
 }
