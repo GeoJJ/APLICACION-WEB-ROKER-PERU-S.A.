@@ -14,6 +14,7 @@ import AdminDashboardPage from '@/pages/backoffice/admin/AdminDashboardPage';
 import WarehouseStockPage from '@/pages/backoffice/warehouse/WarehouseStockPage';
 import SellerOrdersPage from '@/pages/backoffice/seller/SellerOrdersPage';
 import DeliveryPage from '@/pages/backoffice/delivery/DeliveryPage';
+import Reportes from '@/pages/backoffice/admin/Reportes';
 
 export default function AppRouter() {
     return (
@@ -33,6 +34,7 @@ export default function AppRouter() {
             {/* Rutas Backoffice */}
             <Route element={<BackOfficeLayout role="admin" />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/reportes" element={<Reportes />} />
             </Route>
 
             <Route element={<BackOfficeLayout role="warehouse" />}>
