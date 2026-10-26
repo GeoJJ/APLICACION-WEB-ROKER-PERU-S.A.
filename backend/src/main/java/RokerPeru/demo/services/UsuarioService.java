@@ -9,6 +9,7 @@ import RokerPeru.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
 import java.util.List;
 
 @Service
@@ -34,13 +35,40 @@ public class UsuarioService {
         return aDto(usuarioRepository.save(usuario));
     }
 
+    public List<UsuarioResponseDTO> listarUsuario() {
+        return usuarioRepository.findAll().stream().map(this::aDto).toList();
+    }
+
+
+    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto){
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado" + id));
+        Rol rol = rolRepository.findById(dto.getIdRol())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado " + dto.getIdRol()));
+
+        usuario.setNombreUsuario(dto.getNombreUsuario());
+        usuario.setCorreoUsuario(dto.getCorreoUsuario());
+        usuario.setTipoPersonaUsuario(dto.getTipoPersonaUsuario());
+        usuario.setNumeroDocumentoUsuario(dto.getNumeroDocumentoUsuario());
+        usuario.setTelefonoUsuario(dto.getTelefonoUsuario());
+        usuario.setDireccionUsuario(dto.getDireccionUsuario());
+        usuario.setRol(rol);
+
+        return aDto(usuarioRepository.save(usuario));
+    }
+
+    public void eliminarUsuario(Long id){
+        if(!usuarioRepository.existsById(id)){
+            throw new RuntimeException("Usuario no encontrado" + id);
+        }
+
+        usuarioRepository.deleteById(id);
+    }
+
+
     public UsuarioResponseDTO buscarPorIdUsuario(Long id) {
         return aDto(usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id)));
-    }
-
-    public List<UsuarioResponseDTO> listarUsuario() {
-        return usuarioRepository.findAll().stream().map(this::aDto).toList();
     }
 
     private UsuarioResponseDTO aDto(Usuario u) {

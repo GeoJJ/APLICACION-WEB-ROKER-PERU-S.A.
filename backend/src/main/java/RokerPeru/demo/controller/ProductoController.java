@@ -25,8 +25,21 @@ public class ProductoController {
         return productoService.listarProducto();
     }
 
-    @GetMapping("/buscar/{id}")
-    public ProductoResponseDTO buscarPorIdProducto(@PathVariable Long id) {
-        return productoService.buscarPorIdProducto(id);
+    @PutMapping("/actualizar/{id}")
+    public ProductoResponseDTO actualizarProducto(@PathVariable Long id,
+                                                  @RequestBody ProductoRequestDTO dto) {
+        return productoService.actualizarProducto(id, dto);
     }
+
+    @PatchMapping("/estado/{id}")
+    public ProductoResponseDTO cambiarEstadoProducto(@PathVariable Long id,
+                                                     @RequestParam String estado) {
+        return productoService.cambiarEstadoProducto(id, estado);
+    }
+
+    @DeleteMapping("/eliminar/{id}")
+    public void eliminarProducto(@PathVariable Long id) {
+        productoService.eliminarProducto(id);
+    }
+
 }
