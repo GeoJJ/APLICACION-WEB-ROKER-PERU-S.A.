@@ -1,42 +1,83 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import Breadcrumb from "@/components/shared/Breadcrumb";
 import PageTitle from "@/components/shared/PageTitle";
 import RangeSlider from "@/components/ui/RangeSlider";
 import ProductCard from "@/components/features/catalog/ProductCard";
-import { PRODUCTS } from "@/data/products";
+import { obtenerProductos } from "@/services/productService";
 
 export default function CatalogPage() {
+    // Estados para los productos del backend
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Estados de filtros y controles de UI
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("");
     const [priceRange, setPriceRange] = useState([0, 200]);
     const [category, setCategory] = useState("");
 
+
+    useEffect(() => {
+        const cargarDatos = async () => {
+            try {
+                setLoading(true);
+                const data = await obtenerProductos();
+                setProducts(data);
+                setError(null);
+            } catch (err) {
+                setError(err.message || "No se pudo obtener la lista de productos del servidor.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarDatos();
+    }, []);
+
     const filteredProducts = useMemo(() => {
-        let result = PRODUCTS;
+        let result = products;
 
+        // Filtro por nombre
         if (search) {
-            result = result.filter((p) =>
-                p.name.toLowerCase().includes(search.toLowerCase())
-            );
+            result = result.filter((p) => {
+                const productName = p.nombreProducto || p.name || p.nombre || "";
+                return productName.toLowerCase().includes(search.toLowerCase());
+            });
         }
 
+        // Filtro por categoría
         if (category) {
-            result = result.filter((p) => p.category === category);
+            result = result.filter((p) => {
+                const productCategory = p.categoriaProducto || p.category || p.categoria || "";
+                return productCategory.toLowerCase().includes(category.toLowerCase());
+            });
         }
 
-        result = result.filter(
-            (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
-        );
+        // Filtro por rango de precio
+        result = result.filter((p) => {
+            const price = p.precioProducto ?? p.price ?? p.precio ?? 0;
+            return price >= priceRange[0] && price <= priceRange[1];
+        });
 
+        // Ordenamiento por precio
         if (sort === "precio-asc") {
-            result = [...result].sort((a, b) => a.price - b.price);
+            result = [...result].sort((a, b) => {
+                const priceA = a.precioProducto ?? a.price ?? a.precio ?? 0;
+                const priceB = b.precioProducto ?? b.price ?? b.precio ?? 0;
+                return priceA - priceB;
+            });
         } else if (sort === "precio-desc") {
-            result = [...result].sort((a, b) => b.price - a.price);
+            result = [...result].sort((a, b) => {
+                const priceA = a.precioProducto ?? a.price ?? a.precio ?? 0;
+                const priceB = b.precioProducto ?? b.price ?? b.precio ?? 0;
+                return priceB - priceA;
+            });
         }
 
         return result;
-    }, [search, category, sort, priceRange]);
+    }, [products, search, category, sort, priceRange]);
 
     return (
         <main className="bg-gray-50 min-h-screen pb-20">
@@ -132,11 +173,21 @@ export default function CatalogPage() {
                             </div>
                         </div>
 
-                        {/* Grid de Productos */}
-                        {filteredProducts.length > 0 ? (
+                        {/* Renderizado Condicional: Carga, Error o Productos */}
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-20 text-center">
+                                <p className="text-lg font-semibold text-gray-700">Cargando catálogo...</p>
+                                <p className="text-sm text-gray-500">Obteniendo productos desde el servidor</p>
+                            </div>
+                        ) : error ? (
+                            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-red-200 bg-white py-20 text-center">
+                                <p className="text-lg font-semibold text-red-600">Error al conectar con la base de datos</p>
+                                <p className="text-sm text-gray-500">{error}</p>
+                            </div>
+                        ) : filteredProducts.length > 0 ? (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 {filteredProducts.map((product) => (
-                                    <ProductCard key={product.id} product={product} />
+                                    <ProductCard key={product.id || product.idProducto} product={product} />
                                 ))}
                             </div>
                         ) : (
