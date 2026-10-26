@@ -1,0 +1,38 @@
+Abrir Pgadmin, crear la base de datos llamada roker_bd y posteriormente ingresar a la misma.
+Al momento de inicializar Springboot, las tablas se crearán automáticamente.
+Usar Query Tools para agregar datos a las tablas proveedores y producto.
+
+Tabla proveedores:
+
+INSERT INTO proveedores (id_proveedor, nombre_proveedor, ruc_proveedor, telefono_proveedor) 
+VALUES (1, 'Proveedor General Roker', '20123456789', '987654321');
+
+Tabla producto:
+
+INSERT INTO producto (
+    categoria_producto, 
+    codigo_producto, 
+    estado_producto, 
+    nombre_producto, 
+    precio_producto, 
+    stock_producto, 
+    id_proveedor
+) VALUES 
+(
+    'Bioseguridad', 
+    'PROD-001', 
+    'Disponible', 
+    'Mascarilla KN95 - Cta 10 Unidades', 
+    25.50, 
+    100, 
+    1
+),
+(
+    'Desinfección', 
+    'PROD-002', 
+    'Disponible', 
+    'Alcohol en Gel 1 Litro - Roker', 
+    18.00, 
+    50, 
+    1
+);
