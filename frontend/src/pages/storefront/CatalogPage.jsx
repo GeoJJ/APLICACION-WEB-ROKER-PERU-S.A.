@@ -23,7 +23,7 @@ export default function CatalogPage() {
         const cargarDatos = async () => {
             try {
                 setLoading(true);
-                const data = await obtenerProductos();
+                const data = await obtenerProductos(); // Usamos la función del servicio
                 setProducts(data);
                 setError(null);
             } catch (err) {
@@ -36,6 +36,8 @@ export default function CatalogPage() {
         cargarDatos();
     }, []);
 
+    // Filtrado y ordenamiento dinámico de los datos cargados desde el backend
+    // Filtrado y ordenamiento dinámico adaptado a tu backend
     const filteredProducts = useMemo(() => {
         let result = products;
 
