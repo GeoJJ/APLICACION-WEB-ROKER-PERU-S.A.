@@ -1,12 +1,11 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.services.InventarioService;
 import RokerPeru.demo.dto.movimiento.MovimientoRequestDTO;
 import RokerPeru.demo.dto.movimiento.MovimientoResponseDTO;
 import RokerPeru.demo.dto.movimiento.AlertaStockDTO;
+import RokerPeru.demo.services.InventarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-//instalada la librería de Spring Security. Para que Java reconozca la anotación @PreAuthorize
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 

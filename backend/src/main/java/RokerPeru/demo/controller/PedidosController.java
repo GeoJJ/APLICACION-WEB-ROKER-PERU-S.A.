@@ -2,7 +2,7 @@ package RokerPeru.demo.controller;
 
 import RokerPeru.demo.dto.pedido.PedidoRequestDTO;
 import RokerPeru.demo.dto.pedido.PedidoResponseDTO;
-import RokerPeru.demo.services.impl.PedidoServiceImpl;
+import RokerPeru.demo.services.PedidoService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +17,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class PedidosController {
 
-    private final PedidoServiceImpl pedidosService;
+    private final PedidoService pedidosService;
 
     // ---------------- OPERACIONES TRANSACCIONALES ----------------
 

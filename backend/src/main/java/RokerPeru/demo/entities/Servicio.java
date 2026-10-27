@@ -27,6 +27,9 @@ public class Servicio {
     @Column(name = "nombre_servicio", nullable = false, length = 150)
     private String nombreServicio;
 
+    @Column(name = "tipo_servicio", length = 50)
+    private String tipoServicio;
+
     @Column(name = "descripcion_servicio", columnDefinition = "TEXT")
     private String descripcionServicio;
 
@@ -47,6 +50,4 @@ public class Servicio {
 
     @OneToMany(mappedBy = "servicio")
     private List<OrdenesServicio> ordenesServicio = new ArrayList<>();
-
-
 }

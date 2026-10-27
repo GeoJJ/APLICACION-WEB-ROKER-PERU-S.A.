@@ -1,7 +1,8 @@
 package RokerPeru.demo.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import RokerPeru.demo.entities.OrdenesServicio;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
 public interface OrdenesServicioRepository extends JpaRepository<OrdenesServicio, Long> {

@@ -1,7 +1,7 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.UsuarioResponseDTO;
 import RokerPeru.demo.dto.usuarios.UsuarioRequestDTO;
+import RokerPeru.demo.dto.usuarios.UsuarioResponseDTO;
 import RokerPeru.demo.services.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

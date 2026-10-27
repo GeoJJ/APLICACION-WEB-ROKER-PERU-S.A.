@@ -17,4 +17,5 @@ public interface RolRepository extends JpaRepository<Rol, Long> {
     @Query("SELECT r FROM Rol r " +
             "WHERE LOWER(r.nombreRol) LIKE LOWER(CONCAT('%', :texto, '%')) " +
             "ORDER BY r.nombreRol ASC")
-    List<Rol> buscarRolPorNombre(@Param("texto") String texto);}
+    List<Rol> buscarRolPorNombre(@Param("texto") String texto);
+}
