@@ -1,4 +1,4 @@
-package RokerPeru.demo.dto;
+package RokerPeru.demo.dto.ordenServicio;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +19,9 @@ public class OrdenServicioResponseDTO {
     private double montoTotalServicio;
     private String metodoPagoServicio;
     private String incidenciaServicio;
+    
     private String nombreServicio;
     private String nombreCliente;
-    private String nombreVendedor;   // puede ser null
-    private String nombreAuxiliar;   // puede ser null
+    private String nombreVendedor;   
+    private String nombreAuxiliar;   
 }

@@ -1,11 +1,13 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.EmpleadoRequestDTO;
-import RokerPeru.demo.dto.EmpleadoResponseDTO;
+import RokerPeru.demo.dto.empleadoServicio.EmpleadoRequestDTO;
+import RokerPeru.demo.dto.empleadoServicio.EmpleadoResponseDTO;
 import RokerPeru.demo.entities.EmpleadosServicio;
 import RokerPeru.demo.repository.EmpleadosServicioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,23 +16,36 @@ import java.util.List;
 public class EmpleadoServicioService {
 
     private final EmpleadosServicioRepository empleadosRepository;
-
+    @Transactional
     public EmpleadoResponseDTO crearEmpleadoServicio(EmpleadoRequestDTO dto) {
         EmpleadosServicio e = new EmpleadosServicio();
-        e.setNombreEmpleadoServicio(dto.getNombreEmpleadoServicio());
-        e.setApellidoEmpleadoServicio(dto.getApellidoEmpleadoServicio());
+        e.setNombreEmpleadoServicio(normalizar(dto.getNombreEmpleadoServicio()));
+        e.setApellidoEmpleadoServicio(normalizar(dto.getApellidoEmpleadoServicio()));
         e.setTelefonoEmpleadoServicio(dto.getTelefonoEmpleadoServicio());
-        e.setCargoEmpleadoServicio(dto.getCargoEmpleadoServicio());
         return aDto(empleadosRepository.save(e));
     }
-
+    @Transactional(readOnly = true)
     public List<EmpleadoResponseDTO> listarEmpleadoServicio() {
-        return empleadosRepository.findAll().stream().map(this::aDto).toList();
+        return empleadosRepository.findAll(Sort.by("nombreEmpleadoServicio")).stream().map(this::aDto).toList();
     }
 
-    public EmpleadoResponseDTO buscarPorIdEmpleadoServicio(Long id) {
-        return aDto(empleadosRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado: " + id)));
+    @Transactional(readOnly = true)
+    public List<EmpleadoResponseDTO> buscarPorIdEmpleadoServicio(String texto) {
+        return empleadosRepository.buscarEmpleadoServicio(texto).stream().map(this::aDto).toList();
+    }
+
+    @Transactional
+    public EmpleadoResponseDTO actualizarEmpleadoServicio(Long id,EmpleadoRequestDTO dto) {
+        EmpleadosServicio e= obtenerEmpleadoServicio(id);
+        e.setNombreEmpleadoServicio(normalizar(dto.getNombreEmpleadoServicio()));
+        e.setApellidoEmpleadoServicio(normalizar(dto.getApellidoEmpleadoServicio()));
+        e.setTelefonoEmpleadoServicio(dto.getTelefonoEmpleadoServicio());
+        return aDto(e);
+    }
+    @Transactional
+    public void eliminarEmpleadoServicio(Long id){
+        EmpleadosServicio empleadosServicio= obtenerEmpleadoServicio(id);
+        empleadosRepository.delete(empleadosServicio);
     }
 
     private EmpleadoResponseDTO aDto(EmpleadosServicio e) {
@@ -38,8 +53,15 @@ public class EmpleadoServicioService {
                 e.getIdEmpleadoServicio(),
                 e.getNombreEmpleadoServicio(),
                 e.getApellidoEmpleadoServicio(),
-                e.getTelefonoEmpleadoServicio(),
-                e.getCargoEmpleadoServicio()
+                e.getTelefonoEmpleadoServicio()
         );
+    }
+
+    private String normalizar(String texto) {
+        return (texto == null || texto.isBlank()) ? null : texto .trim();
+    }
+
+    private EmpleadosServicio obtenerEmpleadoServicio(Long id){
+        return empleadosRepository.findById(id).orElseThrow(() -> new RuntimeException("Empleado de servicio no encontrado: " + id));
     }
 }

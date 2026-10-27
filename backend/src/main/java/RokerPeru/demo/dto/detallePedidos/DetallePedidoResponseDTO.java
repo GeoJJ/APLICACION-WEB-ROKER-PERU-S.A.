@@ -1,11 +1,11 @@
-package RokerPeru.demo.dto;
+package RokerPeru.demo.dto.detallePedidos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
- @AllArgsConstructor
+@AllArgsConstructor
 public class DetallePedidoResponseDTO {
     private Long idDetallePedido;
     private Long idProducto;

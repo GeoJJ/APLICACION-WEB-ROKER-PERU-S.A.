@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioRequestDTO {
+public class UsuarioResponseDTO {
+    private Long idUsuario;
     private String nombreUsuario;
     private String correoUsuario;
     private String tipoPersonaUsuario;
@@ -15,4 +16,5 @@ public class UsuarioRequestDTO {
     private String telefonoUsuario;
     private String direccionUsuario;
     private Long idRol;
+    private String nombreRol;
 }

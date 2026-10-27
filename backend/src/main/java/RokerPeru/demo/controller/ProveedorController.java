@@ -1,8 +1,9 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.ProveedorRequestDTO;
 import RokerPeru.demo.dto.ProveedorResponseDTO;
+import RokerPeru.demo.dto.proveedor.ProveedorRequestDTO;
 import RokerPeru.demo.services.ProveedorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,21 +14,33 @@ import java.util.List;
 @RequestMapping("/proveedores")
 @RequiredArgsConstructor
 public class ProveedorController {
-
     private final ProveedorService proveedorService;
 
-    @PostMapping("/crear")
-    public ProveedorResponseDTO crearProveedor(@RequestBody ProveedorRequestDTO dto) {
+    @PostMapping
+    public ProveedorResponseDTO crearProveedor(@Valid @RequestBody ProveedorRequestDTO dto) {
         return proveedorService.crearProveedor(dto);
     }
 
-    @GetMapping("/listar")
+    @GetMapping
     public List<ProveedorResponseDTO> listarProveedor() {
         return proveedorService.listarProveedor();
     }
 
-    @GetMapping("buscar/{id}")
-    public ProveedorResponseDTO buscarPorIdProveedor(@PathVariable Long id) {
-        return proveedorService.buscarPorIdProveedor(id);
+    // GET /api/proveedores/buscar?texto=ferre   (por nombre)
+    // GET /api/proveedores/buscar?texto=20123   (por RUC)
+    @GetMapping("/buscar")
+    public List<ProveedorResponseDTO> buscarProveedor(@RequestParam String texto) {
+        return proveedorService.buscarProveedor(texto);
+    }
+
+    @PutMapping("/{id}")
+    public ProveedorResponseDTO actualizarProveedor(@PathVariable Long id,
+                                                    @Valid @RequestBody ProveedorRequestDTO dto) {
+        return proveedorService.actualizarProveedor(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminarProveedor(@PathVariable Long id) {
+        proveedorService.eliminarProveedor(id);
     }
 }

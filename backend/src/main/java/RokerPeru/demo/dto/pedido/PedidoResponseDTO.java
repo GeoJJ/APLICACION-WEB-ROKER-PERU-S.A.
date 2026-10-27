@@ -1,9 +1,9 @@
-package RokerPeru.demo.dto;
-
+package RokerPeru.demo.dto.pedido;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import RokerPeru.demo.dto.detallePedidos.DetallePedidoResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;

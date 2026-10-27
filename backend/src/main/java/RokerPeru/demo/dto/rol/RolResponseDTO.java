@@ -1,4 +1,4 @@
-package RokerPeru.demo.dto;
+package RokerPeru.demo.dto.rol;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

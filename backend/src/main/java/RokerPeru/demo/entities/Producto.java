@@ -34,6 +34,10 @@ public class Producto {
     @Column(name = "stock_producto", nullable = false)
     private int stockProducto;
 
+    // Nuevo campo agregado es para la alerta de stock_minimo
+    @Column(name = "stock_minimo", nullable = false, columnDefinition = "integer default 10")
+    private int stockMinimo;
+
     @Column(name = "estado_producto", length = 30)
     private String estadoProducto;
 
@@ -47,6 +51,10 @@ public class Producto {
     //EN DUDA AUN
     //Es necesario que el movimiento de un producto se borre si se borra el producto?
     //pero este podria mantenerse como para el historial tambien
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+
+    //No, los movimientos nunca deben borrarse. En sistemas de ventas e inventario (como ROKER), 
+    // el historial financiero y de auditoría es sagrado. En lugar de borrar un producto 
+    // (lo cual daría error si está en facturas antiguas), deberías cambiar su estadoProducto a "INACTIVO"
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
     private List<MovimientosProducto> movimientos = new ArrayList<>();
 }
