@@ -15,5 +15,6 @@ public class UsuarioResponseDTO {
     private String numeroDocumentoUsuario;
     private String telefonoUsuario;
     private String direccionUsuario;
+    private Long idRol;
     private String nombreRol;
 }

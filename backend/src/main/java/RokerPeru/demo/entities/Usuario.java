@@ -28,7 +28,7 @@ public class Usuario {
     @Column(name = "tipopersona_usuario", length = 30)
     private String tipoPersonaUsuario;
 
-    @Column(name = "numero_documento_usuario", length = 20)
+    @Column(name = "numero_documento_usuario", nullable = false, unique = true, length = 11)
     private String numeroDocumentoUsuario;
 
     @Column(name = "telefono_usuario", length = 20)
@@ -36,6 +36,9 @@ public class Usuario {
 
     @Column(name = "direccion_usuario", length = 255)
     private String direccionUsuario;
+
+    @Column(name = "password_usuario", nullable = false, length = 100)
+    private String passwordUsuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_rol", nullable = false)
