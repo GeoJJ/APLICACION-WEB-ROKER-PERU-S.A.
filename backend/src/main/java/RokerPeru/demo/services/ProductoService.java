@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;   // ← nuevo import
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductoService {
@@ -28,15 +31,21 @@ public class ProductoService {
 
         Producto p = new Producto();
         copiarDatos(p, dto, codigo);
-        return aDto(productoRepository.save(p));
+        Producto guardado = productoRepository.save(p);
+
+        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), codigo);
+        return aDto(guardado);
     }
 
     @Transactional(readOnly = true)
     public List<ProductoResponseDTO> listarProducto() {
-        return productoRepository.findAll(Sort.by("nombreProducto"))
+        List<ProductoResponseDTO> productos = productoRepository.findAll(Sort.by("nombreProducto"))
                 .stream()
                 .map(this::aDto)
                 .toList();
+
+        log.debug("Listado de productos: {} resultados", productos.size());
+        return productos;
     }
 
     @Transactional(readOnly = true)
@@ -46,10 +55,13 @@ public class ProductoService {
 
     @Transactional(readOnly = true)
     public List<ProductoResponseDTO> buscarProducto(String texto) {
-        return productoRepository.buscarProducto(texto.trim())
+        List<ProductoResponseDTO> productos = productoRepository.buscarProducto(texto.trim())
                 .stream()
                 .map(this::aDto)
                 .toList();
+
+        log.debug("Búsqueda de productos con texto='{}': {} resultados", texto.trim(), productos.size());
+        return productos;
     }
 
     @Transactional
@@ -59,22 +71,32 @@ public class ProductoService {
         validarCodigoDuplicado(codigo, id);
 
         copiarDatos(p, dto, codigo);
+
+        log.info("Producto actualizado: id={}, codigo={}", id, codigo);
         return aDto(p);
     }
 
     @Transactional
     public void eliminarProducto(Long id) {
-        productoRepository.delete(obtenerProducto(id));
+        Producto p = obtenerProducto(id);
+        productoRepository.delete(p);
+
+        log.info("Producto eliminado: id={}, codigo={}", id, p.getCodigoProducto());
     }
 
     @Transactional
     public ProductoResponseDTO cambiarEstadoProducto(Long id, String estado) {
         String nuevoEstado = normalizar(estado);
         if (nuevoEstado == null) {
+            log.warn("Cambio de estado rechazado para producto id={}: estado vacío", id);
             throw new RuntimeException("El estado es obligatorio");
         }
+
         Producto p = obtenerProducto(id);
+        String estadoAnterior = p.getEstadoProducto();
         p.setEstadoProducto(nuevoEstado.toUpperCase());
+
+        log.info("Estado de producto id={} cambió de {} a {}", id, estadoAnterior, p.getEstadoProducto());
         return aDto(p);
     }
 
@@ -98,6 +120,8 @@ public class ProductoService {
         return aClienteDto(obtenerProducto(id));
     }
 
+    // ---------- privados ----------
+
     private void copiarDatos(Producto p, ProductoRequestDTO dto, String codigo) {
         p.setCodigoProducto(codigo);
         p.setNombreProducto(normalizar(dto.getNombreProducto()));
@@ -116,15 +140,26 @@ public class ProductoService {
                 : productoRepository.existsByCodigoProductoIgnoreCaseAndIdProductoNot(codigo, idActual);
 
         if (existe) {
+            log.warn("Código de producto duplicado rechazado: {}", codigo);
             throw new RuntimeException("Ya existe un producto con el código: " + codigo);
         }
     }
 
-
     private Proveedores obtenerProveedor(Long idProveedor) {
         if (idProveedor == null) return null;
         return proveedoresRepository.findById(idProveedor)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + idProveedor));
+                .orElseThrow(() -> {
+                    log.warn("Proveedor no encontrado al asignar a producto: id={}", idProveedor);
+                    return new RuntimeException("Proveedor no encontrado: " + idProveedor);
+                });
+    }
+
+    private Producto obtenerProducto(Long id) {
+        return productoRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Producto no encontrado: id={}", id);
+                    return new RuntimeException("Producto no encontrado: " + id);
+                });
     }
 
     private ProductoResponseDTO aDto(Producto p) {
@@ -146,13 +181,7 @@ public class ProductoService {
         );
     }
 
-
     private String normalizar(String texto) {
         return (texto == null || texto.isBlank()) ? null : texto.trim();
-    }
-
-    private Producto obtenerProducto(Long id) {
-        return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
     }
 }

@@ -1,4 +1,4 @@
-package RokerPeru.demo.dto;
+package RokerPeru.demo.dto.servicios;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,4 +28,4 @@ public class ServicioRequestDTO {
     private String duracionEstimadaServicio;
 
     @Size(max = 50, message = "La cantidad de personal no puede superar los 50 caracteres")
-    private String cantidadPersonalServicio;
+    private String cantidadPersonalServicio;}
