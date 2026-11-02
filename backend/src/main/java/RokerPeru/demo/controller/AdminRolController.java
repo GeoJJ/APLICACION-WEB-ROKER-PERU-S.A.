@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/roles")
+@RequestMapping("/admin/roles")
 @RequiredArgsConstructor
 public class AdminRolController {
 

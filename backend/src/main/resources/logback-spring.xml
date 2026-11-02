@@ -1,34 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Propiedad con el formato de los logs -->
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
 
-    <!-- Appender para la consola -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Consola: corta y con colores. Archivo: fecha completa, hilo y sin colores -->
+    <property name="PATRON_CONSOLA"
+              value="%gray(%d{HH:mm:ss.SSS}) %highlight(%-5level) %cyan(%-40.40logger{39}) : %msg%n%ex{12}"/>
+    <property name="PATRON_ARCHIVO"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %-40.40logger{39} : %msg%n%ex{30}"/>
+
+    <appender name="CONSOLA" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+            <pattern>${PATRON_CONSOLA}</pattern>
         </encoder>
     </appender>
 
-    <!-- Appender para archivo rotativo (guardado en logs/app.log) -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/app.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Rotación diaria -->
-            <fileNamePattern>logs/archived/app-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>10MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+    <appender name="ARCHIVO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/roker-peru.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/roker-peru-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+            <pattern>${PATRON_ARCHIVO}</pattern>
         </encoder>
     </appender>
 
-    <!-- Nivel general para la aplicación -->
+    <!-- Tu código: detallado -->
+    <logger name="RokerPeru.demo" level="DEBUG"/>
+
+    <!-- SQL: se mantiene, pero se silencia el resto de Hibernate -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <!-- Descomenta para ver los VALORES de los ? en cada consulta -->
+    <!-- <logger name="org.hibernate.orm.jdbc.bind" level="TRACE"/> -->
+
+    <!-- Ruido de arranque -->
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
+        <appender-ref ref="CONSOLA"/>
+        <appender-ref ref="ARCHIVO"/>
     </root>
 </configuration>

@@ -1,7 +1,7 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.ServicioRequestDTO;
 import RokerPeru.demo.dto.ServicioResponseDTO;
+import RokerPeru.demo.dto.servicios.ServicioRequestDTO;
 import RokerPeru.demo.services.ServicioService;
 import jakarta.validation.Valid;
 import java.util.List;

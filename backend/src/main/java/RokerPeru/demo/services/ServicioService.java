@@ -1,8 +1,8 @@
 package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.ServicioClienteResponseDTO;
-import RokerPeru.demo.dto.ServicioRequestDTO;
 import RokerPeru.demo.dto.ServicioResponseDTO;
+import RokerPeru.demo.dto.servicios.ServicioRequestDTO;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.repository.ServicioRepository;
 import org.springframework.transaction.annotation.Transactional;
