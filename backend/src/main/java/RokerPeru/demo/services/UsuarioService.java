@@ -1,94 +1,89 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.usuarios.UsuarioRequestDTO;
-import RokerPeru.demo.dto.usuarios.UsuarioResponseDTO;
+import RokerPeru.demo.dto.UsuarioDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.repository.RolRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
+
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
 
     @Transactional
-    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
-        String correo = dto.getCorreoUsuario().trim().toLowerCase();
-        String tipo = dto.getTipoPersonaUsuario().trim().toUpperCase();
-        String documento = dto.getNumeroDocumentoUsuario().trim();
-
-        validarDocumento(tipo, documento);
-
-        if (usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo)) {
-            throw new RuntimeException("Ya existe un usuario con el correo: " + correo);
+    public UsuarioDTO.ResponseDTO crearUsuario(UsuarioDTO.RequestDTO dto) {
+        if (usuarioRepository.existsByCorreoUsuarioIgnoreCase(dto.correoUsuario())) {
+            throw new RuntimeException("Ya existe un usuario con el correo: " + dto.correoUsuario());
         }
-        if (usuarioRepository.existsByNumeroDocumentoUsuario(documento)) {
-            throw new RuntimeException("Ya existe un usuario con el documento: " + documento);
-        }
-        if (dto.getPasswordUsuario() == null || dto.getPasswordUsuario().isBlank()) {
-            throw new RuntimeException("La contraseña es obligatoria");
+        if (usuarioRepository.existsByNumeroDocumentoUsuario(dto.numeroDocumentoUsuario())) {
+            throw new RuntimeException("Ya existe un usuario con el documento: " + dto.numeroDocumentoUsuario());
         }
 
         Usuario usuario = new Usuario();
-        copiarDatos(usuario, dto, correo, tipo, documento);
-        usuario.setPasswordUsuario(passwordEncoder.encode(dto.getPasswordUsuario()));
-        return aDto(usuarioRepository.save(usuario));
+        dto.toEntity(usuario, obtenerRol(dto.idRol()));
+
+        usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
+
+        Usuario guardado = usuarioRepository.save(usuario);
+        log.info("Usuario creado exitosamente: {}", guardado.getCorreoUsuario());
+        return UsuarioDTO.ResponseDTO.fromEntity(guardado);
     }
 
-    public List<UsuarioResponseDTO> listarUsuario() {
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO.ResponseDTO> listarUsuario() {
         return usuarioRepository.findAllByOrderByNombreUsuarioAsc()
-                .stream().map(this::aDto).toList();
+                .stream()
+                .map(UsuarioDTO.ResponseDTO::fromEntity)
+                .toList();
     }
 
-    public List<UsuarioResponseDTO> buscarUsuario(String texto) {
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO.ResponseDTO> buscarUsuario(String texto) {
         return usuarioRepository.buscarUsuario(texto.trim())
-                .stream().map(this::aDto).toList();
+                .stream()
+                .map(UsuarioDTO.ResponseDTO::fromEntity)
+                .toList();
     }
 
     @Transactional
-    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+    public UsuarioDTO.ResponseDTO actualizarUsuario(Long id, UsuarioDTO.RequestDTO dto) {
         Usuario usuario = obtenerUsuario(id);
 
-        String correo = dto.getCorreoUsuario().trim().toLowerCase();
-        String tipo = dto.getTipoPersonaUsuario().trim().toUpperCase();
-        String documento = dto.getNumeroDocumentoUsuario().trim();
-
-        validarDocumento(tipo, documento);
-
-        if (usuarioRepository.existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(correo, id)) {
-            throw new RuntimeException("Ya existe otro usuario con el correo: " + correo);
+        if (usuarioRepository.existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(dto.correoUsuario(), id)) {
+            throw new RuntimeException("Ya existe otro usuario con el correo: " + dto.correoUsuario());
         }
-        if (usuarioRepository.existsByNumeroDocumentoUsuarioAndIdUsuarioNot(documento, id)) {
-            throw new RuntimeException("Ya existe otro usuario con el documento: " + documento);
+        if (usuarioRepository.existsByNumeroDocumentoUsuarioAndIdUsuarioNot(dto.numeroDocumentoUsuario(), id)) {
+            throw new RuntimeException("Ya existe otro usuario con el documento: " + dto.numeroDocumentoUsuario());
         }
 
-        copiarDatos(usuario, dto, correo, tipo, documento);
-        if (dto.getPasswordUsuario() != null && !dto.getPasswordUsuario().isBlank()) {
-            usuario.setPasswordUsuario(passwordEncoder.encode(dto.getPasswordUsuario()));
+        dto.toEntity(usuario, obtenerRol(dto.idRol()));
+
+        if (dto.passwordUsuario() != null && !dto.passwordUsuario().isBlank()) {
+            usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
         }
-        return aDto(usuario);   // Hibernate hace el UPDATE solo
+
+        log.info("Usuario actualizado exitosamente: id={}", id);
+        return UsuarioDTO.ResponseDTO.fromEntity(usuario); // Hibernate hace el UPDATE automáticamente
     }
 
     @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = obtenerUsuario(id);
-
-        // TODO: cuando existan Pedidos y Ordenes_Servicio, validar aquí que el usuario
-        // no tenga pedidos ni órdenes asociadas antes de eliminarlo
-
+        // TODO: validar aquí que el usuario no tenga pedidos ni órdenes asociadas
         usuarioRepository.delete(usuario);
+        log.info("Usuario eliminado: id={}", id);
     }
-
-    // ---------- privados ----------
 
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
@@ -98,45 +93,5 @@ public class UsuarioService {
     private Rol obtenerRol(Long idRol) {
         return rolRepository.findById(idRol)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + idRol));
-    }
-
-    // Regla cruzada: NATURAL -> DNI (8), JURIDICA -> RUC (11)
-    private void validarDocumento(String tipo, String documento) {
-        if (tipo.equals("NATURAL") && documento.length() != 8) {
-            throw new RuntimeException("Una persona natural debe tener un DNI de 8 dígitos");
-        }
-        if (tipo.equals("JURIDICA") && documento.length() != 11) {
-            throw new RuntimeException("Una persona jurídica debe tener un RUC de 11 dígitos");
-        }
-    }
-
-    // Se usa en crear y actualizar para no repetir los setters
-    private void copiarDatos(Usuario usuario, UsuarioRequestDTO dto,
-                             String correo, String tipo, String documento) {
-        usuario.setNombreUsuario(dto.getNombreUsuario().trim());
-        usuario.setCorreoUsuario(correo);
-        usuario.setTipoPersonaUsuario(tipo);
-        usuario.setNumeroDocumentoUsuario(documento);
-        usuario.setTelefonoUsuario(normalizar(dto.getTelefonoUsuario()));
-        usuario.setDireccionUsuario(normalizar(dto.getDireccionUsuario()));
-        usuario.setRol(obtenerRol(dto.getIdRol()));
-    }
-
-    private String normalizar(String texto) {
-        return (texto == null || texto.isBlank()) ? null : texto.trim();
-    }
-
-    private UsuarioResponseDTO aDto(Usuario u) {
-        return new UsuarioResponseDTO(
-                u.getIdUsuario(),
-                u.getNombreUsuario(),
-                u.getCorreoUsuario(),
-                u.getTipoPersonaUsuario(),
-                u.getNumeroDocumentoUsuario(),
-                u.getTelefonoUsuario(),
-                u.getDireccionUsuario(),
-                u.getRol().getIdRol(),
-                u.getRol().getNombreRol()
-        );
     }
 }
