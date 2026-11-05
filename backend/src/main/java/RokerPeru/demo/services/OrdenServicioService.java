@@ -1,14 +1,12 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.ordenServicio.OrdenServicioRequestDTO;
-import RokerPeru.demo.dto.ordenServicio.OrdenServicioResponseDTO;
+import RokerPeru.demo.dto.OrdenServicioDTO;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.repository.OrdenesServicioRepository;
 import RokerPeru.demo.repository.ServicioRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,137 +14,146 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrdenServicioService {
 
-    private final OrdenesServicioRepository ordenesServicioRepository;
+    private final OrdenesServicioRepository ordenesRepository;
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
 
+    // Flujo del cliente para crear orden de servicio
     @Transactional
-    public OrdenServicioResponseDTO crearOrdenServicio(OrdenServicioRequestDTO request) {
-        log.info("Creando orden de servicio para cliente ID: {}", request.getIdCliente());
+    public OrdenServicioDTO.ResponseCliente crearOrdenServicio(OrdenServicioDTO.RequestCliente dto) {
+        Servicio servicio = servicioRepository.findById(dto.idServicio())
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + dto.idServicio()));
 
-        //  Extraer el servicio y el precio real de la base de datos (Regla de seguridad)
-        Servicio servicio = servicioRepository.findById(request.getIdServicio())
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + request.getIdServicio()));
+        Usuario cliente = obtenerUsuario(dto.idCliente());
 
-        OrdenesServicio orden = new OrdenesServicio();
+        OrdenesServicio orden = dto.toEntity(servicio, cliente);
         orden.setFechaOrdenServicio(LocalDateTime.now());
-        orden.setFechaProgramadaServicio(request.getFechaProgramadaServicio());
         orden.setEstadoServicio("PENDIENTE");
-        orden.setSerieComprobanteServicio(request.getSerieComprobanteServicio());
-        orden.setNumeroComprobanteServicio(request.getNumeroComprobanteServicio());
-        orden.setMetodoPagoServicio(request.getMetodoPagoServicio());
-        orden.setIncidenciaServicio(request.getIncidenciaServicio());
-        
-        // 2. Asignar el monto cobrando estrictamente lo que vale el servicio
         orden.setMontoTotalServicio(servicio.getPrecioServicio());
-        orden.setServicio(servicio);
 
-        // 3. Vincular Usuarios
-        orden.setCliente(buscarUsuario(request.getIdCliente()));
-        if (request.getIdVendedor() != null) {
-            orden.setVendedor(buscarUsuario(request.getIdVendedor()));
-        }
-        if (request.getIdAuxiliar() != null) {
-            orden.setAuxiliar(buscarUsuario(request.getIdAuxiliar()));
-        }
+        OrdenesServicio guardado = ordenesRepository.save(orden);
+        log.info("Cliente {} creó orden de servicio #{} para {}", cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), servicio.getNombreServicio());
 
-        return aDto(ordenesServicioRepository.save(orden));
+        return OrdenServicioDTO.ResponseCliente.fromEntity(guardado);
     }
-
 
     @Transactional
-    public OrdenServicioResponseDTO confirmarOrdenServicio(Long idOrden) {
-        OrdenesServicio orden = buscarOrdenPorId(idOrden);
-        orden.setEstadoServicio("CONFIRMADO"); // Listo para que el Personal de Servicio lo atienda
-        return aDto(ordenesServicioRepository.save(orden));
-    }
+    public OrdenServicioDTO.ResponseVendedor confirmarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
+        // 1. Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
+        OrdenesServicio orden = obtenerOrdenConDetalles(idOrden);
 
-
-    @Transactional
-    public OrdenServicioResponseDTO cancelarOrdenServicio(Long idOrden) {
-        OrdenesServicio orden = buscarOrdenPorId(idOrden);
-        orden.setEstadoServicio("CANCELADO");
-        return aDto(ordenesServicioRepository.save(orden));
-    }
-
-
-    public List<OrdenServicioResponseDTO> listarOrdenesServicioVendedor() {
-        // El vendedor ve el historial completo de la empresa para gestionar
-        return ordenesServicioRepository.findAll().stream()
-                .map(this::aDto)
-                .collect(Collectors.toList());
-    }
-
-
-    public List<OrdenServicioResponseDTO> listarOrdenesServicioCliente(Long idCliente) {
-        // Uso de la consulta optimizada: el cliente SOLO ve sus propias órdenes
-        return ordenesServicioRepository.findByClienteIdUsuario(idCliente).stream()
-                .map(this::aDto)
-                .collect(Collectors.toList());
-    }
-
-
-    public List<OrdenServicioResponseDTO> listarOrdenesServicioPersonal() {
-        // El personal técnico solo debe ver las órdenes que están listas para ser ejecutadas
-        return ordenesServicioRepository.findByEstadoServicioIn(List.of("CONFIRMADO", "EN_PROCESO")).stream()
-                .map(this::aDto)
-                .collect(Collectors.toList());
-    }
-
-
-    public OrdenServicioResponseDTO buscarOrdenServicioVendedor(Long idOrden) {
-        return aDto(buscarOrdenPorId(idOrden));
-    }
-
-
-    public OrdenServicioResponseDTO buscarOrdenServicioCliente(Long idOrden, Long idCliente) {
-        OrdenesServicio orden = buscarOrdenPorId(idOrden);
-        // Filtro estricto de seguridad: Evitar que un cliente acceda a la URL de otro cliente
-        if (!orden.getCliente().getIdUsuario().equals(idCliente)) {
-            throw new RuntimeException("Acceso denegado: Esta orden pertenece a otro cliente");
+        if (!"PENDIENTE".equals(orden.getEstadoServicio())) {
+            throw new RuntimeException("Solo se pueden confirmar órdenes en estado PENDIENTE");
         }
-        return aDto(orden);
+
+        // 2. ⭐ VALIDACIÓN CRÍTICA DE PERSONAL
+        int personalRequerido = 0;
+        try {
+            String soloNumeros = orden.getServicio().getCantidadPersonalServicio().replaceAll("\\D+", "");
+            personalRequerido = Integer.parseInt(soloNumeros);
+        } catch (Exception e) {
+            personalRequerido = 1;
+        }
+
+        int personalAsignado = orden.getAsignaciones() != null ? orden.getAsignaciones().size() : 0;
+
+        if (personalAsignado < personalRequerido) {
+            int faltantes = personalRequerido - personalAsignado;
+            throw new RuntimeException(
+                    String.format("No se puede confirmar la orden. El servicio requiere %d personas, pero solo se han asignado %d. Faltan %d empleados.",
+                            personalRequerido, personalAsignado, faltantes)
+            );
+        }
+
+        // 3. Si pasa la validación, aplicamos los cambios y confirmamos
+        dto.applyTo(orden); // Esto cambia el estado a "CONFIRMADO" y agrega incidencias si hay
+
+        OrdenesServicio actualizado = ordenesRepository.save(orden);
+
+        log.info("Vendedor confirmó la orden de servicio #{}. Personal asignado: {}/{}",
+                idOrden, personalAsignado, personalRequerido);
+
+        return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
 
-    public OrdenServicioResponseDTO buscarOrdenServicioPersonal(Long idOrden) {
-        return aDto(buscarOrdenPorId(idOrden));
+    // Flujo del vendedor para cancelar orden
+    @Transactional
+    public OrdenServicioDTO.ResponseVendedor cancelarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
+        OrdenesServicio orden = obtenerOrden(idOrden);
+
+        if ("COMPLETADO".equals(orden.getEstadoServicio())) {
+            throw new RuntimeException("No se puede cancelar una orden ya completada");
+        }
+
+        dto.applyTo(orden);
+        OrdenesServicio actualizado = ordenesRepository.save(orden);
+
+        log.info("Orden de servicio #{} cancelada", idOrden);
+        return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
-    // ---------------- MÉTODOS PRIVADOS AUXILIARES ----------------
-
-    private OrdenesServicio buscarOrdenPorId(Long idOrden) {
-        return ordenesServicioRepository.findById(idOrden)
-                .orElseThrow(() -> new RuntimeException("Orden de Servicio no encontrada: " + idOrden));
+    @Transactional(readOnly = true)
+    public List<OrdenServicioDTO.ResponseCliente> listarOrdenesServicioCliente(Long idCliente) {
+        return ordenesRepository.findByCliente_IdUsuarioOrderByFechaOrdenServicioDesc(idCliente)
+                .stream()
+                .map(OrdenServicioDTO.ResponseCliente::fromEntity)
+                .toList();
     }
 
-    private Usuario buscarUsuario(Long idUsuario) {
-        return usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idUsuario));
+    @Transactional(readOnly = true)
+    public List<OrdenServicioDTO.ResponseVendedor> listarOrdenesServicioVendedor() {
+        return ordenesRepository.findAllByOrderByFechaOrdenServicioDesc()
+                .stream()
+                .map(OrdenServicioDTO.ResponseVendedor::fromEntity)
+                .toList();
     }
 
-    private OrdenServicioResponseDTO aDto(OrdenesServicio o) {
-        return new OrdenServicioResponseDTO(
-                o.getIdOrdenServicio(),
-                o.getFechaOrdenServicio(),
-                o.getFechaProgramadaServicio(),
-                o.getSerieComprobanteServicio(),
-                o.getNumeroComprobanteServicio(),
-                o.getEstadoServicio(),
-                o.getMontoTotalServicio(),
-                o.getMetodoPagoServicio(),
-                o.getIncidenciaServicio(),
-                o.getServicio().getNombreServicio(),
-                o.getCliente().getNombreUsuario(),
-                o.getVendedor() != null ? o.getVendedor().getNombreUsuario() : null,
-                o.getAuxiliar() != null ? o.getAuxiliar().getNombreUsuario() : null
-        );
+    @Transactional(readOnly = true)
+    public List<OrdenServicioDTO.ResponseVendedor> listarOrdenesServicioPersonal() {
+        List<String> estadosActivos = List.of("CONFIRMADO", "EN_PROCESO");
+        return ordenesRepository.findByEstadoServicioInOrderByFechaOrdenServicioDesc(estadosActivos)
+                .stream()
+                .map(OrdenServicioDTO.ResponseVendedor::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrdenServicioDTO.ResponseCliente buscarOrdenServicioCliente(Long idOrden, Long idCliente) {
+        validarAccesoCliente(idOrden, idCliente);
+        return OrdenServicioDTO.ResponseCliente.fromEntity(obtenerOrden(idOrden));
+    }
+
+    @Transactional(readOnly = true)
+    public OrdenServicioDTO.ResponseVendedor buscarOrdenServicioVendedor(Long idOrden) {
+        return OrdenServicioDTO.ResponseVendedor.fromEntity(obtenerOrden(idOrden));
+    }
+
+    private OrdenesServicio obtenerOrden(Long id) {
+        return ordenesRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
+    }
+
+    private OrdenesServicio obtenerOrdenConDetalles(Long id) {
+        return ordenesRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
+    }
+
+    private Usuario obtenerUsuario(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+    }
+
+    private void validarAccesoCliente(Long idOrden, Long idCliente) {
+        boolean pertenece = ordenesRepository.existsByIdAndCliente_IdUsuario(idOrden, idCliente);
+        if (!pertenece) {
+            throw new RuntimeException("Acceso denegado: Esta orden no pertenece a este cliente");
+        }
     }
 }

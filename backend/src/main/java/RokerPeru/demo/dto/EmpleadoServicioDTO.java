@@ -29,11 +29,11 @@ public final class EmpleadoServicioDTO {
 
         public EmpleadosServicio toEntity() {
             EmpleadosServicio empleado = new EmpleadosServicio();
-            aplicarDatosA(empleado);
+            applyTo(empleado);
             return empleado;
         }
 
-        public void aplicarDatosA(EmpleadosServicio empleado) {
+        public void applyTo(EmpleadosServicio empleado) {
             empleado.setNombreEmpleadoServicio(this.nombreEmpleadoServicio);
             empleado.setApellidoEmpleadoServicio(this.apellidoEmpleadoServicio);
             empleado.setTelefonoEmpleadoServicio(this.telefonoEmpleadoServicio);

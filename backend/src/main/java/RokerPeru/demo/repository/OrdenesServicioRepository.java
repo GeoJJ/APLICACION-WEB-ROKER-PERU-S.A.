@@ -1,20 +1,32 @@
 package RokerPeru.demo.repository;
 
 import RokerPeru.demo.entities.OrdenesServicio;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+@Repository
 public interface OrdenesServicioRepository extends JpaRepository<OrdenesServicio, Long> {
-    
-    // Spring Boot leerá el nombre de este método y automáticamente creará el SQL: 
-    // SELECT * FROM ordenes_servicio WHERE id_cliente = ?
-    List<OrdenesServicio> findByClienteIdUsuario(Long idCliente);
-    
-    // Para que el Vendedor pueda ver las órdenes que él mismo gestionó
-    List<OrdenesServicio> findByVendedorIdUsuario(Long idVendedor);
-    
-    // Para que el Personal de Servicio vea solo las órdenes que le importan 
-    // (ej. buscar por estados: "CONFIRMADO", "EN_PROCESO")
-    List<OrdenesServicio> findByEstadoServicioIn(List<String> estados);
+    @EntityGraph(attributePaths = {"servicio", "vendedor", "auxiliar"})
+    List<OrdenesServicio> findByCliente_IdUsuarioOrderByFechaOrdenServicioDesc(Long idCliente);
+
+    @EntityGraph(attributePaths = {"cliente", "servicio"})
+    List<OrdenesServicio> findByEstadoServicioInOrderByFechaOrdenServicioDesc(List<String> estados);
+
+    boolean existsByIdAndCliente_IdUsuario(Long idOrden, Long idCliente);
+
+    @EntityGraph(attributePaths = {
+            "cliente", "servicio", "vendedor", "auxiliar",
+            "asignaciones", "asignaciones.empleado"
+    })
+    List<OrdenesServicio> findAllByOrderByFechaOrdenServicioDesc();
+
+    @EntityGraph(attributePaths = {
+            "cliente", "servicio", "vendedor", "auxiliar",
+            "asignaciones", "asignaciones.empleado"
+    })
+    Optional<OrdenesServicio> findById(Long id);
 }

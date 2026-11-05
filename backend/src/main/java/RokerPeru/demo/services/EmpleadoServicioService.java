@@ -47,7 +47,7 @@ public class EmpleadoServicioService {
     public EmpleadoServicioDTO.Response actualizarEmpleadoServicio(Long id, EmpleadoServicioDTO.Request dto) {
         EmpleadosServicio empleado = obtenerEmpleadoServicio(id);
 
-        dto.aplicarDatosA(empleado);
+        dto.applyTo(empleado);
 
         log.info("Empleado de servicio actualizado: id={}", id);
         return EmpleadoServicioDTO.Response.fromEntity(empleado);

@@ -23,8 +23,7 @@ public class RolService {
             log.warn("Creación de rol rechazada, nombre duplicado: {}", dto.nombreRol());
             throw new RuntimeException("Ya existe un rol con el nombre: " + dto.nombreRol());
         }
-        Rol rol = new Rol();
-        Rol guardado = rolRepository.save(dto.toEntity(rol));
+        Rol guardado = rolRepository.save(dto.toEntity());
         log.info("Rol creado: id={}, nombre={}", guardado.getIdRol(), dto.nombreRol());
         return RolDTO.Response.fromEntity(guardado);
     }
@@ -48,7 +47,7 @@ public class RolService {
             throw new RuntimeException("Ya existe otro rol con el nombre: " + dto.nombreRol());
         }
         String nombreAnterior = rol.getNombreRol();
-        dto.toEntity(rol);
+        dto.applyTo(rol);
 
         log.info("Rol actualizado: id={}, '{}' -> '{}'", id, nombreAnterior, dto.nombreRol());
         return RolDTO.Response.fromEntity(rol);
@@ -63,7 +62,7 @@ public class RolService {
         return roles;
     }
 
-    private Rol obtenerRol(Long id) {
+    public Rol obtenerRol(Long id) {
         return rolRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Rol no encontrado: id={}", id);

@@ -1,113 +1,81 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.ServicioClienteResponseDTO;
-import RokerPeru.demo.dto.ServicioResponseDTO;
-import RokerPeru.demo.dto.servicios.ServicioRequestDTO;
+import RokerPeru.demo.dto.ServicioDTO;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.repository.ServicioRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServicioService {
+
     private final ServicioRepository servicioRepository;
 
     @Transactional
-    public ServicioResponseDTO crearServicio(ServicioRequestDTO dto){
-        Servicio s = new Servicio ();
-        copiarDatos(s, dto);
-        return aDto(servicioRepository.save(s));
+    public ServicioDTO.Response crearServicio(ServicioDTO.Request dto) {
+        Servicio guardado = servicioRepository.save(dto.toEntity());
+        log.info("Servicio creado: id={}, nombre={}", guardado.getIdServicio(), dto.nombreServicio());
+        return ServicioDTO.Response.fromEntity(guardado);
     }
 
     @Transactional(readOnly = true)
-    public List<ServicioResponseDTO> listarServicio() {
+    public List<ServicioDTO.Response> listarServicio() {
         return servicioRepository.findAll(Sort.by("nombreServicio"))
                 .stream()
-                .map(this::aDto)
+                .map(ServicioDTO.Response::fromEntity)
                 .toList();
     }
+
     @Transactional(readOnly = true)
-    public ServicioResponseDTO buscarPorIdServicio(Long id) {
-        return aDto(obtenerServicio(id));
+    public ServicioDTO.Response buscarPorIdServicio(Long id) {
+        return ServicioDTO.Response.fromEntity(obtenerServicio(id));
     }
 
     @Transactional
-    public ServicioResponseDTO actualizarServicio(Long id, ServicioRequestDTO dto) {
-        Servicio s = obtenerServicio(id);
-        copiarDatos(s, dto);
-        return aDto(s);
+    public ServicioDTO.Response actualizarServicio(Long id, ServicioDTO.Request dto) {
+        Servicio servicio = obtenerServicio(id);
+
+        dto.applyTo(servicio);
+
+        log.info("Servicio actualizado: id={}, nombre={}", id, dto.nombreServicio());
+        return ServicioDTO.Response.fromEntity(servicio); // Hibernate hace el UPDATE
     }
 
     @Transactional
     public void eliminarServicio(Long id) {
-        Servicio s = obtenerServicio(id);
-        servicioRepository.delete(s);
+        Servicio servicio = obtenerServicio(id);
+        servicioRepository.delete(servicio);
+        log.info("Servicio eliminado: id={}", id);
     }
 
+    // Métodos específicos para la Vista del Cliente
     @Transactional(readOnly = true)
-    public List<ServicioClienteResponseDTO> listarServiciosCliente() {
+    public List<ServicioDTO.ClienteResponse> listarServiciosCliente() {
         return servicioRepository.findAll(Sort.by("nombreServicio"))
                 .stream()
-                .map(this::aClienteDto)
+                .map(ServicioDTO.ClienteResponse::fromEntity)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ServicioClienteResponseDTO> buscarServiciosCliente(String texto) {
+    public List<ServicioDTO.ClienteResponse> buscarServiciosCliente(String texto) {
         return servicioRepository.buscarServicio(texto.trim())
                 .stream()
-                .map(this::aClienteDto)
+                .map(ServicioDTO.ClienteResponse::fromEntity)
                 .toList();
     }
 
-    private void copiarDatos(Servicio s, ServicioRequestDTO dto) {
-        s.setCategoriaServicio(normalizar(dto.getCategoriaServicio()));
-        s.setNombreServicio(normalizar(dto.getNombreServicio()));
-        s.setTipoServicio(normalizar(dto.getTipoServicio()));
-        s.setDescripcionServicio(normalizar(dto.getDescripcionServicio()));
-        s.setPrecioServicio(dto.getPrecioServicio());
-        s.setDuracionEstimadaServicio(normalizar(dto.getDuracionEstimadaServicio()));
-        s.setCantidadPersonalServicio(normalizar(dto.getCantidadPersonalServicio()));
-    }
 
-    private String normalizar(String texto) {
-        return (texto == null || texto.isBlank()) ? null : texto.trim();
-    }
-
+    // Métodos privados
     private Servicio obtenerServicio(Long id) {
         return servicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + id));
-    }
-
-
-
-    private ServicioResponseDTO aDto(Servicio s) {
-        return new ServicioResponseDTO(
-                s.getIdServicio(),
-                s.getCategoriaServicio(),
-                s.getNombreServicio(),
-                s.getTipoServicio(),
-                s.getDescripcionServicio(),
-                s.getPrecioServicio(),
-                s.getDuracionEstimadaServicio(),
-                s.getCantidadPersonalServicio()
-        );
-    }
-
-    private ServicioClienteResponseDTO aClienteDto(Servicio s) {
-        return new ServicioClienteResponseDTO(
-                s.getCategoriaServicio(),
-                s.getNombreServicio(),
-                s.getTipoServicio(),
-                s.getDescripcionServicio(),
-                s.getPrecioServicio(),
-                s.getDuracionEstimadaServicio(),
-                s.getCantidadPersonalServicio()
-        );
     }
 }

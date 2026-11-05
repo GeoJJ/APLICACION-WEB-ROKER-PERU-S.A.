@@ -1,17 +1,14 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.repository.ProductoRepository;
-import RokerPeru.demo.repository.MovimientosProductoRepository;
-import RokerPeru.demo.entities.Producto;
+import RokerPeru.demo.dto.MovimientoDTO;
 import RokerPeru.demo.entities.MovimientosProducto;
-import RokerPeru.demo.dto.movimiento.MovimientoRequestDTO;
-import RokerPeru.demo.dto.movimiento.MovimientoResponseDTO;
-import RokerPeru.demo.dto.movimiento.AlertaStockDTO;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import RokerPeru.demo.entities.Producto;
+import RokerPeru.demo.repository.MovimientosProductoRepository;
+import RokerPeru.demo.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,86 +16,74 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InventarioService {
 
     private final ProductoRepository productoRepository;
     private final MovimientosProductoRepository movimientoRepository;
 
-    
     @Transactional
-    public MovimientoResponseDTO registrarIngreso(MovimientoRequestDTO request) {
-        log.info("Ingreso solicitado para producto ID: {}", request.getProductoId());
+    public MovimientoDTO.Response registrarIngreso(MovimientoDTO.Request request) {
         return procesarMovimiento(request, "INGRESO");
     }
 
-    
     @Transactional
-    public MovimientoResponseDTO registrarSalida(MovimientoRequestDTO request) {
-        log.info("Salida solicitada para producto ID: {}", request.getProductoId());
+    public MovimientoDTO.Response registrarSalida(MovimientoDTO.Request request) {
         return procesarMovimiento(request, "SALIDA");
     }
 
-    
     @Transactional
-    public MovimientoResponseDTO registrarAjuste(MovimientoRequestDTO request) {
-        log.info("Ajuste solicitado para producto ID: {}", request.getProductoId());
+    public MovimientoDTO.Response registrarAjuste(MovimientoDTO.Request request) {
         return procesarMovimiento(request, "AJUSTE");
     }
 
     // Método privado centralizado para operaciones de escritura
-    private MovimientoResponseDTO procesarMovimiento(MovimientoRequestDTO request, String tipo) {
-        Producto producto = productoRepository.findById(request.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    private MovimientoDTO.Response procesarMovimiento(MovimientoDTO.Request request, String tipo) {
+        // Con bloqueo de fila: dos peticiones simultáneas sobre el mismo producto se procesan en fila
+        Producto producto = productoRepository.buscarParaActualizarStock(request.productoId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + request.productoId()));
 
-        int nuevoStock = producto.getStockProducto();
+        int stockAnterior = producto.getStockProducto();
+        int nuevoStock = tipo.equals("INGRESO")
+                ? stockAnterior + request.cantidad()
+                : stockAnterior - request.cantidad();
 
-        if (tipo.equals("INGRESO")) {
-            nuevoStock += request.getCantidad();
-        } else if (tipo.equals("SALIDA") || tipo.equals("AJUSTE")) {
-            if (producto.getStockProducto() < request.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente para realizar la operación");
-            }
-            nuevoStock -= request.getCantidad();
+        if (nuevoStock < 0) {
+            log.warn("{} rechazado, producto id={}: stock insuficiente (disponible={}, solicitado={})",
+                    tipo, producto.getIdProducto(), stockAnterior, request.cantidad());
+            throw new RuntimeException("Stock insuficiente. Disponible: " + stockAnterior);
         }
 
-        // Actualizar Entidad Producto
         producto.setStockProducto(nuevoStock);
-        productoRepository.save(producto);
 
-        // Registrar Historial
         MovimientosProducto movimiento = new MovimientosProducto();
         movimiento.setProducto(producto);
-        movimiento.setCantidadMovimientoProducto(request.getCantidad());
+        movimiento.setCantidadMovimientoProducto(request.cantidad());
         movimiento.setTipoMovimientoProducto(tipo);
         movimiento.setFechaMovimientoProducto(LocalDateTime.now());
         movimientoRepository.save(movimiento);
 
-        // Retornar DTO usando constructor
-        return new MovimientoResponseDTO(movimiento, nuevoStock, tipo + " registrado exitosamente");
+        log.info("{} registrado: producto id={}, cantidad={}, stock {} -> {}",
+                tipo, producto.getIdProducto(), request.cantidad(), stockAnterior, nuevoStock);
+
+        return MovimientoDTO.Response.fromEntity(movimiento, nuevoStock, tipo + " registrado exitosamente");
     }
 
-    
     public Integer consultarStock(Long idProducto) {
-        Producto producto = productoRepository.findById(idProducto)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        return producto.getStockProducto();
+        return productoRepository.consultarStockPorId(idProducto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + idProducto));
     }
 
-    
-    public List<MovimientoResponseDTO> listarMovimientos() {
-        return movimientoRepository.findAll().stream()
-                .map(m -> new MovimientoResponseDTO(m, m.getProducto().getStockProducto(), "Historial listado"))
+    public List<MovimientoDTO.Response> listarMovimientos() {
+        return movimientoRepository.findAllByOrderByFechaMovimientoProductoDesc().stream()
+                .map(m -> MovimientoDTO.Response.fromEntity(m, m.getProducto().getStockProducto(), "Historial listado"))
                 .toList();
     }
 
-    
-    public List<AlertaStockDTO> consultarAlertasStock() {
-        // Usa el Query personalizado del repositorio para traer solo los productos en riesgo
-        List<Producto> productosEnRiesgo = movimientoRepository.findProductosConBajoStock();
-        
-        // Mapea al DTO, el cual calcula el nivel de urgencia automáticamente en su constructor
-        return productosEnRiesgo.stream()
-                .map(AlertaStockDTO::new)
+    public List<MovimientoDTO.AlertaStockResponse> consultarAlertasStock() {
+        // La consulta vive en ProductoRepository (devuelve productos); el DTO calcula la urgencia
+        return productoRepository.findProductosConBajoStock().stream()
+                .map(MovimientoDTO.AlertaStockResponse::fromEntity)
                 .toList();
     }
 }

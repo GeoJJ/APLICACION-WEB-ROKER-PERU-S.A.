@@ -1,20 +1,17 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.ProductoClienteResponseDTO;
-import RokerPeru.demo.dto.ProductoRequestDTO;
-import RokerPeru.demo.dto.ProductoResponseDTO;
+import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Proveedores;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.ProveedoresRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;   // ← nuevo import
 
 @Slf4j
 @Service
@@ -25,163 +22,89 @@ public class ProductoService {
     private final ProveedoresRepository proveedoresRepository;
 
     @Transactional
-    public ProductoResponseDTO crearProducto(ProductoRequestDTO dto) {
-        String codigo = normalizar(dto.getCodigoProducto());
-        validarCodigoDuplicado(codigo, null);
+    public ProductoDTO.Response crearProducto(ProductoDTO.Request dto) {
+        if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), null)) {
+            throw new RuntimeException("Ya existe un producto con el código: " + dto.codigoProducto());
+        }
 
-        Producto p = new Producto();
-        copiarDatos(p, dto, codigo);
-        Producto guardado = productoRepository.save(p);
+        Producto guardado = productoRepository.save(dto.toEntity(obtenerProveedor(dto.idProveedor())));
+        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), dto.codigoProducto());
 
-        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), codigo);
-        return aDto(guardado);
+        return ProductoDTO.Response.fromEntity(guardado);
     }
 
     @Transactional(readOnly = true)
-    public List<ProductoResponseDTO> listarProducto() {
-        List<ProductoResponseDTO> productos = productoRepository.findAll(Sort.by("nombreProducto"))
-                .stream()
-                .map(this::aDto)
-                .toList();
-
-        log.debug("Listado de productos: {} resultados", productos.size());
-        return productos;
+    public List<ProductoDTO.Response> listarProducto() {
+        return productoRepository.findAll(Sort.by("nombreProducto"))
+                .stream().map(ProductoDTO.Response::fromEntity).toList();
     }
 
     @Transactional(readOnly = true)
-    public ProductoResponseDTO buscarPorIdProducto(Long id) {
-        return aDto(obtenerProducto(id));
+    public ProductoDTO.Response buscarPorIdProducto(Long id) {
+        return ProductoDTO.Response.fromEntity(obtenerProducto(id));
     }
 
     @Transactional(readOnly = true)
-    public List<ProductoResponseDTO> buscarProducto(String texto) {
-        List<ProductoResponseDTO> productos = productoRepository.buscarProducto(texto.trim())
-                .stream()
-                .map(this::aDto)
-                .toList();
-
-        log.debug("Búsqueda de productos con texto='{}': {} resultados", texto.trim(), productos.size());
-        return productos;
+    public List<ProductoDTO.Response> buscarProducto(String texto) {
+        return productoRepository.buscarProducto(texto.trim())
+                .stream().map(ProductoDTO.Response::fromEntity).toList();
     }
 
     @Transactional
-    public ProductoResponseDTO actualizarProducto(Long id, ProductoRequestDTO dto) {
-        Producto p = obtenerProducto(id);
-        String codigo = normalizar(dto.getCodigoProducto());
-        validarCodigoDuplicado(codigo, id);
+    public ProductoDTO.Response actualizarProducto(Long id, ProductoDTO.Request dto) {
+        Producto producto = obtenerProducto(id);
 
-        copiarDatos(p, dto, codigo);
+        if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), id)) {
+            throw new RuntimeException("Ya existe un producto con el código: " + dto.codigoProducto());
+        }
 
-        log.info("Producto actualizado: id={}, codigo={}", id, codigo);
-        return aDto(p);
+        dto.applyTo(producto, obtenerProveedor(dto.idProveedor()));
+        log.info("Producto actualizado: id={}, codigo={}", id, dto.codigoProducto());
+
+        return ProductoDTO.Response.fromEntity(producto);
     }
 
     @Transactional
     public void eliminarProducto(Long id) {
-        Producto p = obtenerProducto(id);
-        productoRepository.delete(p);
-
-        log.info("Producto eliminado: id={}, codigo={}", id, p.getCodigoProducto());
+        Producto producto = obtenerProducto(id);
+        productoRepository.delete(producto);
+        log.info("Producto eliminado: id={}, codigo={}", id, producto.getCodigoProducto());
     }
 
     @Transactional
-    public ProductoResponseDTO cambiarEstadoProducto(Long id, String estado) {
-        String nuevoEstado = normalizar(estado);
-        if (nuevoEstado == null) {
-            log.warn("Cambio de estado rechazado para producto id={}: estado vacío", id);
+    public ProductoDTO.Response cambiarEstadoProducto(Long id, String estado) {
+        String nuevoEstado = estado != null ? estado.trim().toUpperCase() : null;
+        if (nuevoEstado == null || nuevoEstado.isBlank()) {
             throw new RuntimeException("El estado es obligatorio");
         }
 
-        Producto p = obtenerProducto(id);
-        String estadoAnterior = p.getEstadoProducto();
-        p.setEstadoProducto(nuevoEstado.toUpperCase());
+        Producto producto = obtenerProducto(id);
+        producto.setEstadoProducto(nuevoEstado);
+        log.info("Estado de producto id={} cambió a {}", id, nuevoEstado);
 
-        log.info("Estado de producto id={} cambió de {} a {}", id, estadoAnterior, p.getEstadoProducto());
-        return aDto(p);
+        return ProductoDTO.Response.fromEntity(producto);
     }
 
+    // Métodos específicos para la Vista del Cliente
     @Transactional(readOnly = true)
-    public List<ProductoClienteResponseDTO> listarProductosCliente() {
+    public List<ProductoDTO.ClienteResponse> listarProductosCliente() {
         return productoRepository.findAll(Sort.by("nombreProducto"))
-                .stream()
-                .map(this::aClienteDto)
-                .toList();
+                .stream().map(ProductoDTO.ClienteResponse::fromEntity).toList();
     }
 
-    // Admin - Vendedor
     @Transactional(readOnly = true)
-    public ProductoResponseDTO obtenerProductoA(Long id) {
-        return aDto(obtenerProducto(id));
+    public ProductoDTO.ClienteResponse obtenerProductoCliente(Long id) {
+        return ProductoDTO.ClienteResponse.fromEntity(obtenerProducto(id));
     }
 
-    // Cliente
-    @Transactional(readOnly = true)
-    public ProductoClienteResponseDTO obtenerProductoCliente(Long id) {
-        return aClienteDto(obtenerProducto(id));
-    }
-
-    // ---------- privados ----------
-
-    private void copiarDatos(Producto p, ProductoRequestDTO dto, String codigo) {
-        p.setCodigoProducto(codigo);
-        p.setNombreProducto(normalizar(dto.getNombreProducto()));
-        p.setCategoriaProducto(normalizar(dto.getCategoriaProducto()));
-        p.setPrecioProducto(dto.getPrecioProducto());
-        p.setStockProducto(dto.getStockProducto());
-        p.setEstadoProducto(normalizar(dto.getEstadoProducto()));
-        p.setProveedor(obtenerProveedor(dto.getIdProveedor()));
-    }
-
-    private void validarCodigoDuplicado(String codigo, Long idActual) {
-        if (codigo == null) return;
-
-        boolean existe = (idActual == null)
-                ? productoRepository.existsByCodigoProductoIgnoreCase(codigo)
-                : productoRepository.existsByCodigoProductoIgnoreCaseAndIdProductoNot(codigo, idActual);
-
-        if (existe) {
-            log.warn("Código de producto duplicado rechazado: {}", codigo);
-            throw new RuntimeException("Ya existe un producto con el código: " + codigo);
-        }
-    }
-
+    //Metodos privados
     private Proveedores obtenerProveedor(Long idProveedor) {
-        if (idProveedor == null) return null;
         return proveedoresRepository.findById(idProveedor)
-                .orElseThrow(() -> {
-                    log.warn("Proveedor no encontrado al asignar a producto: id={}", idProveedor);
-                    return new RuntimeException("Proveedor no encontrado: " + idProveedor);
-                });
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + idProveedor));
     }
 
     private Producto obtenerProducto(Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Producto no encontrado: id={}", id);
-                    return new RuntimeException("Producto no encontrado: " + id);
-                });
-    }
-
-    private ProductoResponseDTO aDto(Producto p) {
-        return new ProductoResponseDTO(
-                p.getCodigoProducto(),
-                p.getNombreProducto(),
-                p.getCategoriaProducto(),
-                p.getPrecioProducto(),
-                p.getStockProducto()
-        );
-    }
-
-    private ProductoClienteResponseDTO aClienteDto(Producto p) {
-        return new ProductoClienteResponseDTO(
-                p.getNombreProducto(),
-                p.getCategoriaProducto(),
-                p.getPrecioProducto(),
-                p.getStockProducto() > 0
-        );
-    }
-
-    private String normalizar(String texto) {
-        return (texto == null || texto.isBlank()) ? null : texto.trim();
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
     }
 }

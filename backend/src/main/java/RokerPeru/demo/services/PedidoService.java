@@ -1,14 +1,14 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.pedido.PedidoRequestDTO;
-import RokerPeru.demo.dto.pedido.PedidoResponseDTO;
-import RokerPeru.demo.dto.detallePedidos.DetallePedidoRequestDTO;
-import RokerPeru.demo.dto.detallePedidos.DetallePedidoResponseDTO;
-import RokerPeru.demo.entities.*;
+import RokerPeru.demo.dto.DetallePedidoDTO;
+import RokerPeru.demo.dto.PedidoDTO;
+import RokerPeru.demo.entities.DetallePedido;
+import RokerPeru.demo.entities.Pedidos;
+import RokerPeru.demo.entities.Producto;
+import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.repository.PedidosRepository;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,157 +26,150 @@ public class PedidoService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
 
-    
+    // Crear un nuevo pedido del cliente
     @Transactional
-    public PedidoResponseDTO crearPedido(PedidoRequestDTO dto) {
-        if (dto.getDetalles() == null || dto.getDetalles().isEmpty()) {
-            throw new RuntimeException("El pedido debe tener al menos un producto");
-        }
+    public PedidoDTO.ResponseCliente crearPedido(PedidoDTO.RequestCliente dto) {
+        // Obtener al cliente
+        Usuario cliente = obtenerUsuario(dto.idCliente());
 
-        Pedidos pedido = new Pedidos();
+        // Delegar la creación de la entidad base al DTO
+        Pedidos pedido = dto.toEntity(cliente);
+
+        // El Service establece las reglas de negocio iniciales
         pedido.setFechaPedido(LocalDateTime.now());
         pedido.setEstadoPedido("PENDIENTE");
-        pedido.setSerieComprobantePedido(dto.getSerieComprobantePedido());
-        pedido.setNumeroComprobantePedido(dto.getNumeroComprobantePedido());
-        pedido.setMetodoPagoPedido(dto.getMetodoPagoPedido());
 
-        pedido.setCliente(buscarUsuario(dto.getIdCliente()));
-        if (dto.getIdVendedor() != null) pedido.setVendedor(buscarUsuario(dto.getIdVendedor()));
-        if (dto.getIdDelivery() != null) pedido.setDelivery(buscarUsuario(dto.getIdDelivery()));
-        if (dto.getIdAuxiliar() != null) pedido.setAuxiliar(buscarUsuario(dto.getIdAuxiliar()));
+        double montoTotal = 0.0;
 
-        double total = 0;
+        // Procesar cada detalle del pedido
+        for (DetallePedidoDTO.Request detalleDto : dto.detalles()) {
+            Producto producto = productoRepository.findById(detalleDto.idProducto())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleDto.idProducto()));
 
-        for (DetallePedidoRequestDTO d : dto.getDetalles()) {
-            Producto producto = productoRepository.findById(d.getIdProducto())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + d.getIdProducto()));
-
-            if (d.getCantidadProducto() == null || d.getCantidadProducto() <= 0) {
-                throw new RuntimeException("Cantidad inválida para el producto: " + producto.getNombreProducto());
-            }
-            if (producto.getStockProducto() < d.getCantidadProducto()) {
-                throw new RuntimeException("Stock insuficiente para: " + producto.getNombreProducto());
+            // Validar stock
+            if (producto.getStockProducto() < detalleDto.cantidadProducto()) {
+                throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombreProducto());
             }
 
-            double precio = producto.getPrecioProducto();
-            double subtotal = precio * d.getCantidadProducto();
+            // Delegar la creación del detalle al DTO
+            DetallePedido detalle = detalleDto.toEntity(pedido, producto, producto.getPrecioProducto());
 
-            DetallePedido detalle = new DetallePedido();
-            detalle.setPedido(pedido);
-            detalle.setProducto(producto);
-            detalle.setCantidadProducto(d.getCantidadProducto());
-            detalle.setPrecioUnitarioProducto(precio);
-            detalle.setSubtotal(subtotal);
-            pedido.getDetallePedidos().add(detalle);
+            // Usar el método de la entidad para mantener la integridad bidireccional
+            pedido.agregarDetalle(detalle);
 
-            // Descontar stock 
-            producto.setStockProducto(producto.getStockProducto() - d.getCantidadProducto());
-            total += subtotal;
+            // Descontar stock y acumular el total
+            producto.setStockProducto(producto.getStockProducto() - detalleDto.cantidadProducto());
+            montoTotal += detalle.getSubtotal();
         }
 
-        pedido.setMontoTotalPedido(total);
-        return aDto(pedidosRepository.save(pedido));
+        pedido.setMontoTotalPedido(montoTotal);
+
+        // Guardar y retornar la vista específica para el cliente
+        Pedidos pedidoGuardado = pedidosRepository.save(pedido);
+        log.info("Cliente {} creó el pedido #{} exitosamente. Total: S/ {}", cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
+
+        return PedidoDTO.ResponseCliente.fromEntity(pedidoGuardado);
     }
 
-    
+    // Confirmar pedido, asignar repartidor y completar datos para el vendedor
     @Transactional
-    public PedidoResponseDTO confirmarPedido(Long idPedido) {
+    public PedidoDTO.ResponseVendedor confirmarYAsignarPedido(Long idPedido, PedidoDTO.RequestAsignacionVendedor dto, Long idVendedorLogueado) {
+        // Obtener el pedido
         Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + idPedido));
-        pedido.setEstadoPedido("CONFIRMADO");
-        return aDto(pedidosRepository.save(pedido));
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + idPedido));
+
+        // Validar regla de negocio: solo se pueden procesar pedidos pendientes
+        if (!"PENDIENTE".equals(pedido.getEstadoPedido())) {
+            throw new RuntimeException("Solo se pueden procesar pedidos que estén en estado PENDIENTE");
+        }
+
+        // Obtener las entidades de usuario necesarias
+        Usuario vendedor = obtenerUsuario(idVendedorLogueado);
+        Usuario delivery = obtenerUsuario(dto.idDelivery());
+
+        // Validar que el usuario asignado tenga rol de repartidor
+        if (delivery.getRol() == null || !"REPARTIDOR".equalsIgnoreCase(delivery.getRol().getNombreRol())) {
+            throw new RuntimeException("El usuario seleccionado no tiene el rol de REPARTIDOR");
+        }
+
+        // El vendedor se asigna a sí mismo al pedido
+        pedido.setVendedor(vendedor);
+
+        // Delegar la actualización de campos de gestión al DTO
+        dto.applyTo(pedido, delivery);
+
+        // Actualizar el estado a "EN_RUTA" (o "CONFIRMADO", según tu flujo de negocio)
+        pedido.setEstadoPedido("EN_RUTA");
+
+        // Guardar y retornar la vista COMPLETA para el vendedor
+        Pedidos pedidoActualizado = pedidosRepository.save(pedido);
+        log.info("Vendedor {} confirmó el pedido #{} y lo asignó al repartidor {}", vendedor.getNombreUsuario(), idPedido, delivery.getNombreUsuario());
+
+        return PedidoDTO.ResponseVendedor.fromEntity(pedidoActualizado);
     }
 
-    
+    // Actualizar estado (Entregado/Cancelado) e incidentes para el repartidor
     @Transactional
-    public PedidoResponseDTO cancelarPedido(Long idPedido) {
-        Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + idPedido));
-        
-        // Devolver el stock al inventario
-        for (DetallePedido detalle : pedido.getDetallePedidos()) {
-            Producto producto = detalle.getProducto();
-            producto.setStockProducto(producto.getStockProducto() + detalle.getCantidadProducto());
-            productoRepository.save(producto);
+    public PedidoDTO.ResponseRepartidor actualizarEstadoRepartidor(Long idPedido, Long idRepartidorLogueado, PedidoDTO.RequestActualizacionRepartidor dto) {
+        // Validar que el pedido esté asignado a ESTE repartidor
+        boolean esSuPedido = pedidosRepository.existsByIdAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);
+        if (!esSuPedido) {
+            throw new RuntimeException("Acceso denegado: Este pedido no está asignado a ti");
         }
-        
-        pedido.setEstadoPedido("CANCELADO");
-        return aDto(pedidosRepository.save(pedido));
-    }
 
-    
-    public List<PedidoResponseDTO> listarPedidosVendedor() {
-        return pedidosRepository.findAll().stream().map(this::aDto).collect(Collectors.toList());
-    }
-
-    
-    public List<PedidoResponseDTO> listarPedidosCliente(Long idCliente) {
-        return pedidosRepository.findAll().stream()
-                .filter(p -> p.getCliente().getIdUsuario().equals(idCliente))
-                .map(this::aDto)
-                .collect(Collectors.toList());
-    }
-
-    
-    public List<PedidoResponseDTO> listarPedidoRepartidor() {
-        return pedidosRepository.findAll().stream()
-                .filter(p -> p.getEstadoPedido().equals("CONFIRMADO") || p.getEstadoPedido().equals("EN_RUTA"))
-                .map(this::aDto)
-                .collect(Collectors.toList());
-    }
-
-    
-    public PedidoResponseDTO buscarPedidosVendedor(Long idPedido) {
-        return aDto(pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + idPedido)));
-    }
-
-    
-    public PedidoResponseDTO buscarPedidosCliente(Long idPedido, Long idCliente) {
+        // Obtener el pedido
         Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + idPedido));
-        
-        if (!pedido.getCliente().getIdUsuario().equals(idCliente)) {
-            throw new RuntimeException("Acceso denegado: El pedido no pertenece a este cliente");
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + idPedido));
+
+        // Delegar la actualización de estado e incidentes al DTO
+        dto.applyTo(pedido);
+
+        // Regla de negocio: Si se marca como ENTREGADO, registrar la fecha y hora real
+        if ("ENTREGADO".equals(dto.nuevoEstado())) {
+            pedido.setFechaEntregaPedido(LocalDateTime.now());
         }
-        return aDto(pedido);
+
+        // Guardar y retornar la vista limitada para el repartidor
+        Pedidos pedidoActualizado = pedidosRepository.save(pedido);
+        log.info("Repartidor actualizó el pedido #{} al estado: {}", idPedido, dto.nuevoEstado());
+
+        return PedidoDTO.ResponseRepartidor.fromEntity(pedidoActualizado);
     }
 
-    
-    public PedidoResponseDTO buscarPedidoRepartidor(Long idPedido) {
-        return aDto(pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + idPedido)));
+    // Consultas segun rol
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseCliente> listarMisPedidos(Long idCliente) {
+        return pedidosRepository.findByCliente_IdUsuarioOrderByFechaPedidoDesc(idCliente)
+                .stream()
+                .map(PedidoDTO.ResponseCliente::fromEntity)
+                .toList();
     }
 
-    // Métodos privados auxiliares
-    private Usuario buscarUsuario(Long id) {
-        if (id == null) throw new RuntimeException("Falta el id del usuario");
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseVendedor> listarPedidosParaGestionar() {
+        // El vendedor ve todos los pedidos pendientes para procesarlos
+        return pedidosRepository.findByEstadoPedidoOrderByFechaPedidoDesc("PENDIENTE")
+                .stream()
+                .map(PedidoDTO.ResponseVendedor::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseRepartidor> listarPedidosAsignados(Long idRepartidor) {
+        // El repartidor solo ve los pedidos que están en ruta o pendientes de entrega y que son suyos
+        List<String> estadosActivos = List.of("EN_RUTA", "PENDIENTE_ENTREGA");
+        return pedidosRepository.findByDelivery_IdUsuarioAndEstadoPedidoInOrderByFechaPedidoDesc(idRepartidor, estadosActivos)
+                .stream()
+                .map(PedidoDTO.ResponseRepartidor::fromEntity)
+                .toList();
+    }
+
+    // Métodos privados
+    private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
-    }
-
-    private PedidoResponseDTO aDto(Pedidos p) {
-        List<DetallePedidoResponseDTO> detalles = p.getDetallePedidos().stream()
-                .map(d -> new DetallePedidoResponseDTO(
-                        d.getIdDetallePedido(),
-                        d.getProducto().getIdProducto(),
-                        d.getProducto().getNombreProducto(),
-                        d.getCantidadProducto(),
-                        d.getPrecioUnitarioProducto(),
-                        d.getSubtotal()))
-                .collect(Collectors.toList());
-
-        return new PedidoResponseDTO(
-                p.getIdPedido(),
-                p.getFechaPedido(),
-                p.getSerieComprobantePedido(),
-                p.getNumeroComprobantePedido(),
-                p.getEstadoPedido(),
-                p.getMontoTotalPedido(),
-                p.getMetodoPagoPedido(),
-                p.getCliente().getNombreUsuario(),
-                p.getVendedor() != null ? p.getVendedor().getNombreUsuario() : null,
-                detalles
-        );
+                .orElseThrow(() -> {
+                    log.warn("Intento de buscar usuario con ID inexistente: {}", id);
+                    return new RuntimeException("Usuario no encontrado con ID: " + id);
+                });
     }
 }

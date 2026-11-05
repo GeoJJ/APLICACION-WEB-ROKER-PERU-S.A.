@@ -36,7 +36,7 @@ public class Producto {
 
     // Nuevo campo agregado es para la alerta de stock_minimo
     @Column(name = "stock_minimo", nullable = false, columnDefinition = "integer default 10")
-    private int stockMinimo;
+    private int stockMinimo = 10;
 
     @Column(name = "estado_producto", length = 30)
     private String estadoProducto;

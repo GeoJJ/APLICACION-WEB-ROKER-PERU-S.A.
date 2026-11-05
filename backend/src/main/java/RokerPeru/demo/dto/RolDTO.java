@@ -16,9 +16,13 @@ public final class RolDTO {
             nombreRol = nombreRol != null ? nombreRol.trim() : null;
         }
 
-        public Rol toEntity(Rol rol) {
-            rol.setNombreRol(this.nombreRol);
+        public Rol toEntity() {
+            Rol rol = new Rol();
+            applyTo(rol);
             return rol;
+        }
+        public void applyTo(Rol rol) {
+            rol.setNombreRol(this.nombreRol);
         }
     }
 

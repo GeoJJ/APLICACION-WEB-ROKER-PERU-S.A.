@@ -1,83 +1,75 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.ProveedorResponseDTO;
-import RokerPeru.demo.dto.proveedor.ProveedorRequestDTO;
+import RokerPeru.demo.dto.ProveedorDTO;
 import RokerPeru.demo.entities.Proveedores;
 import RokerPeru.demo.repository.ProveedoresRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProveedorService {
+
     private final ProveedoresRepository proveedoresRepository;
 
     @Transactional
-    public ProveedorResponseDTO crearProveedor(ProveedorRequestDTO dto) {
-        Proveedores p = new Proveedores();
-        String rucProveedor= normalizar(dto.getRucProveedor());
-        if(proveedoresRepository.existsByRucProveedor(rucProveedor)){
-            throw new RuntimeException("Ya existe un proveedor con el RUC: " + rucProveedor);
+    public ProveedorDTO.Response crearProveedor(ProveedorDTO.Request dto) {
+        if (proveedoresRepository.existsByRucProveedor(dto.rucProveedor())) {
+            throw new RuntimeException("Ya existe un proveedor con el RUC: " + dto.rucProveedor());
         }
-        p.setNombreProveedor(dto.getNombreProveedor());
-        p.setRucProveedor(rucProveedor);
-        p.setTelefonoProveedor(dto.getTelefonoProveedor());
-        p.setCorreoProveedor(dto.getCorreoProveedor());
-        return aDto(proveedoresRepository.save(p));
+
+        Proveedores guardado = proveedoresRepository.save(dto.toEntity());
+        log.info("Proveedor creado: id={}, ruc={}", guardado.getIdProveedor(), dto.rucProveedor());
+
+        return ProveedorDTO.Response.fromEntity(guardado);
     }
 
     @Transactional(readOnly = true)
-    public List<ProveedorResponseDTO> listarProveedor() {
+    public List<ProveedorDTO.Response> listarProveedor() {
         return proveedoresRepository.findAll(Sort.by("nombreProveedor"))
                 .stream()
-                .map(this::aDto)
-                .toList();    }
+                .map(ProveedorDTO.Response::fromEntity)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
-    public List<ProveedorResponseDTO> buscarProveedor(String texto) {
-        return proveedoresRepository.buscarProveedor(texto).stream().map(this::aDto).toList();
+    public List<ProveedorDTO.Response> buscarProveedor(String texto) {
+        return proveedoresRepository.buscarProveedor(texto.trim())
+                .stream()
+                .map(ProveedorDTO.Response::fromEntity)
+                .toList();
     }
 
     @Transactional
-    public ProveedorResponseDTO actualizarProveedor(Long id, ProveedorRequestDTO dto) {
+    public ProveedorDTO.Response actualizarProveedor(Long id, ProveedorDTO.Request dto) {
         Proveedores proveedor = obtenerProveedor(id);
-        String ruc = normalizar(dto.getRucProveedor());
 
-        if (proveedoresRepository.existsByRucProveedorAndIdProveedorNot(ruc, id)) {
-            throw new RuntimeException("Ya existe otro proveedor con el RUC: " + ruc);
+        if (proveedoresRepository.existsByRucProveedorAndIdProveedorNot(dto.rucProveedor(), id)) {
+            throw new RuntimeException("Ya existe otro proveedor con el RUC: " + dto.rucProveedor());
         }
 
-        proveedor.setNombreProveedor(dto.getNombreProveedor());
-        proveedor.setRucProveedor(ruc);
-        proveedor.setTelefonoProveedor(normalizar(dto.getTelefonoProveedor()));
-        proveedor.setCorreoProveedor(normalizar(dto.getCorreoProveedor()));
-        return aDto(proveedor);
+        dto.applyTo(proveedor);
+        log.info("Proveedor actualizado: id={}, ruc={}", id, dto.rucProveedor());
+
+        return ProveedorDTO.Response.fromEntity(proveedor);
     }
 
     @Transactional
     public void eliminarProveedor(Long id) {
         Proveedores proveedor = obtenerProveedor(id);
         proveedoresRepository.delete(proveedor);
+        log.info("Proveedor eliminado: id={}", id);
     }
 
-    private Proveedores obtenerProveedor(Long id){
-        return proveedoresRepository.findById(id).orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id));
-    }
-
-    private ProveedorResponseDTO aDto(Proveedores p) {
-        return new ProveedorResponseDTO(
-                p.getIdProveedor(),
-                p.getNombreProveedor(),
-                p.getRucProveedor(),
-                p.getTelefonoProveedor(),
-                p.getCorreoProveedor()
-        );
-    }
-    private String normalizar(String texto) {
-        return (texto == null || texto.isBlank()) ? null : texto .trim();
+    // Métodos privados
+    private Proveedores obtenerProveedor(Long id) {
+        return proveedoresRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id));
     }
 }

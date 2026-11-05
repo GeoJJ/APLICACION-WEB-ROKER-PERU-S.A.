@@ -8,11 +8,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-
 public final class UsuarioDTO {
-    private UsuarioDTO() {}
+    private UsuarioDTO() {
+    }
 
-    public record RequestDTO(
+    public record Request(
             @NotBlank(message = "El nombre es obligatorio")
             @Size(max = 150, message = "El nombre no puede superar los 150 caracteres")
             String nombreUsuario,
@@ -27,7 +27,7 @@ public final class UsuarioDTO {
             String tipoPersonaUsuario,
 
             @NotBlank(message = "El número de documento es obligatorio")
-            String numeroDocumentoUsuario, // Quitamos el @Pattern de aquí para validar la regla cruzada abajo
+            String numeroDocumentoUsuario,
 
             @Pattern(regexp = "^(\\d{9})?$", message = "El teléfono debe tener 9 dígitos")
             String telefonoUsuario,
@@ -41,7 +41,7 @@ public final class UsuarioDTO {
             @Size(min = 8, max = 72, message = "La contraseña debe tener entre 8 y 72 caracteres")
             String passwordUsuario
     ) {
-        public RequestDTO {
+        public Request {
             nombreUsuario = nombreUsuario != null ? nombreUsuario.trim() : null;
             correoUsuario = correoUsuario != null ? correoUsuario.trim().toLowerCase() : null;
             tipoPersonaUsuario = tipoPersonaUsuario != null ? tipoPersonaUsuario.trim().toUpperCase() : null;
@@ -59,7 +59,13 @@ public final class UsuarioDTO {
             }
         }
 
-        public void toEntity(Usuario usuario, Rol rol) {
+        public Usuario toEntity(Rol rol) {
+            Usuario usuario = new Usuario();
+            applyTo(usuario, rol);
+            return usuario;
+        }
+
+        public void applyTo(Usuario usuario, Rol rol) {
             usuario.setNombreUsuario(this.nombreUsuario);
             usuario.setCorreoUsuario(this.correoUsuario);
             usuario.setTipoPersonaUsuario(this.tipoPersonaUsuario);
@@ -70,7 +76,7 @@ public final class UsuarioDTO {
         }
     }
 
-    public record ResponseDTO(
+    public record Response(
             Long idUsuario,
             String nombreUsuario,
             String correoUsuario,
@@ -81,8 +87,8 @@ public final class UsuarioDTO {
             Long idRol,
             String nombreRol
     ) {
-        public static ResponseDTO fromEntity(Usuario u) {
-            return new ResponseDTO(
+        public static Response fromEntity(Usuario u) {
+            return new Response(
                     u.getIdUsuario(),
                     u.getNombreUsuario(),
                     u.getCorreoUsuario(),
