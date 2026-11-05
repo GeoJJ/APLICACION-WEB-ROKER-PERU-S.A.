@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from '@/components/auth/AuthProvider';
+import { ROLES } from '@/data/roles';
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 export default function LoginForm() {
+    const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [isLoading, setIsLoading] = useState(false);
@@ -15,13 +20,13 @@ export default function LoginForm() {
         e.preventDefault();
         setIsLoading(true);
 
-        // TODO: Aquí irá la llamada a tu backend Spring Boot
-        setTimeout(() => {
-            console.log("Intento de login con:", formData);
-            setIsLoading(false);
-            alert("¡Login simulado exitoso!");
-            // navigate("/dashboard"); 
-        }, 1500);
+        setError('');
+        try {
+            const user = await login(formData.email, formData.password);
+            const from=location.state?.from;
+            navigate(typeof from==='string'&&from.startsWith('/')&&!from.startsWith('//')?from:ROLES.find(r => r.code === user.role)?.home || '/', { replace: true });
+        } catch (e) { setError(e.message); }
+        finally { setIsLoading(false); }
     };
 
     return (
@@ -34,6 +39,7 @@ export default function LoginForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+                {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
                 <Input
                     icon={Mail}
                     type="email"
@@ -61,15 +67,7 @@ export default function LoginForm() {
                     </button>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                    <label className="flex cursor-pointer items-center gap-2 text-gray-600">
-                        <input type="checkbox" className="rounded border-gray-300 text-brand focus:ring-brand" />
-                        Recordarme
-                    </label>
-                    <Link to="/recuperar-password" className="font-medium text-brand hover:underline">
-                        ¿Olvidaste tu contraseña?
-                    </Link>
-                </div>
+
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Ingresando..." : "Iniciar Sesión"}

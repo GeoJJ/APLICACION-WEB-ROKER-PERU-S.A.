@@ -1,3 +1,4 @@
+import { api } from '@/lib/api';
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock } from "lucide-react";
@@ -7,7 +8,8 @@ import Card from "@/components/ui/Card";
 
 export default function RegisterForm() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+    const [error,setError]=useState('');
+    const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "", documento: "" });
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e) => {
@@ -20,13 +22,9 @@ export default function RegisterForm() {
 
         setIsLoading(true);
 
-        // TODO: Aquí irá la llamada a tu backend Spring Boot
-        setTimeout(() => {
-            console.log("Intento de registro con:", formData);
-            setIsLoading(false);
-            alert("¡Registro simulado exitoso! Redirigiendo al login...");
-            navigate("/login");
-        }, 1500);
+        setError('');
+        try { await api('/auth/register',{method:'POST',body:JSON.stringify({nombre:formData.name,email:formData.email,documento:formData.documento,password:formData.password})}); navigate('/login'); }
+        catch(e){setError(e.message);}finally{setIsLoading(false);}
     };
 
     return (
@@ -38,7 +36,7 @@ export default function RegisterForm() {
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">{error&&<p role="alert" className="text-sm text-red-700">{error}</p>}<Input placeholder="DNI (8 dígitos)" aria-label="DNI" pattern="[0-9]{8}" required value={formData.documento} onChange={e=>setFormData({...formData,documento:e.target.value})} />
                 <Input
                     icon={User}
                     type="text"
@@ -64,7 +62,7 @@ export default function RegisterForm() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
-                    minLength={6}
+                    minLength={8}
                 />
 
                 <Input
