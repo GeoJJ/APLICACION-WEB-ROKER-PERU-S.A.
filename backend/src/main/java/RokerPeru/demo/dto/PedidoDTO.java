@@ -11,17 +11,8 @@ import java.util.List;
 public final class PedidoDTO {
     private PedidoDTO() {
     }
-
-    // ==========================================
-    // 1. REQUEST: Solo para que el CLIENTE cree el pedido
-    // ==========================================
+    // Solo para que el CLIENTE cree el pedido
     public record RequestCliente(
-            @NotBlank(message = "La serie del comprobante es obligatoria")
-            String serieComprobantePedido,
-
-            @NotBlank(message = "El número del comprobante es obligatorio")
-            String numeroComprobantePedido,
-
             @NotBlank(message = "El método de pago es obligatorio")
             String metodoPagoPedido,
 
@@ -32,33 +23,25 @@ public final class PedidoDTO {
             List<DetallePedidoDTO.Request> detalles
     ) {
         public RequestCliente {
-            serieComprobantePedido = serieComprobantePedido != null ? serieComprobantePedido.trim().toUpperCase() : null;
-            numeroComprobantePedido = numeroComprobantePedido != null ? numeroComprobantePedido.trim() : null;
             metodoPagoPedido = metodoPagoPedido != null ? metodoPagoPedido.trim().toUpperCase() : null;
         }
 
-        // Crea la entidad Pedido base con el cliente
         public Pedidos toEntity(Usuario cliente) {
             Pedidos pedido = new Pedidos();
             applyTo(pedido, cliente, null, null);
             return pedido;
         }
 
-        // Mapea los datos del request a la entidad (reutilizable para creación o actualización)
         public void applyTo(Pedidos pedido, Usuario cliente, Usuario vendedor, Usuario delivery) {
             pedido.setCliente(cliente);
             if (vendedor != null) pedido.setVendedor(vendedor);
             if (delivery != null) pedido.setDelivery(delivery);
 
-            pedido.setSerieComprobantePedido(this.serieComprobantePedido);
-            pedido.setNumeroComprobantePedido(this.numeroComprobantePedido);
             pedido.setMetodoPagoPedido(this.metodoPagoPedido);
         }
     }
 
-    // ==========================================
-    // 2. REQUEST: Para que el VENDEDOR asigne y complete datos
-    // ==========================================
+    // Para que el VENDEDOR asigne y complete datos
     public record RequestAsignacionVendedor(
             @NotNull(message = "El ID del repartidor (delivery) es obligatorio")
             Long idDelivery,
@@ -78,9 +61,7 @@ public final class PedidoDTO {
         }
     }
 
-    // ==========================================
-    // 3. REQUEST: Para que el REPARTIDOR actualice estado e incidentes
-    // ==========================================
+    // Para que el REPARTIDOR actualice estado e incidentes
     public record RequestActualizacionRepartidor(
             @NotBlank(message = "El nuevo estado del pedido es obligatorio")
             String nuevoEstado,
@@ -101,9 +82,7 @@ public final class PedidoDTO {
         }
     }
 
-    // ==========================================
-    // 4. RESPONSE: Lo que ve el CLIENTE
-    // ==========================================
+    // Lo que ve el CLIENTE
     public record ResponseCliente(
             LocalDateTime fechaPedido,
             String serieComprobantePedido,
@@ -136,9 +115,7 @@ public final class PedidoDTO {
         }
     }
 
-    // ==========================================
-    // 5. RESPONSE: Lo que ve el VENDEDOR (TODO)
-    // ==========================================
+    // Lo que ve el VENDEDOR (TODO)
     public record ResponseVendedor(
             Long idPedido,
             LocalDateTime fechaPedido,
@@ -179,9 +156,7 @@ public final class PedidoDTO {
         }
     }
 
-    // ==========================================
-    // 6. RESPONSE: Lo que ve el REPARTIDOR (Solo lo esencial)
-    // ==========================================
+    // Lo que ve el REPARTIDOR (Solo lo esencial)
     public record ResponseRepartidor(
             Long idPedido,
             String estadoPedido,

@@ -6,6 +6,7 @@ import RokerPeru.demo.entities.DetallePedido;
 import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Usuario;
+import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.repository.PedidosRepository;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -25,6 +26,7 @@ public class PedidoService {
     private final PedidosRepository pedidosRepository;
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
+    private final ComprobanteService comprobanteService;
 
     // Crear un nuevo pedido del cliente
     @Transactional
@@ -34,10 +36,23 @@ public class PedidoService {
 
         // Delegar la creación de la entidad base al DTO
         Pedidos pedido = dto.toEntity(cliente);
-
-        // El Service establece las reglas de negocio iniciales
         pedido.setFechaPedido(LocalDateTime.now());
         pedido.setEstadoPedido("PENDIENTE");
+
+        TipoComprobanteEnum tipoComprobante;
+
+        // Si es empresa (JURIDICA), le damos Factura. Si es persona (NATURAL), Boleta.
+        if ("JURIDICA".equals(cliente.getTipoPersonaUsuario())) {
+            tipoComprobante = TipoComprobanteEnum.FACTURA_PRODUCTO;
+        } else {
+            tipoComprobante = TipoComprobanteEnum.BOLETA_PRODUCTO;
+        }
+        String numeroGenerado = comprobanteService.generarNumeroComprobante(tipoComprobante);
+
+        // Asignamos a la entidad
+        pedido.setSerieComprobantePedido(tipoComprobante.getSerie());
+        pedido.setNumeroComprobantePedido(numeroGenerado);
+        // =========================================================================
 
         double montoTotal = 0.0;
 
@@ -46,27 +61,23 @@ public class PedidoService {
             Producto producto = productoRepository.findById(detalleDto.idProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleDto.idProducto()));
 
-            // Validar stock
             if (producto.getStockProducto() < detalleDto.cantidadProducto()) {
                 throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombreProducto());
             }
 
-            // Delegar la creación del detalle al DTO
             DetallePedido detalle = detalleDto.toEntity(pedido, producto, producto.getPrecioProducto());
-
-            // Usar el método de la entidad para mantener la integridad bidireccional
             pedido.agregarDetalle(detalle);
 
-            // Descontar stock y acumular el total
             producto.setStockProducto(producto.getStockProducto() - detalleDto.cantidadProducto());
             montoTotal += detalle.getSubtotal();
         }
 
         pedido.setMontoTotalPedido(montoTotal);
 
-        // Guardar y retornar la vista específica para el cliente
+        // Guardar y retornar
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Cliente {} creó el pedido #{} exitosamente. Total: S/ {}", cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
+        log.info("Cliente {} creó el pedido #{} con comprobante {}. Total: S/ {}",
+                cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), numeroGenerado, montoTotal);
 
         return PedidoDTO.ResponseCliente.fromEntity(pedidoGuardado);
     }

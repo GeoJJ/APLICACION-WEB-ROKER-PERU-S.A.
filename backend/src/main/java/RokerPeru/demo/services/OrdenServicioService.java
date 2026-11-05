@@ -4,6 +4,7 @@ import RokerPeru.demo.dto.OrdenServicioDTO;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.entities.Usuario;
+import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.repository.OrdenesServicioRepository;
 import RokerPeru.demo.repository.ServicioRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -23,6 +24,7 @@ public class OrdenServicioService {
     private final OrdenesServicioRepository ordenesRepository;
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ComprobanteService  comprobanteService;
 
     // Flujo del cliente para crear orden de servicio
     @Transactional
@@ -37,8 +39,25 @@ public class OrdenServicioService {
         orden.setEstadoServicio("PENDIENTE");
         orden.setMontoTotalServicio(servicio.getPrecioServicio());
 
+        TipoComprobanteEnum tipoComprobante;
+
+        // Si es empresa (JURIDICA), le damos Factura de Servicio. Si es persona (NATURAL), Boleta de Servicio.
+        if ("JURIDICA".equals(cliente.getTipoPersonaUsuario())) {
+            tipoComprobante = TipoComprobanteEnum.FACTURA_SERVICIO;
+        } else {
+            tipoComprobante = TipoComprobanteEnum.BOLETA_SERVICIO;
+        }
+
+        // Generamos el número automático (ej: "B002-00000001" o "F002-00000001")
+        String numeroGenerado = comprobanteService.generarNumeroComprobante(tipoComprobante);
+
+        // Asignamos a la entidad
+        orden.setSerieComprobanteServicio(tipoComprobante.getSerie());
+        orden.setNumeroComprobanteServicio(numeroGenerado);
+
         OrdenesServicio guardado = ordenesRepository.save(orden);
-        log.info("Cliente {} creó orden de servicio #{} para {}", cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), servicio.getNombreServicio());
+        log.info("Cliente {} creó orden de servicio #{} con comprobante {} para {}",
+                cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), numeroGenerado, servicio.getNombreServicio());
 
         return OrdenServicioDTO.ResponseCliente.fromEntity(guardado);
     }
@@ -52,7 +71,6 @@ public class OrdenServicioService {
             throw new RuntimeException("Solo se pueden confirmar órdenes en estado PENDIENTE");
         }
 
-        // 2. ⭐ VALIDACIÓN CRÍTICA DE PERSONAL
         int personalRequerido = 0;
         try {
             String soloNumeros = orden.getServicio().getCantidadPersonalServicio().replaceAll("\\D+", "");

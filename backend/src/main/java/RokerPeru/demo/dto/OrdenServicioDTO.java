@@ -21,21 +21,14 @@ public final class OrdenServicioDTO {
 
             LocalDateTime fechaProgramadaServicio,
 
-            @NotBlank(message = "La serie del comprobante es obligatoria")
-            String serieComprobanteServicio,
-
-            @NotBlank(message = "El número del comprobante es obligatorio")
-            String numeroComprobanteServicio,
-
             @NotBlank(message = "El método de pago es obligatorio")
             String metodoPagoServicio,
 
             String incidenciaServicio
     ) {
         public RequestCliente {
-            serieComprobanteServicio = serieComprobanteServicio != null ? serieComprobanteServicio.trim().toUpperCase() : null;
-            numeroComprobanteServicio = numeroComprobanteServicio != null ? numeroComprobanteServicio.trim() : null;
             metodoPagoServicio = metodoPagoServicio != null ? metodoPagoServicio.trim().toUpperCase() : null;
+            incidenciaServicio = incidenciaServicio != null ? incidenciaServicio.trim() : null;
         }
 
         public OrdenesServicio toEntity(Servicio servicio, Usuario cliente) {
@@ -51,8 +44,6 @@ public final class OrdenServicioDTO {
             if (auxiliar != null) orden.setAuxiliar(auxiliar);
 
             orden.setFechaProgramadaServicio(this.fechaProgramadaServicio);
-            orden.setSerieComprobanteServicio(this.serieComprobanteServicio);
-            orden.setNumeroComprobanteServicio(this.numeroComprobanteServicio);
             orden.setMetodoPagoServicio(this.metodoPagoServicio);
             orden.setIncidenciaServicio(this.incidenciaServicio);
         }
