@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.rol.RolRequestDTO;
-import RokerPeru.demo.dto.rol.RolResponseDTO;
+import RokerPeru.demo.dto.RolDTO;
 import RokerPeru.demo.services.RolService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -19,25 +18,25 @@ public class AdminRolController {
     // POST /admin/roles
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RolResponseDTO crearRol(@Valid @RequestBody RolRequestDTO dto) {
+    public RolDTO.Response crearRol(@Valid @RequestBody RolDTO.Request dto) {
         return rolService.crearRol(dto);
     }
 
     // GET /admin/roles
     @GetMapping
-    public List<RolResponseDTO> listarRol() {
+    public List<RolDTO.Response> listarRol() {
         return rolService.listarRol();
     }
 
     // GET /admin/roles/buscar?texto=...
     @GetMapping("/buscar")
-    public List<RolResponseDTO> buscarRol(@RequestParam String texto) {
+    public List<RolDTO.Response> buscarRol(@RequestParam String texto) {
         return rolService.buscarRol(texto);
     }
 
     // PUT /admin/roles/{id}
     @PutMapping("/{id}")
-    public RolResponseDTO actualizarRol(@PathVariable Long id, @Valid @RequestBody RolRequestDTO dto) {
+    public RolDTO.Response actualizarRol(@PathVariable Long id, @Valid @RequestBody RolDTO.Request dto) {
         return rolService.actualizarRol(id, dto);
     }
 }

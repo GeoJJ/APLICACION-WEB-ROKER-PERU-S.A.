@@ -1,6 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.ProductoClienteResponseDTO;
+import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.services.ProductoService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +15,13 @@ public class ClienteProductoController {
 
     // GET /cliente/productos
     @GetMapping
-    public List<ProductoClienteResponseDTO> listarProductosCliente() {
+    public List<ProductoDTO.ClienteResponse> listarProductosCliente() {
         return productoService.listarProductosCliente();
     }
 
     // GET /cliente/productos/{id}
     @GetMapping("/{id}")
-    public ProductoClienteResponseDTO obtenerProductoCliente(@PathVariable Long id) {
+    public ProductoDTO.ClienteResponse obtenerProductoCliente(@PathVariable Long id) {
         return productoService.obtenerProductoCliente(id);
     }
 }

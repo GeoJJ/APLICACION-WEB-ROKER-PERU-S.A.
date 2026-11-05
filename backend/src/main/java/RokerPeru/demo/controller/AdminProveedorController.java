@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.ProveedorResponseDTO;
-import RokerPeru.demo.dto.proveedor.ProveedorRequestDTO;
+import RokerPeru.demo.dto.ProveedorDTO;
 import RokerPeru.demo.services.ProveedorService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,25 +19,25 @@ public class AdminProveedorController {
     // POST /api/admin/proveedores
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProveedorResponseDTO crearProveedor(@Valid @RequestBody ProveedorRequestDTO dto) {
+    public ProveedorDTO.Response crearProveedor(@Valid @RequestBody ProveedorDTO.Request dto) {
         return proveedorService.crearProveedor(dto);
     }
 
     // GET /admin/proveedores
     @GetMapping
-    public List<ProveedorResponseDTO> listarProveedor() {
+    public List<ProveedorDTO.Response> listarProveedor() {
         return proveedorService.listarProveedor();
     }
 
     // GET /admin/proveedores/buscar?texto=...
     @GetMapping("/buscar")
-    public List<ProveedorResponseDTO> buscarProveedor(@RequestParam String texto) {
+    public List<ProveedorDTO.Response> buscarProveedor(@RequestParam String texto) {
         return proveedorService.buscarProveedor(texto);
     }
 
     // PUT /admin/proveedores/{id}
     @PutMapping("/{id}")
-    public ProveedorResponseDTO actualizarProveedor(@PathVariable Long id, @Valid @RequestBody ProveedorRequestDTO dto) {
+    public ProveedorDTO.Response actualizarProveedor(@PathVariable Long id, @Valid @RequestBody ProveedorDTO.Request dto) {
         return proveedorService.actualizarProveedor(id, dto);
     }
 

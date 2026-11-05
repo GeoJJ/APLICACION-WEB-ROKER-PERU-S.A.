@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.usuarios.UsuarioRequestDTO;
-import RokerPeru.demo.dto.usuarios.UsuarioResponseDTO;
+import RokerPeru.demo.dto.UsuarioDTO;
 import RokerPeru.demo.services.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -19,25 +18,25 @@ public class AdminUsuarioController {
     // POST /admin/usuarios
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioResponseDTO crearUsuario(@Valid @RequestBody UsuarioRequestDTO dto) {
+    public UsuarioDTO.Response crearUsuario(@Valid @RequestBody UsuarioDTO.Request dto) {
         return usuarioService.crearUsuario(dto);
     }
 
     // GET /admin/usuarios
     @GetMapping
-    public List<UsuarioResponseDTO> listarUsuario() {
-        return usuarioService.listarUsuario();
+    public List<UsuarioDTO.Response> listarUsuario() {
+        return usuarioService.listarUsuarios();
     }
 
     // GET /admin/usuarios/buscar?texto=...
     @GetMapping("/buscar")
-    public List<UsuarioResponseDTO> buscarUsuario(@RequestParam String texto) {
+    public List<UsuarioDTO.Response> buscarUsuario(@RequestParam String texto) {
         return usuarioService.buscarUsuario(texto);
     }
 
     // PUT /admin/usuarios/{id}
     @PutMapping("/{id}")
-    public UsuarioResponseDTO actualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO dto) {
+    public UsuarioDTO.Response actualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioDTO.Request dto) {
         return usuarioService.actualizarUsuario(id, dto);
     }
 

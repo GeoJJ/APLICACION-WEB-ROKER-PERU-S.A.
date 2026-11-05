@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface RolRepository extends JpaRepository<Rol, Long> {
+    java.util.Optional<Rol> findByNombreRolIgnoreCase(String nombre);
     // validar que no se repita el nombre
     boolean existsByNombreRolIgnoreCase(String nombreRol);
 

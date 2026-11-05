@@ -31,6 +31,7 @@ public class PedidoService {
     // Crear un nuevo pedido del cliente
     @Transactional
     public PedidoDTO.ResponseCliente crearPedido(PedidoDTO.RequestCliente dto) {
+        if(dto.detalles()==null||dto.detalles().isEmpty())throw new IllegalArgumentException("El pedido debe contener productos");
         // Obtener al cliente
         Usuario cliente = obtenerUsuario(dto.idCliente());
 
@@ -58,9 +59,11 @@ public class PedidoService {
 
         // Procesar cada detalle del pedido
         for (DetallePedidoDTO.Request detalleDto : dto.detalles()) {
-            Producto producto = productoRepository.findById(detalleDto.idProducto())
+            if(detalleDto.cantidadProducto()==null||detalleDto.cantidadProducto()<1)throw new IllegalArgumentException("Cantidad no válida");
+            Producto producto = productoRepository.buscarParaActualizarStock(detalleDto.idProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleDto.idProducto()));
 
+            if("INACTIVO".equalsIgnoreCase(producto.getEstadoProducto()))throw new IllegalArgumentException("Producto inactivo");
             if (producto.getStockProducto() < detalleDto.cantidadProducto()) {
                 throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombreProducto());
             }
@@ -99,7 +102,7 @@ public class PedidoService {
         Usuario delivery = obtenerUsuario(dto.idDelivery());
 
         // Validar que el usuario asignado tenga rol de repartidor
-        if (delivery.getRol() == null || !"REPARTIDOR".equalsIgnoreCase(delivery.getRol().getNombreRol())) {
+        if (!delivery.isActivo() || delivery.getRol() == null || !"REPARTIDOR".equalsIgnoreCase(delivery.getRol().getNombreRol())) {
             throw new RuntimeException("El usuario seleccionado no tiene el rol de REPARTIDOR");
         }
 
@@ -123,7 +126,7 @@ public class PedidoService {
     @Transactional
     public PedidoDTO.ResponseRepartidor actualizarEstadoRepartidor(Long idPedido, Long idRepartidorLogueado, PedidoDTO.RequestActualizacionRepartidor dto) {
         // Validar que el pedido esté asignado a ESTE repartidor
-        boolean esSuPedido = pedidosRepository.existsByIdAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);
+        boolean esSuPedido = pedidosRepository.existsByIdPedidoAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);
         if (!esSuPedido) {
             throw new RuntimeException("Acceso denegado: Este pedido no está asignado a ti");
         }
@@ -132,6 +135,8 @@ public class PedidoService {
         Pedidos pedido = pedidosRepository.findById(idPedido)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + idPedido));
 
+        if(!List.of("EN_RUTA","ENTREGADO").contains(dto.nuevoEstado())||List.of("ENTREGADO","CANCELADO").contains(pedido.getEstadoPedido()))throw new IllegalArgumentException("Transición de entrega no válida");
+        if("ENTREGADO".equals(dto.nuevoEstado())&&(pedido.getEvidencia()==null||pedido.getFirma()==null))throw new IllegalArgumentException("Adjunta la evidencia y la firma desde el panel de entregas");
         // Delegar la actualización de estado e incidentes al DTO
         dto.applyTo(pedido);
 
@@ -176,6 +181,27 @@ public class PedidoService {
     }
 
     // Métodos privados
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseVendedor> listarTodos() { return pedidosRepository.findAll().stream().map(PedidoDTO.ResponseVendedor::fromEntity).toList(); }
+    @Transactional(readOnly = true)
+    public PedidoDTO.ResponseVendedor buscarVendedor(Long id) { return PedidoDTO.ResponseVendedor.fromEntity(pedidosRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"))); }
+    @Transactional(readOnly = true)
+    public PedidoDTO.ResponseCliente buscarCliente(Long id, Long user) {
+        var p = pedidosRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
+        if (!p.getCliente().getIdUsuario().equals(user)) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN);
+        return PedidoDTO.ResponseCliente.fromEntity(p);
+    }
+    @Transactional
+    public PedidoDTO.ResponseCliente cancelarCliente(Long id, Long user) {
+        buscarCliente(id,user); var p=pedidosRepository.findById(id).orElseThrow();
+        if (!"PENDIENTE".equals(p.getEstadoPedido())) throw new IllegalArgumentException("Solo puedes cancelar pedidos pendientes");
+        p.getDetallePedidos().forEach(d -> { var product=productoRepository.buscarParaActualizarStock(d.getProducto().getIdProducto()).orElseThrow(); product.setStockProducto(product.getStockProducto()+d.getCantidadProducto()); });
+        p.setEstadoPedido("CANCELADO"); return PedidoDTO.ResponseCliente.fromEntity(p);
+    }
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseRepartidor> listarAsignadosHistorial(Long user) { return pedidosRepository.findAll().stream().filter(p -> p.getDelivery()!=null && p.getDelivery().getIdUsuario().equals(user)).map(PedidoDTO.ResponseRepartidor::fromEntity).toList(); }
+    @Transactional(readOnly = true)
+    public PedidoDTO.ResponseRepartidor buscarRepartidor(Long id,Long user) { return listarAsignadosHistorial(user).stream().filter(p -> p.idPedido().equals(id)).findFirst().orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND)); }
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> {

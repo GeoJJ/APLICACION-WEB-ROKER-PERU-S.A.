@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/gerente/reportes")
+@RequestMapping({"/gerente/reportes", "/api/reportes"})
 @RequiredArgsConstructor
 public class GerenteReporteController {
 

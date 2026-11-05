@@ -16,6 +16,14 @@ import java.util.List;
 @Getter
 @Setter
 public class Pedidos {
+ @Column(unique=true,length=120) private String checkoutKey;
+ @Column(length=150) private String contactoEntrega;
+ @Column(length=20) private String telefonoEntrega;
+ @Column(length=500) private String direccionEntrega;
+    @Column(columnDefinition = "TEXT")
+    private String evidencia;
+    @Column(columnDefinition = "TEXT")
+    private String firma;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pedido")

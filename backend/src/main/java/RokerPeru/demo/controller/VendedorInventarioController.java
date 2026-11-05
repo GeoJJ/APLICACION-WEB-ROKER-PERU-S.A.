@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.movimiento.MovimientoRequestDTO;
-import RokerPeru.demo.dto.movimiento.MovimientoResponseDTO;
+import RokerPeru.demo.dto.MovimientoDTO;
 import RokerPeru.demo.services.InventarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,7 @@ public class VendedorInventarioController {
     // POST /vendedor/inventario/salida
     @PostMapping("/salida")
     @ResponseStatus(HttpStatus.CREATED)
-    public MovimientoResponseDTO registrarSalida(@Valid @RequestBody MovimientoRequestDTO dto) {
+    public MovimientoDTO.Response registrarSalida(@Valid @RequestBody MovimientoDTO.Request dto) {
         return inventarioService.registrarSalida(dto);
     }
 

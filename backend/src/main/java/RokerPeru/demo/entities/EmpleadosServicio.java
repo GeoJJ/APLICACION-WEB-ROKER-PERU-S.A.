@@ -14,6 +14,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class EmpleadosServicio {
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario", unique = true)
+    private Usuario usuario;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_empleado_servicio")

@@ -25,6 +25,7 @@ public class UsuarioService {
     public UsuarioDTO.Response crearUsuario(UsuarioDTO.Request dto) {
         validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), null);
         Rol rol = rolService.obtenerRol(dto.idRol());
+        validarAdministradorUnico(rol,null);
         Usuario usuario = dto.toEntity(rol);
 
         usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
@@ -57,6 +58,7 @@ public class UsuarioService {
         validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), id);
 
         Rol rol = rolService.obtenerRol(dto.idRol());
+        validarAdministradorUnico(rol,id);
         dto.applyTo(usuario, rol);
 
         if (dto.passwordUsuario() != null && !dto.passwordUsuario().isBlank()) {
@@ -70,7 +72,8 @@ public class UsuarioService {
     @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = obtenerUsuario(id);
-        // TODO: validar aquí que el usuario no tenga pedidos ni órdenes asociadas
+        if("ADMINISTRADOR".equalsIgnoreCase(usuario.getRol().getNombreRol()))throw new IllegalArgumentException("No puedes eliminar la cuenta administradora");
+        // Existing relational constraints protect linked records.
         usuarioRepository.delete(usuario);
         log.info("Usuario eliminado: id={}", id);
     }
@@ -87,6 +90,9 @@ public class UsuarioService {
     }
     // Métodos privados
 
+    private void validarAdministradorUnico(Rol rol,Long id){
+        if("ADMINISTRADOR".equalsIgnoreCase(rol.getNombreRol())&&usuarioRepository.findByRol_NombreRolIgnoreCase("ADMINISTRADOR").stream().anyMatch(u->!u.getIdUsuario().equals(id)))throw new IllegalArgumentException("Solo puede existir una cuenta de administrador");
+    }
     private void validarDuplicados(String correo, String documento, Long idIgnorado) {
         boolean correoExiste = (idIgnorado == null)
                 ? usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo)

@@ -1,8 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.movimiento.AlertaStockDTO;
-import RokerPeru.demo.dto.movimiento.MovimientoRequestDTO;
-import RokerPeru.demo.dto.movimiento.MovimientoResponseDTO;
+import RokerPeru.demo.dto.MovimientoDTO;
 import RokerPeru.demo.services.InventarioService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,14 +18,14 @@ public class AlmacenistaInventarioController {
     // POST /almacenista/inventario/ingreso
     @PostMapping("/ingreso")
     @ResponseStatus(HttpStatus.CREATED)
-    public MovimientoResponseDTO registrarIngreso(@Valid @RequestBody MovimientoRequestDTO dto) {
+    public MovimientoDTO.Response registrarIngreso(@Valid @RequestBody MovimientoDTO.Request dto) {
         return inventarioService.registrarIngreso(dto);
     }
 
     // POST /almacenista/inventario/ajuste
     @PostMapping("/ajuste")
     @ResponseStatus(HttpStatus.CREATED)
-    public MovimientoResponseDTO registrarAjuste(@Valid @RequestBody MovimientoRequestDTO dto) {
+    public MovimientoDTO.Response registrarAjuste(@Valid @RequestBody MovimientoDTO.Request dto) {
         return inventarioService.registrarAjuste(dto);
     }
 
@@ -39,13 +37,13 @@ public class AlmacenistaInventarioController {
 
     // GET /almacenista/inventario/movimientos
     @GetMapping("/movimientos")
-    public List<MovimientoResponseDTO> listarMovimientos() {
+    public List<MovimientoDTO.Response> listarMovimientos() {
         return inventarioService.listarMovimientos();
     }
 
     // GET /almacenista/inventario/alertas
     @GetMapping("/alertas")
-    public List<AlertaStockDTO> consultarAlertasStock() {
+    public List<MovimientoDTO.AlertaStockResponse> consultarAlertasStock() {
         return inventarioService.consultarAlertasStock();
     }
 }

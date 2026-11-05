@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class OrdenesServicio {
+ @Column(columnDefinition="TEXT") private String detalleSolicitud;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_orden_servicio")

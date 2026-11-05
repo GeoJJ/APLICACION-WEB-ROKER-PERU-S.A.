@@ -1,6 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.movimiento.MovimientoResponseDTO;
+import RokerPeru.demo.dto.MovimientoDTO;
 import RokerPeru.demo.services.InventarioService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class GerenteInventarioController {
 
     // GET /gerente/inventario/movimientos
     @GetMapping("/movimientos")
-    public List<MovimientoResponseDTO> listarMovimientos() {
+    public List<MovimientoDTO.Response> listarMovimientos() {
         return inventarioService.listarMovimientos();
     }
 }

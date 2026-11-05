@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.ProductoRequestDTO;
-import RokerPeru.demo.dto.ProductoResponseDTO;
+import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.services.ProductoService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,37 +19,37 @@ public class AdminProductoController {
     // POST /admin/productos
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductoResponseDTO crearProducto(@Valid @RequestBody ProductoRequestDTO dto) {
+    public ProductoDTO.Response crearProducto(@Valid @RequestBody ProductoDTO.Request dto) {
         return productoService.crearProducto(dto);
     }
 
     // GET /admin/productos
     @GetMapping
-    public List<ProductoResponseDTO> listarProductosAdmin() {
+    public List<ProductoDTO.Response> listarProductosAdmin() {
         return productoService.listarProducto();
     }
 
     // GET /admin/productos/buscar?texto=...
     @GetMapping("/buscar")
-    public List<ProductoResponseDTO> buscarProducto(@RequestParam String texto) {
+    public List<ProductoDTO.Response> buscarProducto(@RequestParam String texto) {
         return productoService.buscarProducto(texto);
     }
 
     // GET /admin/productos/{id}
     @GetMapping("/{id}")
-    public ProductoResponseDTO obtenerProductoAdmin(@PathVariable Long id) {
-        return productoService.obtenerProductoA(id);
+    public ProductoDTO.Response obtenerProductoAdmin(@PathVariable Long id) {
+        return productoService.buscarPorIdProducto(id);
     }
 
     // PUT /admin/productos/{id}
     @PutMapping("/{id}")
-    public ProductoResponseDTO actualizarProducto(@PathVariable Long id, @Valid @RequestBody ProductoRequestDTO dto) {
+    public ProductoDTO.Response actualizarProducto(@PathVariable Long id, @Valid @RequestBody ProductoDTO.Request dto) {
         return productoService.actualizarProducto(id, dto);
     }
 
     // PATCH /admin/productos/{id}/estado?estado=...
     @PatchMapping("/{id}/estado")
-    public ProductoResponseDTO cambiarEstadoProducto(@PathVariable Long id, @RequestParam String estado) {
+    public ProductoDTO.Response cambiarEstadoProducto(@PathVariable Long id, @RequestParam String estado) {
         return productoService.cambiarEstadoProducto(id, estado);
     }
 

@@ -1,7 +1,6 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.empleadoServicio.EmpleadoRequestDTO;
-import RokerPeru.demo.dto.empleadoServicio.EmpleadoResponseDTO;
+import RokerPeru.demo.dto.EmpleadoServicioDTO;
 import RokerPeru.demo.services.EmpleadoServicioService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -19,25 +18,25 @@ public class AdminEmpleadoServicioController {
     // POST /admin/empleados-servicio
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpleadoResponseDTO crearEmpleadoServicio(@Valid @RequestBody EmpleadoRequestDTO dto) {
+    public EmpleadoServicioDTO.Response crearEmpleadoServicio(@Valid @RequestBody EmpleadoServicioDTO.Request dto) {
         return empleadoServicioService.crearEmpleadoServicio(dto);
     }
 
     // GET /admin/empleados-servicio
     @GetMapping
-    public List<EmpleadoResponseDTO> listarEmpleadoServicio() {
+    public List<EmpleadoServicioDTO.Response> listarEmpleadoServicio() {
         return empleadoServicioService.listarEmpleadoServicio();
     }
 
     // GET /admin/empleados-servicio/buscar?texto=...
     @GetMapping("/buscar")
-    public List<EmpleadoResponseDTO> buscarEmpleadoServicio(@RequestParam String texto) {
-        return empleadoServicioService.buscarPorIdEmpleadoServicio(texto);
+    public List<EmpleadoServicioDTO.Response> buscarEmpleadoServicio(@RequestParam String texto) {
+        return empleadoServicioService.buscarEmpleadoServicio(texto);
     }
 
     // PUT /admin/empleados-servicio/{id}
     @PutMapping("/{id}")
-    public EmpleadoResponseDTO actualizarEmpleadoServicio(@PathVariable Long id, @Valid @RequestBody EmpleadoRequestDTO dto) {
+    public EmpleadoServicioDTO.Response actualizarEmpleadoServicio(@PathVariable Long id, @Valid @RequestBody EmpleadoServicioDTO.Request dto) {
         return empleadoServicioService.actualizarEmpleadoServicio(id, dto);
     }
 

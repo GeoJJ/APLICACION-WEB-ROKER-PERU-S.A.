@@ -158,6 +158,19 @@ public class OrdenServicioService {
                 .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
     }
 
+    @Transactional
+    public OrdenServicioDTO.ResponseCliente cancelarCliente(Long id,Long user) {
+        validarAccesoCliente(id,user); var o=obtenerOrden(id);
+        if (!"PENDIENTE".equals(o.getEstadoServicio())) throw new IllegalArgumentException("Solo puedes cancelar órdenes pendientes");
+        o.setEstadoServicio("CANCELADO"); return OrdenServicioDTO.ResponseCliente.fromEntity(o);
+    }
+    @Transactional(readOnly=true)
+    public List<OrdenServicioDTO.ResponseVendedor> listarParaPersonal(Long user) {
+        return ordenesRepository.findAll().stream().filter(o -> o.getAsignaciones().stream().anyMatch(a -> a.getEmpleado().getUsuario()!=null && a.getEmpleado().getUsuario().getIdUsuario().equals(user))).map(OrdenServicioDTO.ResponseVendedor::fromEntity).toList();
+    }
+    @Transactional(readOnly=true)
+    public OrdenServicioDTO.ResponseVendedor buscarParaPersonal(Long id,Long user) { return listarParaPersonal(user).stream().filter(o -> o.idOrdenServicio().equals(id)).findFirst().orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND)); }
+
     private OrdenesServicio obtenerOrdenConDetalles(Long id) {
         return ordenesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
@@ -169,7 +182,7 @@ public class OrdenServicioService {
     }
 
     private void validarAccesoCliente(Long idOrden, Long idCliente) {
-        boolean pertenece = ordenesRepository.existsByIdAndCliente_IdUsuario(idOrden, idCliente);
+        boolean pertenece = ordenesRepository.existsByIdOrdenServicioAndCliente_IdUsuario(idOrden, idCliente);
         if (!pertenece) {
             throw new RuntimeException("Acceso denegado: Esta orden no pertenece a este cliente");
         }

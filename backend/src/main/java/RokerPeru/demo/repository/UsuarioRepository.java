@@ -9,6 +9,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+ @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+ @Query("SELECT u FROM Usuario u WHERE u.idUsuario=:id")
+ java.util.Optional<Usuario> lockById(@Param("id") Long id);
+    @EntityGraph(attributePaths = "rol")
+    java.util.Optional<Usuario> findByCorreoUsuarioIgnoreCase(String correo);
 
     // validar duplicados
     boolean existsByCorreoUsuarioIgnoreCase(String correoUsuario);

@@ -84,6 +84,7 @@ public final class PedidoDTO {
 
     // Lo que ve el CLIENTE
     public record ResponseCliente(
+            Long idPedido,
             LocalDateTime fechaPedido,
             String serieComprobantePedido,
             String numeroComprobantePedido,
@@ -99,6 +100,7 @@ public final class PedidoDTO {
     ) {
         public static ResponseCliente fromEntity(Pedidos p) {
             return new ResponseCliente(
+                    p.getIdPedido(),
                     p.getFechaPedido(),
                     p.getSerieComprobantePedido(),
                     p.getNumeroComprobantePedido(),
@@ -171,8 +173,8 @@ public final class PedidoDTO {
                     p.getIdPedido(),
                     p.getEstadoPedido(),
                     p.getCliente() != null ? p.getCliente().getNombreUsuario() : "Desconocido",
-                    p.getCliente() != null ? p.getCliente().getDireccionUsuario() : "Sin dirección",
-                    p.getCliente() != null ? p.getCliente().getTelefonoUsuario() : "Sin teléfono",
+                    p.getDireccionEntrega()!=null?p.getDireccionEntrega():p.getCliente() != null ? p.getCliente().getDireccionUsuario() : "Sin dirección",
+                    p.getTelefonoEntrega()!=null?p.getTelefonoEntrega():p.getCliente() != null ? p.getCliente().getTelefonoUsuario() : "Sin teléfono",
                     p.getIncidentePedido(),
                     p.getFechaEntregaPedido()
             );

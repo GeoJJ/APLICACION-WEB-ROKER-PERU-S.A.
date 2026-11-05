@@ -40,6 +40,9 @@ public class Usuario {
     @Column(name = "password_usuario", nullable = false, length = 100)
     private String passwordUsuario;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean activo = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;

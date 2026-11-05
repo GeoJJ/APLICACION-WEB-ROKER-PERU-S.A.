@@ -1,33 +1,10 @@
 package RokerPeru.demo.controller;
-
-import RokerPeru.demo.dto.pedido.PedidoResponseDTO;
-import RokerPeru.demo.services.PedidoService;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/vendedor/pedidos")
-@RequiredArgsConstructor
+import RokerPeru.demo.dto.PedidoDTO; import RokerPeru.demo.services.PedidoService; import RokerPeru.demo.security.CurrentUser;
+import jakarta.validation.Valid; import java.util.List; import lombok.RequiredArgsConstructor; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/vendedor/pedidos") @RequiredArgsConstructor
 public class VendedorPedidoController {
-
-    private final PedidoService pedidoService;
-
-    // PUT /vendedor/pedidos/{idPedido}/confirmar
-    @PutMapping("/{idPedido}/confirmar")
-    public PedidoResponseDTO confirmarPedido(@PathVariable Long idPedido) {
-        return pedidoService.confirmarPedido(idPedido);
-    }
-
-    // GET /vendedor/pedidos
-    @GetMapping
-    public List<PedidoResponseDTO> listarPedidosVendedor() {
-        return pedidoService.listarPedidosVendedor();
-    }
-
-    // GET /vendedor/pedidos/{idPedido}
-    @GetMapping("/{idPedido}")
-    public PedidoResponseDTO buscarPedidosVendedor(@PathVariable Long idPedido) {
-        return pedidoService.buscarPedidosVendedor(idPedido);
-    }
+ private final PedidoService pedidoService; private final CurrentUser current;
+ @GetMapping public List<PedidoDTO.ResponseVendedor> listar() { return pedidoService.listarTodos(); }
+ @GetMapping("/{id}") public PedidoDTO.ResponseVendedor buscar(@PathVariable Long id) { return pedidoService.buscarVendedor(id); }
+ @PutMapping("/{id}/confirmar") public PedidoDTO.ResponseVendedor confirmar(@PathVariable Long id,@Valid @RequestBody PedidoDTO.RequestAsignacionVendedor dto) { return pedidoService.confirmarYAsignarPedido(id,dto,current.get().getIdUsuario()); }
 }

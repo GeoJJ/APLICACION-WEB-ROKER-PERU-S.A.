@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class MovimientosProducto {
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;
+    @Column(length = 150)
+    private String proveedor;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_movimiento_producto")

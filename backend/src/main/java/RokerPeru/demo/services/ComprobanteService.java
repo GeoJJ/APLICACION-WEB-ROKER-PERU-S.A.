@@ -27,10 +27,10 @@ public class ComprobanteService {
                 });
 
         // Le decimos a la BD que sume 1 al número actual
-        secuenciaRepository.incrementarNumero(serie);
+        secuencia.setUltimoNumero(secuencia.getUltimoNumero()+1);
 
         // Volvemos a leer el número actualizado
-        SecuenciaComprobante secuenciaActualizada = secuenciaRepository.findBySerie(serie).get();
+        SecuenciaComprobante secuenciaActualizada = secuencia;
         int nuevoNumero = secuenciaActualizada.getUltimoNumero();
 
         // Formateamos: "B002" + "-" + "00000001" (8 dígitos con ceros a la izquierda)

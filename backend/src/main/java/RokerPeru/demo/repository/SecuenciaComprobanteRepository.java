@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface SecuenciaComprobanteRepository extends JpaRepository<SecuenciaComprobante, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     Optional<SecuenciaComprobante> findBySerie(String serie);
 
     // Suma 1 directamente en la base de datos (seguro contra duplicados)

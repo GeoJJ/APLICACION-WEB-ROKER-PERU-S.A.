@@ -16,6 +16,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class Servicio {
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean activo = true;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_servicio")
