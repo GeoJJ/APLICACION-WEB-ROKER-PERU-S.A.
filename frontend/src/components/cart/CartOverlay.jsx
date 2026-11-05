@@ -1,0 +1,16 @@
+import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { useCart } from './CartProvider';
+import CartItems from './CartItems';
+import { money } from '@/data/backofficeStore';
+import Button from '@/components/ui/Button';
+function Drawer(){
+ const {items,count,subtotal,close,error}=useCart();const ref=useRef(null);
+ useEffect(()=>{const dialog=ref.current;const previous=document.body.style.overflow;dialog.showModal();document.body.style.overflow='hidden';return()=>{dialog.close();document.body.style.overflow=previous;};},[]);
+ return <dialog ref={ref} onCancel={close} aria-labelledby="cart-drawer-title" className="fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-dvh w-full max-w-[520px] border-0 bg-white p-0 shadow-2xl backdrop:bg-slate-950/40" onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right)close();}}}><div className="flex h-full flex-col"><div className="border-b border-gray-200 px-6 py-7"><div className="flex justify-between"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">Tu selección</p><button aria-label="Cerrar carrito" onClick={close} className="rounded-lg p-1 text-gray-500 hover:bg-gray-100"><X size={22}/></button></div><h2 id="cart-drawer-title" className="mt-3 text-2xl font-semibold">Tu carrito</h2><p className="mt-2 text-sm text-gray-500">Todo lo que necesitas para proteger tu espacio.</p></div><div className="min-h-0 flex-1 overflow-auto px-6">{error&&<p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}{items.length?<CartItems/>:<div className="py-20 text-center text-gray-500"><ShoppingBag size={40} className="mx-auto mb-4 text-brand"/><p>Tu carrito está vacío.</p><p className="mt-2 text-sm">Agrega productos desde el catálogo.</p></div>}</div><div className="border-t border-gray-200 bg-gray-50 p-6"><div className="flex items-end justify-between gap-4"><span className="text-sm text-gray-600">Subtotal · {count} unidades</span><strong className="text-2xl text-brand">{money(subtotal)}</strong></div><p className="mb-5 mt-3 text-xs leading-5 text-gray-500">Los productos se reservan al confirmar el pedido.</p><Button as={Link} to="/carrito" onClick={close} className="w-full gap-3">Continuar con la compra<ArrowRight size={18}/></Button></div></div></dialog>;
+}
+export default function CartOverlay(){
+ const {open,toast,openCart,dismissToast}=useCart();
+ return <>{toast&&!open&&<div role="status" className="fixed bottom-5 left-4 z-[80] flex w-[calc(100%-2rem)] max-w-sm items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-5 shadow-xl sm:left-6"><button onClick={dismissToast} aria-label="Cerrar aviso del carrito" className="absolute -left-2 -top-2 rounded-full border border-gray-200 bg-white p-1 text-gray-500"><X size={12}/></button><CheckCircle2 size={20} className="shrink-0 text-brand"/><div className="min-w-0 flex-1"><p className="text-xs font-semibold">{toast.error||'Agregado al carrito'}</p><p className="mt-1 truncate text-xs text-gray-500">{toast.name}</p></div><button onClick={openCart} className="shrink-0 rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white">Ver carrito</button></div>}{open&&<Drawer/>}</>;
+}

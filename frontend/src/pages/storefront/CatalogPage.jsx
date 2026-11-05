@@ -4,9 +4,10 @@ import Breadcrumb from "@/components/shared/Breadcrumb";
 import PageTitle from "@/components/shared/PageTitle";
 import RangeSlider from "@/components/ui/RangeSlider";
 import ProductCard from "@/components/features/catalog/ProductCard";
-import { PRODUCTS } from "@/data/products";
+import { useCatalog } from '@/hooks/useCatalog';
 
 export default function CatalogPage() {
+    const {items:PRODUCTS,loading,error}=useCatalog('products');
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("");
     const [priceRange, setPriceRange] = useState([0, 200]);
@@ -36,13 +37,13 @@ export default function CatalogPage() {
         }
 
         return result;
-    }, [search, category, sort, priceRange]);
+    }, [search, category, sort, priceRange, PRODUCTS]);
 
     return (
         <main className="bg-gray-50 min-h-screen pb-20">
             <div className="mx-auto max-w-[1280px] px-6 py-8">
                 {/* Breadcrumb */}
-                <Breadcrumb items={[{ label: "Productos" }]} />
+                {loading&&<p role="status" className="mb-4 text-gray-500">Cargando catálogo...</p>}{error&&<p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-red-700">{error}</p>}<Breadcrumb items={[{ label: "Productos" }]} />
 
                 {/* Título */}
                 <PageTitle as="h1" className="mb-8">Categorías</PageTitle>
