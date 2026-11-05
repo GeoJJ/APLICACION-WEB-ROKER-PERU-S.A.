@@ -46,6 +46,7 @@ out/
 storybook-static/
 
 # ----- TESTING Y COBERTURA -----
+.qa/
 coverage/
 .nyc_output/
 cypress/videos/
