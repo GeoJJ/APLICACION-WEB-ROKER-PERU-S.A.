@@ -2,19 +2,21 @@ import { Link, useLocation } from "react-router-dom";
 import { BarChart3, Users, Package, ShoppingCart, FileText, ClipboardList, LogOut } from "lucide-react";
 
 const menuConfig = {
-    admin: [
+staff: [{to:'/staff',icon:ClipboardList,label:'Mis servicios'}],
+    admin: [{to:'/admin/solicitudes',icon:FileText,label:'Solicitudes de servicios'},{to:'/admin/inventario',icon:Package,label:'Inventario'},
         { to: "/admin", icon: BarChart3, label: "DashBoard" },
         { to: "/admin/trabajadores", icon: Users, label: "Trabajadores" },
         { to: "/admin/productos", icon: Package, label: "Productos" },
         { to: "/admin/servicios", icon: ShoppingCart, label: "Servicios" },
         { to: "/admin/reportes", icon: FileText, label: "Reportes" },
+        {to:'/admin/proveedores',icon:Package,label:'Proveedores'},
     ],
     warehouse: [
         { to: "/warehouse", icon: BarChart3, label: "Inicio" },
         { to: "/warehouse/productos", icon: Package, label: "Productos" },
         { to: "/warehouse/ingresos", icon: LogOut, label: "Ingresos" },
     ],
-    seller: [
+    seller: [{to:'/seller/solicitudes',icon:FileText,label:'Solicitudes de servicios'},
         { to: "/seller", icon: BarChart3, label: "Inicio" },
         { to: "/seller/pedidos", icon: ClipboardList, label: "Pedidos" },
         { to: "/seller/ventas", icon: ShoppingCart, label: "Ventas" },
@@ -30,9 +32,8 @@ export default function BackOfficeSidebar({ role = "admin" }) {
     const menuItems = menuConfig[role] || menuConfig.admin;
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-gray-50">
-            <div className="h-16" /> {/* Espacio para el header */}
-            <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <aside className="border-r border-gray-200 bg-gray-50 md:fixed md:left-0 md:top-16 md:z-40 md:h-[calc(100vh-4rem)] md:w-64">
+            <nav className="flex gap-1 overflow-auto px-3 py-4 md:block md:h-full md:space-y-1">
                 {menuItems.map((item) => {
                     const isActive = location.pathname === item.to;
                     const Icon = item.icon;
@@ -40,7 +41,7 @@ export default function BackOfficeSidebar({ role = "admin" }) {
                         <Link
                             key={item.to}
                             to={item.to}
-                            className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-200"
+                            className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-200"
                                 }`}
                         >
                             <Icon size={20} />
