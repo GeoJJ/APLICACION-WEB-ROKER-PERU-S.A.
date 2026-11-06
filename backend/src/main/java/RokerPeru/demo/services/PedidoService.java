@@ -7,6 +7,10 @@ import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
+import RokerPeru.demo.exception.OperacionNoPermitidaException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
+import RokerPeru.demo.exception.ReglaNegocioException;
+import RokerPeru.demo.exception.StockInsuficienteException;
 import RokerPeru.demo.repository.PedidosRepository;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -52,17 +56,20 @@ public class PedidoService {
         // Asignamos a la entidad
         pedido.setSerieComprobantePedido(tipoComprobante.getSerie());
         pedido.setNumeroComprobantePedido(numeroGenerado);
-        // =========================================================================
 
         double montoTotal = 0.0;
 
         // Procesar cada detalle del pedido
         for (DetallePedidoDTO.Request detalleDto : dto.detalles()) {
             Producto producto = productoRepository.findById(detalleDto.idProducto())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleDto.idProducto()));
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Producto", detalleDto.idProducto()));
 
             if (producto.getStockProducto() < detalleDto.cantidadProducto()) {
-                throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombreProducto());
+                throw new StockInsuficienteException(
+                        producto.getNombreProducto(),
+                        producto.getStockProducto(),
+                        detalleDto.cantidadProducto()
+                );
             }
 
             DetallePedido detalle = detalleDto.toEntity(pedido, producto, producto.getPrecioProducto());
@@ -91,7 +98,7 @@ public class PedidoService {
 
         // Validar regla de negocio: solo se pueden procesar pedidos pendientes
         if (!"PENDIENTE".equals(pedido.getEstadoPedido())) {
-            throw new RuntimeException("Solo se pueden procesar pedidos que estén en estado PENDIENTE");
+            throw new OperacionNoPermitidaException("Solo se pueden procesar pedidos que estén en estado PENDIENTE");
         }
 
         // Obtener las entidades de usuario necesarias
@@ -100,7 +107,7 @@ public class PedidoService {
 
         // Validar que el usuario asignado tenga rol de repartidor
         if (delivery.getRol() == null || !"REPARTIDOR".equalsIgnoreCase(delivery.getRol().getNombreRol())) {
-            throw new RuntimeException("El usuario seleccionado no tiene el rol de REPARTIDOR");
+            throw new ReglaNegocioException("El usuario seleccionado no tiene el rol de REPARTIDOR");
         }
 
         // El vendedor se asigna a sí mismo al pedido
@@ -123,9 +130,8 @@ public class PedidoService {
     @Transactional
     public PedidoDTO.ResponseRepartidor actualizarEstadoRepartidor(Long idPedido, Long idRepartidorLogueado, PedidoDTO.RequestActualizacionRepartidor dto) {
         // Validar que el pedido esté asignado a ESTE repartidor
-        boolean esSuPedido = pedidosRepository.existsByIdAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);
-        if (!esSuPedido) {
-            throw new RuntimeException("Acceso denegado: Este pedido no está asignado a ti");
+        boolean esSuPedido = pedidosRepository.existsByIdPedidoAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);        if (!esSuPedido) {
+            throw new OperacionNoPermitidaException("Acceso denegado: Este pedido no está asignado a ti");
         }
 
         // Obtener el pedido

@@ -5,6 +5,9 @@ import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
+import RokerPeru.demo.exception.OperacionNoPermitidaException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
+import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.repository.OrdenesServicioRepository;
 import RokerPeru.demo.repository.ServicioRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -24,7 +27,7 @@ public class OrdenServicioService {
     private final OrdenesServicioRepository ordenesRepository;
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ComprobanteService  comprobanteService;
+    private final ComprobanteService comprobanteService;
 
     // Flujo del cliente para crear orden de servicio
     @Transactional
@@ -64,11 +67,11 @@ public class OrdenServicioService {
 
     @Transactional
     public OrdenServicioDTO.ResponseVendedor confirmarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
-        // 1. Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
+        // Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
         OrdenesServicio orden = obtenerOrdenConDetalles(idOrden);
 
         if (!"PENDIENTE".equals(orden.getEstadoServicio())) {
-            throw new RuntimeException("Solo se pueden confirmar órdenes en estado PENDIENTE");
+            throw new OperacionNoPermitidaException("Solo se pueden confirmar órdenes en estado PENDIENTE");
         }
 
         int personalRequerido = 0;
@@ -82,14 +85,13 @@ public class OrdenServicioService {
         int personalAsignado = orden.getAsignaciones() != null ? orden.getAsignaciones().size() : 0;
 
         if (personalAsignado < personalRequerido) {
-            int faltantes = personalRequerido - personalAsignado;
-            throw new RuntimeException(
-                    String.format("No se puede confirmar la orden. El servicio requiere %d personas, pero solo se han asignado %d. Faltan %d empleados.",
-                            personalRequerido, personalAsignado, faltantes)
-            );
+            throw new ReglaNegocioException(String.format(
+                    "No se puede confirmar la orden. El servicio requiere %d personas, pero solo se han asignado %d.",
+                    personalRequerido, personalAsignado
+            ));
         }
 
-        // 3. Si pasa la validación, aplicamos los cambios y confirmamos
+        // Si pasa la validación, aplicamos los cambios y confirmamos
         dto.applyTo(orden); // Esto cambia el estado a "CONFIRMADO" y agrega incidencias si hay
 
         OrdenesServicio actualizado = ordenesRepository.save(orden);
@@ -107,7 +109,7 @@ public class OrdenServicioService {
         OrdenesServicio orden = obtenerOrden(idOrden);
 
         if ("COMPLETADO".equals(orden.getEstadoServicio())) {
-            throw new RuntimeException("No se puede cancelar una orden ya completada");
+            throw new OperacionNoPermitidaException("No se puede cancelar una orden ya completada");
         }
 
         dto.applyTo(orden);
@@ -155,12 +157,12 @@ public class OrdenServicioService {
 
     private OrdenesServicio obtenerOrden(Long id) {
         return ordenesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", id));
     }
 
     private OrdenesServicio obtenerOrdenConDetalles(Long id) {
         return ordenesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", id));
     }
 
     private Usuario obtenerUsuario(Long id) {
@@ -169,9 +171,9 @@ public class OrdenServicioService {
     }
 
     private void validarAccesoCliente(Long idOrden, Long idCliente) {
-        boolean pertenece = ordenesRepository.existsByIdAndCliente_IdUsuario(idOrden, idCliente);
+        boolean pertenece = ordenesRepository.existsByIdOrdenServicioAndCliente_IdUsuario(idOrden, idCliente);
         if (!pertenece) {
-            throw new RuntimeException("Acceso denegado: Esta orden no pertenece a este cliente");
+            throw new OperacionNoPermitidaException("Acceso denegado: Esta orden no pertenece a este cliente");
         }
     }
 }

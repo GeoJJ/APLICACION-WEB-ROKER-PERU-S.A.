@@ -2,6 +2,8 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.RolDTO;
 import RokerPeru.demo.entities.Rol;
+import RokerPeru.demo.exception.ConflictoException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.RolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +23,7 @@ public class RolService {
     public RolDTO.Response crearRol(RolDTO.Request dto) {
         if (rolRepository.existsByNombreRolIgnoreCase(dto.nombreRol())) {
             log.warn("Creación de rol rechazada, nombre duplicado: {}", dto.nombreRol());
-            throw new RuntimeException("Ya existe un rol con el nombre: " + dto.nombreRol());
+            throw new ConflictoException("Ya existe un rol con el nombre: " + dto.nombreRol());
         }
         Rol guardado = rolRepository.save(dto.toEntity());
         log.info("Rol creado: id={}, nombre={}", guardado.getIdRol(), dto.nombreRol());
@@ -44,7 +46,7 @@ public class RolService {
 
         if (rolRepository.existsByNombreRolIgnoreCaseAndIdRolNot(dto.nombreRol(), id)) {
             log.warn("Actualización de rol id={} rechazada, nombre duplicado: {}", id, dto.nombreRol());
-            throw new RuntimeException("Ya existe otro rol con el nombre: " + dto.nombreRol());
+            throw new ConflictoException("Ya existe otro rol con el nombre: " + dto.nombreRol());
         }
         String nombreAnterior = rol.getNombreRol();
         dto.applyTo(rol);
@@ -66,7 +68,7 @@ public class RolService {
         return rolRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Rol no encontrado: id={}", id);
-                    return new RuntimeException("Rol no encontrado: " + id);
+                    return new RecursoNoEncontradoException("Rol", id);
                 });
     }
 }

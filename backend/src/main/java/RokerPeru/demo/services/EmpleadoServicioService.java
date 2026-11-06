@@ -2,6 +2,7 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.EmpleadoServicioDTO;
 import RokerPeru.demo.entities.EmpleadosServicio;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.EmpleadosServicioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,6 @@ public class EmpleadoServicioService {
 
     private EmpleadosServicio obtenerEmpleadoServicio(Long id) {
         return empleadosRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Empleado de servicio no encontrado: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Empleado de servicio", id));
     }
 }
