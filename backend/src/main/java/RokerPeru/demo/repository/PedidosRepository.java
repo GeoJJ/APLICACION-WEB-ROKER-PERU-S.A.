@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PedidosRepository extends JpaRepository<Pedidos, Long> {
-    boolean existsByIdAndDelivery_IdUsuario(Long idPedido, Long idUsuario);
+    boolean existsByIdPedidoAndDelivery_IdUsuario(Long idPedido, Long idDelivery);
 
     @EntityGraph(attributePaths = {"vendedor", "delivery", "detallePedidos", "detallePedidos.producto"})
     List<Pedidos> findByCliente_IdUsuarioOrderByFechaPedidoDesc(Long idCliente);

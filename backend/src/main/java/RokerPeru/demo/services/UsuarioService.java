@@ -3,6 +3,7 @@ package RokerPeru.demo.services;
 import RokerPeru.demo.dto.UsuarioDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.entities.Usuario;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +110,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Usuario no encontrado: id={}", id);
-                    return new RuntimeException("Usuario no encontrado: " + id);
+                    return new RecursoNoEncontradoException("Usuario", id);
                 });
     }
 }

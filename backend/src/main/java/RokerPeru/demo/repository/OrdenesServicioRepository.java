@@ -16,8 +16,7 @@ public interface OrdenesServicioRepository extends JpaRepository<OrdenesServicio
     @EntityGraph(attributePaths = {"cliente", "servicio"})
     List<OrdenesServicio> findByEstadoServicioInOrderByFechaOrdenServicioDesc(List<String> estados);
 
-    boolean existsByIdAndCliente_IdUsuario(Long idOrden, Long idCliente);
-
+    boolean existsByIdOrdenServicioAndCliente_IdUsuario(Long idOrdenServicio, Long idCliente);
     @EntityGraph(attributePaths = {
             "cliente", "servicio", "vendedor", "auxiliar",
             "asignaciones", "asignaciones.empleado"

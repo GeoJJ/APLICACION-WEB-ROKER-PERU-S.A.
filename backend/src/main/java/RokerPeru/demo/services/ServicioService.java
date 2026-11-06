@@ -2,6 +2,7 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.ServicioDTO;
 import RokerPeru.demo.entities.Servicio;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.ServicioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +77,6 @@ public class ServicioService {
     // Métodos privados
     private Servicio obtenerServicio(Long id) {
         return servicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Servicio", id));
     }
 }

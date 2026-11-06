@@ -4,6 +4,8 @@ import RokerPeru.demo.dto.AsignacionDTO;
 import RokerPeru.demo.entities.Asignaciones;
 import RokerPeru.demo.entities.EmpleadosServicio;
 import RokerPeru.demo.entities.OrdenesServicio;
+import RokerPeru.demo.exception.ConflictoException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.AsignacionesRepository;
 import RokerPeru.demo.repository.EmpleadosServicioRepository;
 import RokerPeru.demo.repository.OrdenesServicioRepository;
@@ -27,7 +29,7 @@ public class AsignacionService {
     @Transactional
     public AsignacionDTO.Response crearAsignacion(AsignacionDTO.RequestAsignacion dto) {
         OrdenesServicio orden = ordenesRepository.findById(dto.idOrdenServicio())
-                .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + dto.idOrdenServicio()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", dto.idOrdenServicio()));
 
         EmpleadosServicio empleado = empleadosRepository.findById(dto.idEmpleado())
                 .orElseThrow(() -> new RuntimeException("Empleado de servicio no encontrado: " + dto.idEmpleado()));
@@ -35,7 +37,7 @@ public class AsignacionService {
         // Validar que no esté duplicada la asignación
         if (asignacionesRepository.existsByOrdenServicio_IdOrdenServicioAndEmpleado_IdEmpleadoServicio(
                 dto.idOrdenServicio(), dto.idEmpleado())) {
-            throw new RuntimeException("Este empleado ya está asignado a esta orden");
+            throw new ConflictoException("Este empleado ya está asignado a esta orden");
         }
 
         Asignaciones asignacion = dto.toEntity(orden, empleado);

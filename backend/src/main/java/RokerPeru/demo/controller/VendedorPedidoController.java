@@ -1,33 +1,35 @@
 package RokerPeru.demo.controller;
 
-import RokerPeru.demo.dto.pedido.PedidoResponseDTO;
+import RokerPeru.demo.dto.PedidoDTO;
 import RokerPeru.demo.services.PedidoService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Vendedor: gestiona los pedidos pendientes. Confirma, completa los datos faltantes y asigna al repartidor.
+ * TODO: cuando exista el login, idVendedor debe salir del usuario autenticado y no de un parámetro.
+ */
 @RestController
 @RequestMapping("/vendedor/pedidos")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('VENDEDOR')")
 public class VendedorPedidoController {
 
     private final PedidoService pedidoService;
 
-    // PUT /vendedor/pedidos/{idPedido}/confirmar
-    @PutMapping("/{idPedido}/confirmar")
-    public PedidoResponseDTO confirmarPedido(@PathVariable Long idPedido) {
-        return pedidoService.confirmarPedido(idPedido);
-    }
-
     // GET /vendedor/pedidos
     @GetMapping
-    public List<PedidoResponseDTO> listarPedidosVendedor() {
-        return pedidoService.listarPedidosVendedor();
+    public ResponseEntity<List<PedidoDTO.ResponseVendedor>> listarPedidosParaGestionar() {
+        return ResponseEntity.ok(pedidoService.listarPedidosParaGestionar());
     }
 
-    // GET /vendedor/pedidos/{idPedido}
-    @GetMapping("/{idPedido}")
-    public PedidoResponseDTO buscarPedidosVendedor(@PathVariable Long idPedido) {
-        return pedidoService.buscarPedidosVendedor(idPedido);
+    // PUT /vendedor/pedidos/{idPedido}/confirmar?idVendedor=...
+    @PutMapping("/{idPedido}/confirmar")
+    public ResponseEntity<PedidoDTO.ResponseVendedor> confirmarYAsignarPedido(@PathVariable Long idPedido, @Valid @RequestBody PedidoDTO.RequestAsignacionVendedor dto, @RequestParam Long idVendedor) {
+        return ResponseEntity.ok(pedidoService.confirmarYAsignarPedido(idPedido, dto, idVendedor));
     }
 }

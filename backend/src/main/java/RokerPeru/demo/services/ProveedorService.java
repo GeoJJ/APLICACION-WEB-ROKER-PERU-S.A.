@@ -2,6 +2,8 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.ProveedorDTO;
 import RokerPeru.demo.entities.Proveedores;
+import RokerPeru.demo.exception.ConflictoException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.ProveedoresRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +23,7 @@ public class ProveedorService {
     @Transactional
     public ProveedorDTO.Response crearProveedor(ProveedorDTO.Request dto) {
         if (proveedoresRepository.existsByRucProveedor(dto.rucProveedor())) {
-            throw new RuntimeException("Ya existe un proveedor con el RUC: " + dto.rucProveedor());
+            throw new ConflictoException("Ya existe un proveedor con el RUC: " + dto.rucProveedor());
         }
 
         Proveedores guardado = proveedoresRepository.save(dto.toEntity());
@@ -51,7 +53,7 @@ public class ProveedorService {
         Proveedores proveedor = obtenerProveedor(id);
 
         if (proveedoresRepository.existsByRucProveedorAndIdProveedorNot(dto.rucProveedor(), id)) {
-            throw new RuntimeException("Ya existe otro proveedor con el RUC: " + dto.rucProveedor());
+            throw new ConflictoException("Ya existe otro proveedor con el RUC: " + dto.rucProveedor());
         }
 
         dto.applyTo(proveedor);
@@ -70,6 +72,5 @@ public class ProveedorService {
     // Métodos privados
     private Proveedores obtenerProveedor(Long id) {
         return proveedoresRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id));
-    }
+                .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor", id));     }
 }

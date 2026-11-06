@@ -3,6 +3,9 @@ package RokerPeru.demo.services;
 import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Proveedores;
+import RokerPeru.demo.exception.ConflictoException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
+import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.ProveedoresRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Slf4j
 @Service
@@ -24,7 +29,7 @@ public class ProductoService {
     @Transactional
     public ProductoDTO.Response crearProducto(ProductoDTO.Request dto) {
         if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), null)) {
-            throw new RuntimeException("Ya existe un producto con el código: " + dto.codigoProducto());
+            throw new ConflictoException("Ya existe un producto con el código: " + dto.codigoProducto());
         }
 
         Producto guardado = productoRepository.save(dto.toEntity(obtenerProveedor(dto.idProveedor())));
@@ -55,7 +60,7 @@ public class ProductoService {
         Producto producto = obtenerProducto(id);
 
         if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), id)) {
-            throw new RuntimeException("Ya existe un producto con el código: " + dto.codigoProducto());
+            throw new ConflictoException("Ya existe un producto con el código: " + dto.codigoProducto());
         }
 
         dto.applyTo(producto, obtenerProveedor(dto.idProveedor()));
@@ -75,7 +80,7 @@ public class ProductoService {
     public ProductoDTO.Response cambiarEstadoProducto(Long id, String estado) {
         String nuevoEstado = estado != null ? estado.trim().toUpperCase() : null;
         if (nuevoEstado == null || nuevoEstado.isBlank()) {
-            throw new RuntimeException("El estado es obligatorio");
+            throw new ReglaNegocioException("El estado del producto es obligatorio y no puede estar vacío");
         }
 
         Producto producto = obtenerProducto(id);
@@ -100,11 +105,10 @@ public class ProductoService {
     //Metodos privados
     private Proveedores obtenerProveedor(Long idProveedor) {
         return proveedoresRepository.findById(idProveedor)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + idProveedor));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor", idProveedor));
     }
 
     private Producto obtenerProducto(Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
-    }
+                .orElseThrow(() -> new RecursoNoEncontradoException("Producto", id));     }
 }
