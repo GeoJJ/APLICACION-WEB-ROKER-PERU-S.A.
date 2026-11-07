@@ -3,13 +3,17 @@ import { BarChart3, Users, Package, ShoppingCart, FileText, ClipboardList, LogOu
 
 const menuConfig = {
 staff: [{to:'/staff',icon:ClipboardList,label:'Mis servicios'}],
-    manager: [{to:'/manager/solicitudes',icon:FileText,label:'Solicitudes de servicios'},{to:'/manager/inventario',icon:Package,label:'Inventario'},
-        { to: "/manager", icon: BarChart3, label: "Resumen gerencial" },
-        { to: "/manager/trabajadores", icon: Users, label: "Trabajadores" },
-        { to: "/manager/productos", icon: Package, label: "Productos" },
-        { to: "/manager/servicios", icon: ShoppingCart, label: "Servicios" },
-        { to: "/manager/reportes", icon: FileText, label: "Reportes" },
-        {to:'/manager/proveedores',icon:Package,label:'Proveedores'},
+    manager: [
+        {to:'/manager',icon:BarChart3,label:'Resumen gerencial'},
+        {to:'/manager/inventario',icon:Package,label:'Inventario'},
+        {to:'/manager/reportes',icon:FileText,label:'Reportes'},
+    ],
+    admin: [
+        {to:'/admin',icon:BarChart3,label:'Resumen administrativo'},
+        {to:'/admin/trabajadores',icon:Users,label:'Trabajadores'},
+        {to:'/admin/productos',icon:Package,label:'Productos'},
+        {to:'/admin/servicios',icon:ShoppingCart,label:'Servicios'},
+        {to:'/admin/proveedores',icon:Package,label:'Proveedores'},
     ],
     warehouse: [
         { to: "/warehouse", icon: BarChart3, label: "Inicio" },

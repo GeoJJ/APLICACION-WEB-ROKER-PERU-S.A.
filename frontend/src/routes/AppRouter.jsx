@@ -1,8 +1,9 @@
+import AdministrationDashboardPage from '@/pages/backoffice/admin/AdministrationDashboardPage';
 import MovementsPage from '@/pages/backoffice/warehouse/MovementsPage';
 import CartPage from '@/pages/storefront/CartPage';
 import ServiceRequestPage from '@/pages/storefront/ServiceRequestPage';
 import ServiceRequestsPage from '@/pages/storefront/ServiceRequestsPage';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import PublicLayout from '@/components/layout/storefront/PublicLayout';
 import AuthLayout from '@/components/layout/auth/AuthLayout';
 import HomePage from '@/pages/storefront/HomePage';
@@ -24,7 +25,7 @@ import Entries from '@/pages/backoffice/warehouse/StockEntriesPage';
 import Reports from '@/pages/backoffice/admin/Reportes';
 import StaffPage from '@/pages/backoffice/staff/StaffPage';
 export default function AppRouter() {
- return <Routes><Route path="/admin/*" element={<Navigate to="/manager" replace />} />
+ return <Routes>
   <Route element={<PublicLayout />}>
    <Route path="/carrito" element={<CartPage />} /><Route path="/servicios/:id/solicitar" element={<ServiceRequestPage />} /><Route element={<RequireRole role="customer" />}><Route path="/mis-solicitudes" element={<ServiceRequestsPage />} /></Route>
    <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} /><Route path="/servicios" element={<ServicesPage />} /><Route path="/nosotros" element={<AboutPage />} /><Route path="/contacto" element={<ContactPage />} />
@@ -33,8 +34,14 @@ export default function AppRouter() {
   </Route>
   <Route element={<AuthLayout />}><Route path="/login" element={<LoginPage />} /><Route path="/register" element={<RegisterPage />} /></Route>
   <Route element={<RequireRole role="manager" />}><Route element={<BackOfficeLayout role="manager" />}>
-   <Route path="/manager" element={<Dashboard />} /><Route path="/manager/solicitudes" element={<ServiceRequestsPage management />} /><Route path="/manager/inventario" element={<MovementsPage />} /><Route path="/manager/reportes" element={<Reports />} />
-   <Route path="/manager/trabajadores" element={<Management key="workers" kind="workers" />} /><Route path="/manager/productos" element={<Management key="products" kind="products" />} /><Route path="/manager/servicios" element={<Management key="services" kind="services" />} /><Route path="/manager/proveedores" element={<Management key="providers" kind="providers" />} />
+   <Route path="/manager" element={<Dashboard />} /><Route path="/manager/inventario" element={<MovementsPage />} /><Route path="/manager/reportes" element={<Reports />} />
+  </Route></Route>
+  <Route element={<RequireRole role="admin" />}><Route element={<BackOfficeLayout role="admin" />}>
+   <Route path="/admin" element={<AdministrationDashboardPage />} />
+   <Route path="/admin/trabajadores" element={<Management key="workers" kind="workers" />} />
+   <Route path="/admin/productos" element={<Management key="products" kind="products" />} />
+   <Route path="/admin/servicios" element={<Management key="services" kind="services" />} />
+   <Route path="/admin/proveedores" element={<Management key="providers" kind="providers" />} />
   </Route></Route>
   <Route element={<RequireRole role="warehouse" />}><Route element={<BackOfficeLayout role="warehouse" />}>
    <Route path="/warehouse" element={<Stock />} /><Route path="/warehouse/productos" element={<Management kind="products" readonly />} /><Route path="/warehouse/ingresos" element={<Entries />} />
