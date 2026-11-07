@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import BackOfficeHeader from "./BackOfficeHeader";
-import BackOfficeSidebar from "./BackOfficeSidebar";
+import BackOfficeSidebar from "./BackOfficeSideBar";
 import PublicFooter from '../storefront/PublicFooter';
 import { useBackOffice } from './BackOfficeProvider';
 import { ROLES } from '@/data/roles';

@@ -1,4 +1,5 @@
 export const ROLES=[
+ {id:'admin',code:'ADMINISTRADOR',label:'Administrador',home:'/admin',color:'bg-indigo-600'},
  {id:'manager',code:'GERENTE_GENERAL',label:'Gerente general',home:'/manager',color:'bg-blue-600'},
  {id:'warehouse',code:'ALMACENISTA',label:'Almacenista',home:'/warehouse',color:'bg-green-600'},
  {id:'seller',code:'VENDEDOR',label:'Vendedor',home:'/seller',color:'bg-purple-600'},
