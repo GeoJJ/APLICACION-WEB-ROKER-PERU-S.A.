@@ -1,0 +1,4 @@
+import {UserRound} from 'lucide-react';
+import {SectionHeader,Panel,Field} from '@/components/shared/ManagementUI';
+import Button from '@/components/ui/Button';
+export default function ProfilePage(){return <div className="mx-auto max-w-3xl px-6 py-12"><SectionHeader icon={UserRound} title="Mi perfil" description="Datos personales y de contacto"/><Panel><p role="status" className="mb-6 rounded-xl bg-blue-50 p-4 text-sm text-brand">La edición del perfil estará disponible cuando el backend incorpore autenticación. No hay una sesión iniciada.</p><div className="grid gap-5 sm:grid-cols-2">{['Nombre completo','Correo electrónico','Teléfono','Dirección'].map(label=><Field key={label} label={label}><input className="bo-input" disabled placeholder="Sin sesión iniciada"/></Field>)}</div><Button className="mt-6" disabled>Guardar cambios</Button></Panel></div>;}
