@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Calendar } from "lucide-react";
 import Button from "@/components/ui/Button";
 
@@ -17,16 +18,17 @@ export default function ServiceCard({ service }) {
             <div className="flex flex-col gap-2 p-4">
                 <div>
                     <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                        Nombre del servicio
+                        {service.name}
                     </h3>
                     <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
-                        descripcion del servicio
+                        {service.description}
                     </p>
                 </div>
 
                 <div className="mt-auto pt-2">
-                    <p className="text-lg font-bold text-brand">S/.{service.price.toFixed(2)}</p>
+<p className="text-xs text-gray-500">Cotización según tu ambiente</p>
                     <Button
+                        as={Link} to={`/servicios/${encodeURIComponent(service.id)}/solicitar`}
                         variant="secondary"
                         size="sm"
                         className="mt-2 w-full text-sm"
