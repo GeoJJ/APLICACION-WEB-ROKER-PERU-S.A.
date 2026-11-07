@@ -1,8 +1,10 @@
+import { useCart } from '@/components/cart/CartProvider';
 import { ShoppingCart } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
 export default function ProductCard({ product }) {
+    const {add}=useCart();
     let stockBadge = null;
     if (product.stock === 0) {
         stockBadge = <Badge variant="danger" className="text-xs px-2 py-0.5">Agotado</Badge>;
@@ -28,10 +30,10 @@ export default function ProductCard({ product }) {
             <div className="flex flex-col gap-2 p-4">
                 <div>
                     <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                        Nombre del Producto
+                        {product.name}
                     </h3>
                     <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
-                        descripcion del producto
+                        {product.category}
                     </p>
                 </div>
 
@@ -41,6 +43,7 @@ export default function ProductCard({ product }) {
                         size="sm"
                         className="mt-2 w-full text-sm"
                         disabled={product.stock === 0}
+                        onClick={()=>add(product)}
                     >
                         <ShoppingCart size={16} className="mr-1.5" />
                         Agregar
