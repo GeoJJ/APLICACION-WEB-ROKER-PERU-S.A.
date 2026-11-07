@@ -1,0 +1,7 @@
+import { useRef } from 'react';
+export default function SignaturePad({ value, onChange }) {
+ const canvas = useRef(null);
+ const drawing = useRef(false);
+ function point(e) { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) * 600 / r.width, (e.clientY - r.top) * 180 / r.height]; }
+ return <div><canvas ref={canvas} width="600" height="180" aria-label="Dibujar firma del cliente" className="h-40 w-full touch-none rounded-xl border-2 border-dashed border-gray-300 bg-gray-50" onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); drawing.current = true; const ctx = canvas.current.getContext('2d'); ctx.beginPath(); ctx.moveTo(...point(e)); }} onPointerMove={e => { if (!drawing.current) return; const ctx = canvas.current.getContext('2d'); ctx.strokeStyle = '#00428a'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineTo(...point(e)); ctx.stroke(); }} onPointerUp={() => { if (drawing.current) onChange(canvas.current.toDataURL('image/png')); drawing.current = false; }} onPointerCancel={() => { drawing.current = false; }} /><div className="mt-2 flex justify-between text-xs text-gray-500"><span>{value ? 'Firma capturada' : 'Dibuja con el mouse o con el dedo'}</span><button type="button" className="text-brand underline" onClick={() => { canvas.current.getContext('2d').clearRect(0, 0, 600, 180); onChange(''); }}>Limpiar firma</button></div></div>;
+}
