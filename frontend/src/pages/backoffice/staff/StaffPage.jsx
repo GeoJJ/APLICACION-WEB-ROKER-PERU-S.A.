@@ -1,0 +1,12 @@
+import { useState } from 'react';
+import { ClipboardList } from 'lucide-react';
+import { useBackOffice } from '@/components/layout/backoffice/BackOfficeProvider';
+import { SectionHeader, Panel, Modal, Field, SearchBox } from '@/components/shared/ManagementUI';
+import DataTable from '@/components/shared/DataTable';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+export default function StaffPage() {
+ const {data,update,readOnly}=useBackOffice();const [search,setSearch]=useState('');const [draft,setDraft]=useState(null);const [busy,setBusy]=useState(false);
+ async function save(e){e.preventDefault();setBusy(true);if(await update(old=>({...old,orders:old.orders.map(o=>o.id===draft.id?draft:o)})))setDraft(null);setBusy(false);}
+ return <><SectionHeader icon={ClipboardList} title="Mis servicios asignados" description="Consulta tus órdenes y registra el avance del servicio." /><Panel><div className="mb-6"><SearchBox value={search} onChange={setSearch} placeholder="Buscar servicio o cliente..." /></div><DataTable rows={data.orders.filter(o=>`${o.concepto} ${o.cliente}`.toLowerCase().includes(search.toLowerCase()))} columns={[{key:'id',label:'Orden'},{key:'concepto',label:'Servicio'},{key:'cliente',label:'Cliente'},{key:'fecha',label:'Fecha'},{key:'estado',label:'Estado',render:o=><Badge variant={o.estado==='Completado'?'success':'info'}>{o.estado}</Badge>},{key:'action',label:'Acción',render:o=><Button variant="outline" size="sm" onClick={()=>setDraft({...o})}>Ver</Button>}]} /></Panel>{draft&&<Modal title={`Servicio ${draft.id}`} onClose={()=>setDraft(null)}><form onSubmit={save} className="grid gap-5"><p>{draft.concepto} · {draft.cliente}</p><p className="text-sm text-gray-500">{draft.direccion}</p>{draft.detalleSolicitud&&<p className="whitespace-pre-wrap rounded-xl bg-blue-50 p-4 text-sm">{draft.detalleSolicitud}</p>}<Field label="Estado"><select className="bo-input" disabled={['Completado','Cancelado'].includes(draft.estado)} value={draft.estado} onChange={e=>setDraft({...draft,estado:e.target.value})}><option>En camino</option><option>Completado</option>{draft.estado==='Cancelado'&&<option>Cancelado</option>}</select></Field><Field label="Observaciones"><textarea className="bo-input" value={draft.observaciones||''} onChange={e=>setDraft({...draft,observaciones:e.target.value})} /></Field><Button type="submit" disabled={readOnly||busy||['Completado','Cancelado'].includes(data.orders.find(o=>o.id===draft.id)?.estado)}>{busy?'Guardando...':'Guardar avance'}</Button></form></Modal>}</>;
+}
