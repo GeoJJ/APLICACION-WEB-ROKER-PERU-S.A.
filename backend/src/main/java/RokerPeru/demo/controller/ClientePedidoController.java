@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/cliente/pedidos")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173") //Necesario para que permita recibir informacion del fronted por politica de seguridad
 @PreAuthorize("hasRole('CLIENTE')")
 public class ClientePedidoController {
 

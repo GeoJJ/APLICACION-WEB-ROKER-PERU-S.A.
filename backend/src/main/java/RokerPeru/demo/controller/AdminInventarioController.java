@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/inventario")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173") //Necesario para que permita recibir informacion del fronted por politica de seguridad
 @PreAuthorize("hasRole('ADMINISTRADOR')")
 public class AdminInventarioController {
 

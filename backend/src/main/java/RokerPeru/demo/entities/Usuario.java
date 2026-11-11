@@ -5,7 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// --- NUEVAS IMPORTACIONES DE SPRING SECURITY ---
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -13,7 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Usuario {
+public class Usuario implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -40,7 +46,7 @@ public class Usuario {
     @Column(name = "password_usuario", nullable = false, length = 100)
     private String passwordUsuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) // <-- Cambiar a EAGER es vital para que Spring lea el rol al iniciar sesión
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 
@@ -49,4 +55,38 @@ public class Usuario {
 
     @OneToMany(mappedBy = "vendedor")
     private List<Pedidos> pedidosComoVendedor = new ArrayList<>();
+
+    // metodos de seguridad de Spring Security junto JWT
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // TRUCO VITAL: Spring Security espera que los roles empiecen con "ROLE_" 
+        // cuando usas @PreAuthorize("hasRole(...)")
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.rol.getNombreRol()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passwordUsuario; // Le decimos a Spring dónde está tu contraseña
+    }
+
+    @Override
+    public String getUsername() {
+        return this.correoUsuario; // Le decimos a Spring que usamos el correo para el login
+    }
+
+    // Los siguientes 4 métodos validan si la cuenta está activa. 
+    // Por ahora los dejamos en 'true' (siempre activos) posteriormente podemos
+    // decidir lo que pasa cuando la cuenta expira o se bloquea o cambia permisos
+    // o tiene un fallo.
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }

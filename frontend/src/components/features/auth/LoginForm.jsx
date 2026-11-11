@@ -7,6 +7,8 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
+
+
 export default function LoginForm() {
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -69,7 +71,7 @@ export default function LoginForm() {
 
 
 
-                <Button type="submit" className="w-full" disabled={true}>
+                <Button type="submit" className="w-full">
                     {isLoading ? "Ingresando..." : "Iniciar Sesión"}
                 </Button>
             </form>

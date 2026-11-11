@@ -5,26 +5,29 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import RokerPeru.demo.entities.Usuario;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+@Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    // validar duplicados
+    // --- MÉTODO NUEVO PARA EL LOGIN ---
+    Optional<Usuario> findByCorreoUsuario(String correoUsuario);
+
+    // --- MÉTODOS ANTERIORES ---
     boolean existsByCorreoUsuarioIgnoreCase(String correoUsuario);
 
     boolean existsByNumeroDocumentoUsuario(String numeroDocumentoUsuario);
 
-    // validar duplicados ignorando el propio registro
     boolean existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(String correoUsuario, Long idUsuario);
 
     boolean existsByNumeroDocumentoUsuarioAndIdUsuarioNot(String numeroDocumentoUsuario, Long idUsuario);
 
-    // trae el rol en la misma consulta
     @EntityGraph(attributePaths = "rol")
     List<Usuario> findAllByOrderByNombreUsuarioAsc();
 
-    // buscar usuario por nombre, correo o número de documento
     @Query("""
             SELECT u FROM Usuario u JOIN FETCH u.rol
             WHERE LOWER(u.nombreUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))
@@ -34,11 +37,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             """)
     List<Usuario> buscarUsuario(@Param("texto") String texto);
 
-    // eliminar un rol con usuarios no se puede borrar
     boolean existsByRol_IdRol(Long idRol);
 
-    // Obtiene todos los usuarios que tengan un rol específico (ej: "REPARTIDOR")
-    // @EntityGraph evita el problema N+1, trayendo el rol en la misma consulta SQL
     @EntityGraph(attributePaths = "rol")
     List<Usuario> findByRol_NombreRolIgnoreCase(String nombreRol);
 }
