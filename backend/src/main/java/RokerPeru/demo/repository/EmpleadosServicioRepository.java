@@ -7,8 +7,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface EmpleadosServicioRepository extends JpaRepository<EmpleadosServicio, Long> {
-    // busca por nombre
-    // "juan pe" encuentra "Juan Pérez"
     @Query("""
            SELECT e FROM EmpleadosServicio e
            WHERE LOWER(CONCAT(e.nombreEmpleadoServicio, ' ', e.apellidoEmpleadoServicio))

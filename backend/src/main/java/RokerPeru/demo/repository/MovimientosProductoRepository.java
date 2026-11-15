@@ -1,12 +1,16 @@
 package RokerPeru.demo.repository;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import java.util.List;
 
 import RokerPeru.demo.entities.MovimientosProducto;
-import RokerPeru.demo.entities.Producto;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface MovimientosProductoRepository extends JpaRepository<MovimientosProducto, Long> {
-    @Query("SELECT p FROM Producto p WHERE p.stockProducto <= p.stockMinimo")
-    List<Producto> findProductosConBajoStock();
+
+    // listarMovimientos: más recientes primero, con el producto en la misma consulta (evita N+1)
+    @EntityGraph(attributePaths = "producto")
+    List<MovimientosProducto> findAllByOrderByFechaMovimientoProductoDesc();
+
 }

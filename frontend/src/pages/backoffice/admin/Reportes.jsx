@@ -1,14 +1,27 @@
-import React from 'react';
-import { FileSpreadsheet, Download, ShieldAlert } from 'lucide-react';
+import { api } from '@/lib/api';
+import { useState } from 'react';
+import { FileSpreadsheet, Download } from 'lucide-react';
 
 export default function Reportes() {
-    const handleDescargarExcel = () => {
-        // Redirige directamente al endpoint del backend para descargar el Excel
-        window.location.href = 'http://localhost:8080/api/reportes/productos/excel';
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const handleDescargarExcel = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const blob = await api('/reportes/productos/excel', { blob: true });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'productos-stock.xlsx';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch { setError('No se pudo descargar el reporte. Comprueba que el backend esté disponible.'); }
+        finally { setLoading(false); }
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto">
             {/* Cabecera de la sección */}
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -16,7 +29,7 @@ export default function Reportes() {
                     Gestión de Reportes Gerenciales
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    Panel exclusivo para la exportación de estadísticas y analíticas del sistema en formato Excel (CU-03).
+                    Descarga el inventario y la disponibilidad de productos en formato Excel.
                 </p>
             </div>
 
@@ -42,13 +55,15 @@ export default function Reportes() {
 
                     <button 
                         onClick={handleDescargarExcel}
+                        disabled={loading}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
                         <Download size={18} />
-                        Descargar Excel
+                        {loading ? 'Generando...' : 'Descargar Excel'}
                     </button>
                 </div>
             </div>
+            {error && <p role="alert" className="mt-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         </div>
     );
 }

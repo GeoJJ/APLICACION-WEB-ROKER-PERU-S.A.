@@ -1,142 +1,116 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.dto.usuarios.UsuarioRequestDTO;
-import RokerPeru.demo.dto.usuarios.UsuarioResponseDTO;
+import RokerPeru.demo.dto.UsuarioDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.entities.Usuario;
-import RokerPeru.demo.repository.RolRepository;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
+
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
-    private final RolRepository rolRepository;
+    private final RolService rolService; //
 
     @Transactional
-    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
-        String correo = dto.getCorreoUsuario().trim().toLowerCase();
-        String tipo = dto.getTipoPersonaUsuario().trim().toUpperCase();
-        String documento = dto.getNumeroDocumentoUsuario().trim();
+    public UsuarioDTO.Response crearUsuario(UsuarioDTO.Request dto) {
+        validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), null);
+        Rol rol = rolService.obtenerRol(dto.idRol());
+        Usuario usuario = dto.toEntity(rol);
 
-        validarDocumento(tipo, documento);
+        usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
 
-        if (usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo)) {
-            throw new RuntimeException("Ya existe un usuario con el correo: " + correo);
-        }
-        if (usuarioRepository.existsByNumeroDocumentoUsuario(documento)) {
-            throw new RuntimeException("Ya existe un usuario con el documento: " + documento);
-        }
-        if (dto.getPasswordUsuario() == null || dto.getPasswordUsuario().isBlank()) {
-            throw new RuntimeException("La contraseña es obligatoria");
-        }
+        Usuario guardado = usuarioRepository.save(usuario);
+        log.info("Usuario creado exitosamente: {}", guardado.getCorreoUsuario());
 
-        Usuario usuario = new Usuario();
-        copiarDatos(usuario, dto, correo, tipo, documento);
-        usuario.setPasswordUsuario(passwordEncoder.encode(dto.getPasswordUsuario()));
-        return aDto(usuarioRepository.save(usuario));
+        return UsuarioDTO.Response.fromEntity(guardado);
     }
 
-    public List<UsuarioResponseDTO> listarUsuario() {
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO.Response> listarUsuarios() {
         return usuarioRepository.findAllByOrderByNombreUsuarioAsc()
-                .stream().map(this::aDto).toList();
+                .stream()
+                .map(UsuarioDTO.Response::fromEntity)
+                .toList();
     }
 
-    public List<UsuarioResponseDTO> buscarUsuario(String texto) {
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO.Response> buscarUsuario(String texto) {
         return usuarioRepository.buscarUsuario(texto.trim())
-                .stream().map(this::aDto).toList();
+                .stream()
+                .map(UsuarioDTO.Response::fromEntity)
+                .toList();
     }
 
     @Transactional
-    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+    public UsuarioDTO.Response actualizarUsuario(Long id, UsuarioDTO.Request dto) {
         Usuario usuario = obtenerUsuario(id);
+        validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), id);
 
-        String correo = dto.getCorreoUsuario().trim().toLowerCase();
-        String tipo = dto.getTipoPersonaUsuario().trim().toUpperCase();
-        String documento = dto.getNumeroDocumentoUsuario().trim();
+        Rol rol = rolService.obtenerRol(dto.idRol());
+        dto.applyTo(usuario, rol);
 
-        validarDocumento(tipo, documento);
-
-        if (usuarioRepository.existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(correo, id)) {
-            throw new RuntimeException("Ya existe otro usuario con el correo: " + correo);
-        }
-        if (usuarioRepository.existsByNumeroDocumentoUsuarioAndIdUsuarioNot(documento, id)) {
-            throw new RuntimeException("Ya existe otro usuario con el documento: " + documento);
+        if (dto.passwordUsuario() != null && !dto.passwordUsuario().isBlank()) {
+            usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
         }
 
-        copiarDatos(usuario, dto, correo, tipo, documento);
-        if (dto.getPasswordUsuario() != null && !dto.getPasswordUsuario().isBlank()) {
-            usuario.setPasswordUsuario(passwordEncoder.encode(dto.getPasswordUsuario()));
-        }
-        return aDto(usuario);   // Hibernate hace el UPDATE solo
+        log.info("Usuario actualizado exitosamente: id={}", id);
+        return UsuarioDTO.Response.fromEntity(usuario);
     }
 
     @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = obtenerUsuario(id);
-
-        // TODO: cuando existan Pedidos y Ordenes_Servicio, validar aquí que el usuario
-        // no tenga pedidos ni órdenes asociadas antes de eliminarlo
-
+        // TODO: validar aquí que el usuario no tenga pedidos ni órdenes asociadas
         usuarioRepository.delete(usuario);
+        log.info("Usuario eliminado: id={}", id);
     }
 
-    // ---------- privados ----------
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO.Response> listarRepartidoresDisponibles() {
+        // Llamamos al método del repositorio que acabamos de crear
+        List<Usuario> repartidores = usuarioRepository.findByRol_NombreRolIgnoreCase("REPARTIDOR");
+
+        // Mapeamos a DTO para enviar solo ID y Nombre al frontend (seguridad y limpieza)
+        return repartidores.stream()
+                .map(UsuarioDTO.Response::fromEntity)
+                .toList();
+    }
+    // Métodos privados
+
+    private void validarDuplicados(String correo, String documento, Long idIgnorado) {
+        boolean correoExiste = (idIgnorado == null)
+                ? usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo)
+                : usuarioRepository.existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(correo, idIgnorado);
+
+        if (correoExiste) {
+            throw new RuntimeException("Ya existe un usuario con el correo: " + correo);
+        }
+
+        boolean docExiste = (idIgnorado == null)
+                ? usuarioRepository.existsByNumeroDocumentoUsuario(documento)
+                : usuarioRepository.existsByNumeroDocumentoUsuarioAndIdUsuarioNot(documento, idIgnorado);
+
+        if (docExiste) {
+            throw new RuntimeException("Ya existe un usuario con el documento: " + documento);
+        }
+    }
 
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
-    }
-
-    private Rol obtenerRol(Long idRol) {
-        return rolRepository.findById(idRol)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + idRol));
-    }
-
-    // Regla cruzada: NATURAL -> DNI (8), JURIDICA -> RUC (11)
-    private void validarDocumento(String tipo, String documento) {
-        if (tipo.equals("NATURAL") && documento.length() != 8) {
-            throw new RuntimeException("Una persona natural debe tener un DNI de 8 dígitos");
-        }
-        if (tipo.equals("JURIDICA") && documento.length() != 11) {
-            throw new RuntimeException("Una persona jurídica debe tener un RUC de 11 dígitos");
-        }
-    }
-
-    // Se usa en crear y actualizar para no repetir los setters
-    private void copiarDatos(Usuario usuario, UsuarioRequestDTO dto,
-                             String correo, String tipo, String documento) {
-        usuario.setNombreUsuario(dto.getNombreUsuario().trim());
-        usuario.setCorreoUsuario(correo);
-        usuario.setTipoPersonaUsuario(tipo);
-        usuario.setNumeroDocumentoUsuario(documento);
-        usuario.setTelefonoUsuario(normalizar(dto.getTelefonoUsuario()));
-        usuario.setDireccionUsuario(normalizar(dto.getDireccionUsuario()));
-        usuario.setRol(obtenerRol(dto.getIdRol()));
-    }
-
-    private String normalizar(String texto) {
-        return (texto == null || texto.isBlank()) ? null : texto.trim();
-    }
-
-    private UsuarioResponseDTO aDto(Usuario u) {
-        return new UsuarioResponseDTO(
-                u.getIdUsuario(),
-                u.getNombreUsuario(),
-                u.getCorreoUsuario(),
-                u.getTipoPersonaUsuario(),
-                u.getNumeroDocumentoUsuario(),
-                u.getTelefonoUsuario(),
-                u.getDireccionUsuario(),
-                u.getRol().getIdRol(),
-                u.getRol().getNombreRol()
-        );
+                .orElseThrow(() -> {
+                    log.warn("Usuario no encontrado: id={}", id);
+                    return new RecursoNoEncontradoException("Usuario", id);
+                });
     }
 }

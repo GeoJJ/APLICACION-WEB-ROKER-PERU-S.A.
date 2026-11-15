@@ -6,7 +6,7 @@ const COLUMNS = [
     title: "Navegación",
     links: [
       { label: "Inicio", to: "/" },
-      { label: "Productos", to: "/productos/hospitalaria" },
+      { label: "Productos", to: "/productos" },
       { label: "Servicios", to: "/servicios" },
       { label: "Nosotros", to: "/nosotros" },
       { label: "Contacto", href: "#contacto" },
