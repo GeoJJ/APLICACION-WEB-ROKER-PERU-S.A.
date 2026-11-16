@@ -43,19 +43,6 @@ public class PedidoService {
         pedido.setFechaPedido(LocalDateTime.now());
         pedido.setEstadoPedido("PENDIENTE");
 
-        TipoComprobanteEnum tipoComprobante;
-
-        // Si es empresa (JURIDICA), le damos Factura. Si es persona (NATURAL), Boleta.
-        if ("JURIDICA".equals(cliente.getTipoPersonaUsuario())) {
-            tipoComprobante = TipoComprobanteEnum.FACTURA_PRODUCTO;
-        } else {
-            tipoComprobante = TipoComprobanteEnum.BOLETA_PRODUCTO;
-        }
-        String numeroGenerado = comprobanteService.generarNumeroComprobante(tipoComprobante);
-
-        // Asignamos a la entidad
-        pedido.setSerieComprobantePedido(tipoComprobante.getSerie());
-        pedido.setNumeroComprobantePedido(numeroGenerado);
 
         double montoTotal = 0.0;
 
@@ -83,8 +70,8 @@ public class PedidoService {
 
         // Guardar y retornar
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Cliente {} creó el pedido #{} con comprobante {}. Total: S/ {}",
-                cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), numeroGenerado, montoTotal);
+        log.info("Cliente {} creó el pedido #{} (pendiente de confirmación). Total: S/ {}",
+                cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
 
         return PedidoDTO.ResponseCliente.fromEntity(pedidoGuardado);
     }
@@ -115,10 +102,18 @@ public class PedidoService {
 
         // Delegar la actualización de campos de gestión al DTO
         dto.applyTo(pedido, delivery);
+        // Si el vendedor no indicó la salida, sale ahora
+        if (pedido.getFechaSalidaPedido() == null) {
+            pedido.setFechaSalidaPedido(LocalDateTime.now());
+        }
 
-        // Actualizar el estado a "EN_RUTA" (o "CONFIRMADO", según tu flujo de negocio)
+        // La entrega no puede ser antes de la salida
+        if (pedido.getFechaEntregaPedido() != null
+                && pedido.getFechaEntregaPedido().isBefore(pedido.getFechaSalidaPedido())) {
+            throw new ReglaNegocioException("La fecha de entrega no puede ser anterior a la fecha de salida");
+        }        // Actualizar el estado a "EN_RUTA" (o "CONFIRMADO", según tu flujo de negocio)
         pedido.setEstadoPedido("EN_RUTA");
-
+        emitirComprobante(pedido);
         // Guardar y retornar la vista COMPLETA para el vendedor
         Pedidos pedidoActualizado = pedidosRepository.save(pedido);
         log.info("Vendedor {} confirmó el pedido #{} y lo asignó al repartidor {}", vendedor.getNombreUsuario(), idPedido, delivery.getNombreUsuario());
@@ -130,7 +125,8 @@ public class PedidoService {
     @Transactional
     public PedidoDTO.ResponseRepartidor actualizarEstadoRepartidor(Long idPedido, Long idRepartidorLogueado, PedidoDTO.RequestActualizacionRepartidor dto) {
         // Validar que el pedido esté asignado a ESTE repartidor
-        boolean esSuPedido = pedidosRepository.existsByIdPedidoAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);        if (!esSuPedido) {
+        boolean esSuPedido = pedidosRepository.existsByIdPedidoAndDelivery_IdUsuario(idPedido, idRepartidorLogueado);
+        if (!esSuPedido) {
             throw new OperacionNoPermitidaException("Acceso denegado: Este pedido no está asignado a ti");
         }
 
@@ -188,5 +184,18 @@ public class PedidoService {
                     log.warn("Intento de buscar usuario con ID inexistente: {}", id);
                     return new RuntimeException("Usuario no encontrado con ID: " + id);
                 });
+    }
+
+    // Asigna serie + número. Si ya tiene número no hace nada (nunca se emite dos veces)
+    private void emitirComprobante(Pedidos pedido) {
+        if (pedido.getNumeroComprobantePedido() != null) {
+            return;
+        }
+        TipoComprobanteEnum tipo = ComprobanteService.resolverTipo(pedido.getCliente(), false);
+        ComprobanteService.NumeroComprobante numero = comprobanteService.emitir(tipo);
+
+        pedido.setSerieComprobantePedido(numero.serie());
+        pedido.setNumeroComprobantePedido(numero.numero());
+        pedido.setFechaEmisionComprobante(LocalDateTime.now());
     }
 }

@@ -1,8 +1,9 @@
 package RokerPeru.demo.repository;
 
 import RokerPeru.demo.entities.SecuenciaComprobante;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,8 +13,8 @@ public interface SecuenciaComprobanteRepository extends JpaRepository<SecuenciaC
 
     Optional<SecuenciaComprobante> findBySerie(String serie);
 
-    // Suma 1 directamente en la base de datos (seguro contra duplicados)
-    @Modifying
-    @Query("UPDATE SecuenciaComprobante s SET s.ultimoNumero = s.ultimoNumero + 1 WHERE s.serie = :serie")
-    void incrementarNumero(@Param("serie") String serie);
+    // Bloquea la fila mientras dura la transacción: nadie más toma un número de esta serie
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM SecuenciaComprobante s WHERE s.serie = :serie")
+    Optional<SecuenciaComprobante> findBySerieParaActualizar(@Param("serie") String serie);
 }

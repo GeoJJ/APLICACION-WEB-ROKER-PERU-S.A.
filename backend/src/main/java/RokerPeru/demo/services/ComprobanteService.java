@@ -1,6 +1,7 @@
 package RokerPeru.demo.services;
 
 import RokerPeru.demo.entities.SecuenciaComprobante;
+import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.repository.SecuenciaComprobanteRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,29 +14,32 @@ public class ComprobanteService {
 
     private final SecuenciaComprobanteRepository secuenciaRepository;
 
-    //Genera un número de comprobante automático.
+    // Guarda serie y número por separado: "B001" y "00000001"
+    public record NumeroComprobante(String serie, String numero) {
+        public String completo() {
+            return serie + "-" + numero;
+        }
+    }
+
+    // Empresa (JURIDICA) = Factura, persona (NATURAL) = Boleta
+    public static TipoComprobanteEnum resolverTipo(Usuario cliente, boolean esServicio) {
+        boolean esEmpresa = "JURIDICA".equalsIgnoreCase(cliente.getTipoPersonaUsuario());
+        if (esServicio) {
+            return esEmpresa ? TipoComprobanteEnum.FACTURA_SERVICIO : TipoComprobanteEnum.BOLETA_SERVICIO;
+        }
+        return esEmpresa ? TipoComprobanteEnum.FACTURA_PRODUCTO : TipoComprobanteEnum.BOLETA_PRODUCTO;
+    }
+
     @Transactional
-    public String generarNumeroComprobante(TipoComprobanteEnum tipo) {
+    public NumeroComprobante emitir(TipoComprobanteEnum tipo) {
         String serie = tipo.getSerie();
 
-        // Buscamos si ya existe la secuencia para esta serie
-        SecuenciaComprobante secuencia = secuenciaRepository.findBySerie(serie)
-                .orElseGet(() -> {
-                    // Si no existe (es la primera vez), la creamos empezando en 0
-                    SecuenciaComprobante nueva = new SecuenciaComprobante(serie, 0);
-                    return secuenciaRepository.save(nueva);
-                });
+        SecuenciaComprobante secuencia = secuenciaRepository.findBySerieParaActualizar(serie)
+                .orElseGet(() -> secuenciaRepository.save(new SecuenciaComprobante(serie, 0)));
 
-        // Le decimos a la BD que sume 1 al número actual
-        secuenciaRepository.incrementarNumero(serie);
+        int siguiente = secuencia.getUltimoNumero() + 1;
+        secuencia.setUltimoNumero(siguiente);
 
-        // Volvemos a leer el número actualizado
-        SecuenciaComprobante secuenciaActualizada = secuenciaRepository.findBySerie(serie).get();
-        int nuevoNumero = secuenciaActualizada.getUltimoNumero();
-
-        // Formateamos: "B002" + "-" + "00000001" (8 dígitos con ceros a la izquierda)
-        String numeroFormateado = String.format("%08d", nuevoNumero);
-
-        return serie + "-" + numeroFormateado;
+        return new NumeroComprobante(serie, String.format("%08d", siguiente));
     }
 }

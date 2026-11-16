@@ -30,6 +30,9 @@ public class Pedidos {
     @Column(name = "numero_comprobante_pedido", length = 20)
     private String numeroComprobantePedido;
 
+    @Column(name = "fecha_emision_comprobante")
+    private LocalDateTime fechaEmisionComprobante;
+
     @Column(name = "fecha_salida_pedido")
     private LocalDateTime fechaSalidaPedido;
 
@@ -69,6 +72,7 @@ public class Pedidos {
     // Dependencia fuerte: si se borra un pedido, sus detalles tambien se borran
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallePedidos = new ArrayList<>();
+
     // Sincroniza ambos lados, si no la FK queda en NULL.
     public void agregarDetalle(DetallePedido detalle) {
         detallePedidos.add(detalle);

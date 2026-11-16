@@ -32,6 +32,9 @@ public class OrdenesServicio {
     @Column(name = "numero_comprobante_servicio", length = 20)
     private String numeroComprobanteServicio;
 
+    @Column(name = "fecha_emision_comprobante")
+    private LocalDateTime fechaEmisionComprobante;
+
     @Column(name = "estado_servicio", nullable = false, length = 30)
     private String estadoServicio;
 

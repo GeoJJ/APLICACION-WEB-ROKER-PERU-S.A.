@@ -42,25 +42,9 @@ public class OrdenServicioService {
         orden.setEstadoServicio("PENDIENTE");
         orden.setMontoTotalServicio(servicio.getPrecioServicio());
 
-        TipoComprobanteEnum tipoComprobante;
-
-        // Si es empresa (JURIDICA), le damos Factura de Servicio. Si es persona (NATURAL), Boleta de Servicio.
-        if ("JURIDICA".equals(cliente.getTipoPersonaUsuario())) {
-            tipoComprobante = TipoComprobanteEnum.FACTURA_SERVICIO;
-        } else {
-            tipoComprobante = TipoComprobanteEnum.BOLETA_SERVICIO;
-        }
-
-        // Generamos el número automático (ej: "B002-00000001" o "F002-00000001")
-        String numeroGenerado = comprobanteService.generarNumeroComprobante(tipoComprobante);
-
-        // Asignamos a la entidad
-        orden.setSerieComprobanteServicio(tipoComprobante.getSerie());
-        orden.setNumeroComprobanteServicio(numeroGenerado);
-
         OrdenesServicio guardado = ordenesRepository.save(orden);
-        log.info("Cliente {} creó orden de servicio #{} con comprobante {} para {}",
-                cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), numeroGenerado, servicio.getNombreServicio());
+        log.info("Cliente {} creó orden de servicio #{} (pendiente de confirmación) para {}",
+                cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), servicio.getNombreServicio());
 
         return OrdenServicioDTO.ResponseCliente.fromEntity(guardado);
     }
@@ -93,7 +77,7 @@ public class OrdenServicioService {
 
         // Si pasa la validación, aplicamos los cambios y confirmamos
         dto.applyTo(orden); // Esto cambia el estado a "CONFIRMADO" y agrega incidencias si hay
-
+        emitirComprobante(orden);
         OrdenesServicio actualizado = ordenesRepository.save(orden);
 
         log.info("Vendedor confirmó la orden de servicio #{}. Personal asignado: {}/{}",
@@ -175,5 +159,17 @@ public class OrdenServicioService {
         if (!pertenece) {
             throw new OperacionNoPermitidaException("Acceso denegado: Esta orden no pertenece a este cliente");
         }
+    }
+
+    private void emitirComprobante(OrdenesServicio orden) {
+        if (orden.getNumeroComprobanteServicio() != null) {
+            return;
+        }
+        TipoComprobanteEnum tipo = ComprobanteService.resolverTipo(orden.getCliente(), true);
+        ComprobanteService.NumeroComprobante numero = comprobanteService.emitir(tipo);
+
+        orden.setSerieComprobanteServicio(numero.serie());
+        orden.setNumeroComprobanteServicio(numero.numero());
+        orden.setFechaEmisionComprobante(LocalDateTime.now());
     }
 }

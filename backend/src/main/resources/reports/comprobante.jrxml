@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="comprobante"
+              language="java"
+              pageWidth="226"
+              pageHeight="600"
+              columnWidth="210"
+              leftMargin="8"
+              rightMargin="8"
+              topMargin="10"
+              bottomMargin="10">
+
+    <!-- DATOS DE LA EMPRESA -->
+    <parameter name="razonSocial" class="java.lang.String"/>
+    <parameter name="rucEmpresa" class="java.lang.String"/>
+    <parameter name="direccionEmpresa" class="java.lang.String"/>
+
+    <!-- DATOS DEL COMPROBANTE -->
+    <parameter name="tipoComprobante" class="java.lang.String"/>
+    <parameter name="tipoOperacion" class="java.lang.String"/>
+    <parameter name="numeroComprobante" class="java.lang.String"/>
+    <parameter name="fechaEmision" class="java.util.Date"/>
+    <parameter name="formaPago" class="java.lang.String"/>
+
+    <!-- DATOS DEL CLIENTE -->
+    <parameter name="clienteNombre" class="java.lang.String"/>
+    <parameter name="clienteDocumentoTipo" class="java.lang.String"/>
+    <parameter name="clienteDocumentoNumero" class="java.lang.String"/>
+
+    <!-- TOTALES -->
+    <parameter name="subtotal" class="java.math.BigDecimal"/>
+    <parameter name="impuestoMonto" class="java.math.BigDecimal"/>
+    <parameter name="total" class="java.math.BigDecimal"/>
+
+    <!-- DETALLE -->
+    <field name="descripcion" class="java.lang.String"/>
+    <field name="cantidad" class="java.math.BigDecimal"/>
+    <field name="precioUnitario" class="java.math.BigDecimal"/>
+    <field name="importe" class="java.math.BigDecimal"/>
+
+    <!-- ENCABEZADO -->
+    <title height="205">
+
+        <element kind="staticText"
+                 x="5" y="0" width="200" height="25"
+                 fontName="SansSerif"
+                 fontSize="17"
+                 bold="true"
+                 forecolor="#00428A"
+                 hTextAlign="Center">
+            <text><![CDATA[ROKER PERU S.A.]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="27" width="200" height="14"
+                 fontSize="9"
+                 hTextAlign="Center">
+            <expression><![CDATA["RUC: " + $P{rucEmpresa}]]></expression>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="41" width="200" height="25"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <expression><![CDATA[$P{direccionEmpresa}]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="69" width="200" height="12"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <text><![CDATA[----------------------------------------]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="83" width="200" height="17"
+                 fontSize="11"
+                 bold="true"
+                 forecolor="#00428A"
+                 hTextAlign="Center">
+            <expression><![CDATA[$P{tipoComprobante}]]></expression>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="102" width="200" height="15"
+                 fontSize="10"
+                 bold="true"
+                 hTextAlign="Center">
+            <expression><![CDATA[$P{numeroComprobante}]]></expression>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="120" width="200" height="13"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <expression><![CDATA[
+                "Fecha: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format($P{fechaEmision})
+            ]]></expression>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="135" width="200" height="13"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <expression><![CDATA["Operación: " + $P{tipoOperacion}]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="151" width="200" height="12"
+                 fontSize="8"
+                 bold="true">
+            <text><![CDATA[DATOS DEL CLIENTE]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="165" width="200" height="13"
+                 fontSize="8">
+            <expression><![CDATA["Cliente: " + $P{clienteNombre}]]></expression>
+        </element>
+
+        <element kind="textField"
+                 x="5" y="179" width="200" height="13"
+                 fontSize="8">
+            <expression><![CDATA[
+                $P{clienteDocumentoTipo} + ": " + $P{clienteDocumentoNumero}
+            ]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="193" width="200" height="12"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <text><![CDATA[----------------------------------------]]></text>
+        </element>
+
+    </title>
+
+    <!-- ENCABEZADO DE PRODUCTOS -->
+    <columnHeader height="25">
+
+        <element kind="staticText"
+                 x="5" y="0" width="200" height="13"
+                 fontSize="9"
+                 bold="true">
+            <text><![CDATA[DETALLE DE LA OPERACIÓN]]></text>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="13" width="200" height="12"
+                 fontSize="7"
+                 bold="true">
+            <text><![CDATA[Cant.       P.Unit.              Importe]]></text>
+        </element>
+
+    </columnHeader>
+
+    <!-- DETALLE -->
+    <detail>
+        <band height="35">
+
+            <element kind="textField"
+                     x="5" y="0" width="200" height="14"
+                     fontSize="8"
+                     textAdjust="StretchHeight">
+                <expression><![CDATA[$F{descripcion}]]></expression>
+            </element>
+
+            <element kind="textField"
+                     x="5" y="15" width="38" height="13"
+                     fontSize="8">
+                <expression><![CDATA[
+                    new java.text.DecimalFormat("#,##0.##").format($F{cantidad})
+                ]]></expression>
+            </element>
+
+            <element kind="staticText"
+                     x="42" y="15" width="8" height="13"
+                     fontSize="8">
+                <text><![CDATA[x]]></text>
+            </element>
+
+            <element kind="textField"
+                     x="52" y="15" width="65" height="13"
+                     fontSize="8">
+                <expression><![CDATA[
+                    new java.text.DecimalFormat("#,##0.00").format($F{precioUnitario})
+                ]]></expression>
+            </element>
+
+            <element kind="textField"
+                     x="120" y="15" width="85" height="13"
+                     fontSize="8"
+                     hTextAlign="Right">
+                <expression><![CDATA[
+                    "S/ " + new java.text.DecimalFormat("#,##0.00").format($F{importe})
+                ]]></expression>
+            </element>
+
+        </band>
+    </detail>
+
+    <!-- TOTALES -->
+
+    <summary height="105">
+
+        <element kind="staticText"
+                 x="5" y="0" width="200" height="12"
+                 fontSize="8"
+                 hTextAlign="Center">
+            <text><![CDATA[----------------------------------------]]></text>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="15" width="100" height="14"
+                 fontSize="9">
+            <text><![CDATA[Subtotal:]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="105" y="15" width="100" height="14"
+                 fontSize="9"
+                 hTextAlign="Right">
+            <expression><![CDATA[
+            "S/ " + new java.text.DecimalFormat("#,##0.00").format($P{subtotal})
+        ]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="32" width="100" height="14"
+                 fontSize="9">
+            <text><![CDATA[IGV:]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="105" y="32" width="100" height="14"
+                 fontSize="9"
+                 hTextAlign="Right">
+            <expression><![CDATA[
+            "S/ " + new java.text.DecimalFormat("#,##0.00").format($P{impuestoMonto})
+        ]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="51" width="100" height="18"
+                 fontSize="11"
+                 bold="true"
+                 forecolor="#00428A">
+            <text><![CDATA[TOTAL:]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="105" y="51" width="100" height="18"
+                 fontSize="11"
+                 bold="true"
+                 forecolor="#00428A"
+                 hTextAlign="Right">
+            <expression><![CDATA[
+            "S/ " + new java.text.DecimalFormat("#,##0.00").format($P{total})
+        ]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="74" width="200" height="12"
+                 fontSize="8">
+            <text><![CDATA[Forma de pago:]]></text>
+        </element>
+
+        <element kind="textField"
+                 x="80" y="74" width="125" height="12"
+                 fontSize="8"
+                 hTextAlign="Right">
+            <expression><![CDATA[$P{formaPago}]]></expression>
+        </element>
+
+        <element kind="staticText"
+                 x="5" y="91" width="200" height="12"
+                 fontSize="8"
+                 bold="true"
+                 forecolor="#00428A"
+                 hTextAlign="Center">
+            <text><![CDATA[¡GRACIAS POR SU PREFERENCIA!]]></text>
+        </element>
+
+    </summary>
+
+
+    <!-- PIE DE PÁGINA -->
+
+    <pageFooter height="18">
+
+        <element kind="staticText"
+                 x="5" y="2" width="200" height="12"
+                 fontSize="7"
+                 hTextAlign="Center">
+            <text><![CDATA[ROKER PERU S.A. - Calidad y confianza]]></text>
+        </element>
+
+    </pageFooter>
+
+
+</jasperReport>
