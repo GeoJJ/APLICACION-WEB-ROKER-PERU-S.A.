@@ -18,4 +18,7 @@ public interface PedidosRepository extends JpaRepository<Pedidos, Long> {
 
     @EntityGraph(attributePaths = {"cliente"})
     List<Pedidos> findByDelivery_IdUsuarioAndEstadoPedidoInOrderByFechaPedidoDesc(Long idDelivery, List<String> estados);
+
+    @EntityGraph(attributePaths = {"cliente", "vendedor", "delivery", "detallePedidos", "detallePedidos.producto"})
+    List<Pedidos> findByVendedor_IdUsuarioOrderByFechaPedidoDesc(Long idVendedor);
 }

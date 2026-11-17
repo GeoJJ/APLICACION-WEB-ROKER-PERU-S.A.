@@ -4,6 +4,7 @@ import RokerPeru.demo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,6 +29,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Login SIEMPRE público
+                        .requestMatchers(HttpMethod.GET, "/cliente/productos/**").permitAll() // las peticiones get en este endpoint pueden entrar sin token
+                        .requestMatchers(HttpMethod.GET, "/cliente/servicios/**").permitAll()
                         .anyRequest().authenticated() // CUALQUIER otra ruta EXIGE el Token
                 )
                 // Le decimos a Spring que no guarde sesiones, usamos JWT

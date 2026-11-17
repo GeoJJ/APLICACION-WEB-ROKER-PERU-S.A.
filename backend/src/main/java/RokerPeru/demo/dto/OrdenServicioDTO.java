@@ -16,9 +16,6 @@ public final class OrdenServicioDTO {
             @NotNull(message = "El ID del servicio es obligatorio")
             Long idServicio,
 
-            @NotNull(message = "El ID del cliente es obligatorio")
-            Long idCliente,
-
             LocalDateTime fechaProgramadaServicio,
 
             @NotBlank(message = "El método de pago es obligatorio")

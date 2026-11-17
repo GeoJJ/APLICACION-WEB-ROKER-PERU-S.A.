@@ -11,13 +11,11 @@ import java.util.List;
 public final class PedidoDTO {
     private PedidoDTO() {
     }
+
     // Solo para que el CLIENTE cree el pedido
     public record RequestCliente(
             @NotBlank(message = "El método de pago es obligatorio")
             String metodoPagoPedido,
-
-            @NotNull(message = "El ID del cliente es obligatorio")
-            Long idCliente,
 
             @NotNull(message = "El pedido debe contener al menos un detalle")
             List<DetallePedidoDTO.Request> detalles
@@ -84,6 +82,7 @@ public final class PedidoDTO {
 
     // Lo que ve el CLIENTE
     public record ResponseCliente(
+            Long idPedido,
             LocalDateTime fechaPedido,
             String serieComprobantePedido,
             String numeroComprobantePedido,
@@ -100,12 +99,13 @@ public final class PedidoDTO {
     ) {
         public static ResponseCliente fromEntity(Pedidos p) {
             return new ResponseCliente(
+                    p.getIdPedido(),
                     p.getFechaPedido(),
                     p.getSerieComprobantePedido(),
                     p.getNumeroComprobantePedido(),
+                    p.getFechaEmisionComprobante(),
                     p.getFechaSalidaPedido(),
                     p.getFechaEntregaPedido(),
-                    p.getFechaEmisionComprobante(),
                     p.getIncidentePedido(),
                     p.getEstadoPedido(),
                     p.getMontoTotalPedido(),

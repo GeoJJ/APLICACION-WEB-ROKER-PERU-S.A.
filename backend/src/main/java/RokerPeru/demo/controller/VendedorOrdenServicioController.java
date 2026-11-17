@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -34,10 +35,13 @@ public class VendedorOrdenServicioController {
 
     // PUT /vendedor/ordenes-servicio/{idOrden}/confirmar?incidencia=...
     @PutMapping("/{idOrden}/confirmar")
-    public ResponseEntity<OrdenServicioDTO.ResponseVendedor> confirmarOrdenServicio(@PathVariable Long idOrden, @RequestParam(required = false) String incidencia) {
+    public ResponseEntity<OrdenServicioDTO.ResponseVendedor> confirmarOrdenServicio(
+            @PathVariable Long idOrden,
+            @RequestParam(required = false) String incidencia,
+            @AuthenticationPrincipal(expression = "idUsuario") Long idVendedor) {
         OrdenServicioDTO.RequestGestionVendedor gestion =
                 new OrdenServicioDTO.RequestGestionVendedor("CONFIRMADO", incidencia);
-        return ResponseEntity.ok(ordenServicioService.confirmarOrdenServicio(idOrden, gestion));
+        return ResponseEntity.ok(ordenServicioService.confirmarOrdenServicio(idOrden, gestion, idVendedor));
     }
 
     // PUT /vendedor/ordenes-servicio/{idOrden}/cancelar?incidencia=...

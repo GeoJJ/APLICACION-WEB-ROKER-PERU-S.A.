@@ -34,10 +34,8 @@ public class PedidoService {
 
     // Crear un nuevo pedido del cliente
     @Transactional
-    public PedidoDTO.ResponseCliente crearPedido(PedidoDTO.RequestCliente dto) {
-        // Obtener al cliente
-        Usuario cliente = obtenerUsuario(dto.idCliente());
-
+    public PedidoDTO.ResponseCliente crearPedido(PedidoDTO.RequestCliente dto, Long idCliente) {
+        Usuario cliente = obtenerUsuario(idCliente);
         // Delegar la creación de la entidad base al DTO
         Pedidos pedido = dto.toEntity(cliente);
         pedido.setFechaPedido(LocalDateTime.now());
@@ -162,6 +160,14 @@ public class PedidoService {
     public List<PedidoDTO.ResponseVendedor> listarPedidosParaGestionar() {
         // El vendedor ve todos los pedidos pendientes para procesarlos
         return pedidosRepository.findByEstadoPedidoOrderByFechaPedidoDesc("PENDIENTE")
+                .stream()
+                .map(PedidoDTO.ResponseVendedor::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseVendedor> listarVentasDelVendedor(Long idVendedor) {
+        return pedidosRepository.findByVendedor_IdUsuarioOrderByFechaPedidoDesc(idVendedor)
                 .stream()
                 .map(PedidoDTO.ResponseVendedor::fromEntity)
                 .toList();

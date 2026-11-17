@@ -31,12 +31,11 @@ public class OrdenServicioService {
 
     // Flujo del cliente para crear orden de servicio
     @Transactional
-    public OrdenServicioDTO.ResponseCliente crearOrdenServicio(OrdenServicioDTO.RequestCliente dto) {
+    public OrdenServicioDTO.ResponseCliente crearOrdenServicio(OrdenServicioDTO.RequestCliente dto, Long idCliente) {
         Servicio servicio = servicioRepository.findById(dto.idServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + dto.idServicio()));
 
-        Usuario cliente = obtenerUsuario(dto.idCliente());
-
+        Usuario cliente = obtenerUsuario(idCliente);
         OrdenesServicio orden = dto.toEntity(servicio, cliente);
         orden.setFechaOrdenServicio(LocalDateTime.now());
         orden.setEstadoServicio("PENDIENTE");
@@ -50,7 +49,7 @@ public class OrdenServicioService {
     }
 
     @Transactional
-    public OrdenServicioDTO.ResponseVendedor confirmarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
+    public OrdenServicioDTO.ResponseVendedor confirmarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto, Long idVendedor) {
         // Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
         OrdenesServicio orden = obtenerOrdenConDetalles(idOrden);
 
@@ -75,6 +74,7 @@ public class OrdenServicioService {
             ));
         }
 
+        orden.setVendedor(obtenerUsuario(idVendedor));
         // Si pasa la validación, aplicamos los cambios y confirmamos
         dto.applyTo(orden); // Esto cambia el estado a "CONFIRMADO" y agrega incidencias si hay
         emitirComprobante(orden);

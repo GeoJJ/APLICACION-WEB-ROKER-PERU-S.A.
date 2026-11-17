@@ -22,36 +22,35 @@ import Orders from '@/pages/backoffice/seller/OrdersManagementPage';
 import Deliveries from '@/pages/backoffice/delivery/DeliveryManagementPage';
 import Management from '@/pages/backoffice/admin/ManagementPage';
 import Entries from '@/pages/backoffice/warehouse/StockEntriesPage';
-import Reports from '@/pages/backoffice/admin/Reportes';
+// import Reports from '@/pages/backoffice/admin/Reportes';
 import StaffPage from '@/pages/backoffice/staff/StaffPage';
 export default function AppRouter() {
- return <Routes>
-  <Route element={<PublicLayout />}>
-   <Route path="/carrito" element={<CartPage />} /><Route path="/servicios/:id/solicitar" element={<ServiceRequestPage />} /><Route element={<RequireRole role="customer" />}><Route path="/mis-solicitudes" element={<ServiceRequestsPage />} /></Route>
-   <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} /><Route path="/servicios" element={<ServicesPage />} /><Route path="/nosotros" element={<AboutPage />} /><Route path="/contacto" element={<ContactPage />} />
-   <Route element={<RequireRole />}><Route path="/perfil" element={<ProfilePage />} /></Route>
-   <Route path="*" element={<div className="p-12 text-center">La página que buscas no existe.</div>} />
-  </Route>
-  <Route element={<AuthLayout />}><Route path="/login" element={<LoginPage />} /><Route path="/register" element={<RegisterPage />} /></Route>
-  <Route element={<RequireRole role="manager" />}><Route element={<BackOfficeLayout role="manager" />}>
-   <Route path="/manager" element={<Dashboard />} /><Route path="/manager/inventario" element={<MovementsPage />} /><Route path="/manager/reportes" element={<Reports />} />
-  </Route></Route>
-  <Route element={<RequireRole role="admin" />}><Route element={<BackOfficeLayout role="admin" />}>
-   <Route path="/admin" element={<AdministrationDashboardPage />} />
-   <Route path="/admin/trabajadores" element={<Management key="workers" kind="workers" />} />
-   <Route path="/admin/productos" element={<Management key="products" kind="products" />} />
-   <Route path="/admin/servicios" element={<Management key="services" kind="services" />} />
-   <Route path="/admin/proveedores" element={<Management key="providers" kind="providers" />} />
-  </Route></Route>
-  <Route element={<RequireRole role="warehouse" />}><Route element={<BackOfficeLayout role="warehouse" />}>
-   <Route path="/warehouse" element={<Stock />} /><Route path="/warehouse/productos" element={<Management kind="products" readonly />} /><Route path="/warehouse/ingresos" element={<Entries />} />
-  </Route></Route>
-  <Route element={<RequireRole role="seller" />}><Route element={<BackOfficeLayout role="seller" />}>
-   <Route path="/seller" element={<Orders home />} /><Route path="/seller/solicitudes" element={<ServiceRequestsPage management />} /><Route path="/seller/pedidos" element={<Orders />} /><Route path="/seller/ventas" element={<Orders sales />} />
-  </Route></Route>
-  <Route element={<RequireRole role="delivery" />}><Route element={<BackOfficeLayout role="delivery" />}>
-   <Route path="/delivery" element={<Deliveries />} /><Route path="/delivery/historial" element={<Deliveries history />} />
-  </Route></Route>
-  <Route element={<RequireRole role="staff" />}><Route element={<BackOfficeLayout role="staff" />}><Route path="/staff" element={<StaffPage />} /></Route></Route>
- </Routes>;
+    return <Routes>
+        <Route element={<PublicLayout />}>
+            <Route path="/carrito" element={<CartPage />} /><Route path="/servicios/:id/solicitar" element={<ServiceRequestPage />} /><Route element={<RequireRole role="customer" />}><Route path="/mis-solicitudes" element={<ServiceRequestsPage />} /></Route>
+            <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} /><Route path="/servicios" element={<ServicesPage />} /><Route path="/nosotros" element={<AboutPage />} /><Route path="/contacto" element={<ContactPage />} />
+            <Route element={<RequireRole />}><Route path="/perfil" element={<ProfilePage />} /></Route>
+            <Route path="*" element={<div className="p-12 text-center">La página que buscas no existe.</div>} />
+        </Route>
+        <Route element={<AuthLayout />}><Route path="/login" element={<LoginPage />} /><Route path="/register" element={<RegisterPage />} /></Route>
+        <Route element={<RequireRole role="manager" />}><Route element={<BackOfficeLayout role="manager" />}>
+<Route path="/manager" element={<Dashboard />} /><Route path="/manager/inventario" element={<MovementsPage />} />{/* <Route path="/manager/reportes" element={<Reports />} /> */}        </Route></Route>
+        <Route element={<RequireRole role="admin" />}><Route element={<BackOfficeLayout role="admin" />}>
+            <Route path="/admin" element={<AdministrationDashboardPage />} />
+            <Route path="/admin/trabajadores" element={<Management key="workers" kind="workers" />} />
+            <Route path="/admin/productos" element={<Management key="products" kind="products" />} />
+            <Route path="/admin/servicios" element={<Management key="services" kind="services" />} />
+            <Route path="/admin/proveedores" element={<Management key="providers" kind="providers" />} />
+        </Route></Route>
+        <Route element={<RequireRole role="warehouse" />}><Route element={<BackOfficeLayout role="warehouse" />}>
+            <Route path="/warehouse" element={<Stock />} /><Route path="/warehouse/productos" element={<Management kind="products" readonly />} /><Route path="/warehouse/ingresos" element={<Entries />} />
+        </Route></Route>
+        <Route element={<RequireRole role="seller" />}><Route element={<BackOfficeLayout role="seller" />}>
+            <Route path="/seller" element={<Orders home />} /><Route path="/seller/solicitudes" element={<ServiceRequestsPage management />} /><Route path="/seller/pedidos" element={<Orders />} /><Route path="/seller/ventas" element={<Orders sales />} />
+        </Route></Route>
+        <Route element={<RequireRole role="delivery" />}><Route element={<BackOfficeLayout role="delivery" />}>
+            <Route path="/delivery" element={<Deliveries />} /><Route path="/delivery/historial" element={<Deliveries history />} />
+        </Route></Route>
+        <Route element={<RequireRole role="staff" />}><Route element={<BackOfficeLayout role="staff" />}><Route path="/staff" element={<StaffPage />} /></Route></Route>
+    </Routes>;
 }
