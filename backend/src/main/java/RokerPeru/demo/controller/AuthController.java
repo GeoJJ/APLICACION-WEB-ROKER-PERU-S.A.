@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -18,5 +21,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthDTO.Response> login(@Valid @RequestBody AuthDTO.LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        authService.logout(authHeader);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -33,7 +33,7 @@ public class OrdenServicioService {
     @Transactional
     public OrdenServicioDTO.ResponseCliente crearOrdenServicio(OrdenServicioDTO.RequestCliente dto, Long idCliente) {
         Servicio servicio = servicioRepository.findById(dto.idServicio())
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado: " + dto.idServicio()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Servicio", dto.idServicio()));
 
         Usuario cliente = obtenerUsuario(idCliente);
         OrdenesServicio orden = dto.toEntity(servicio, cliente);
@@ -151,7 +151,7 @@ public class OrdenServicioService {
 
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
     }
 
     private void validarAccesoCliente(Long idOrden, Long idCliente) {

@@ -2,7 +2,9 @@ package RokerPeru.demo.dto;
 
 import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Usuario;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
@@ -16,8 +18,8 @@ public final class PedidoDTO {
     public record RequestCliente(
             @NotBlank(message = "El método de pago es obligatorio")
             String metodoPagoPedido,
-
-            @NotNull(message = "El pedido debe contener al menos un detalle")
+            @NotEmpty(message = "El pedido debe contener al menos un detalle")
+            @Valid
             List<DetallePedidoDTO.Request> detalles
     ) {
         public RequestCliente {

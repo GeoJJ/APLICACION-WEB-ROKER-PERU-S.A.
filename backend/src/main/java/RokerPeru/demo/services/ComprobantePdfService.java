@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,8 @@ public class ComprobantePdfService {
     // Los precios del sistema se consideran CON IGV incluido (18%).
     private static final BigDecimal FACTOR_IGV = new BigDecimal("1.18");
 
-    public record ComprobantePdf(String nombreArchivo, byte[] contenido) {}
+    public record ComprobantePdf(String nombreArchivo, byte[] contenido) {
+    }
 
     private final PedidosRepository pedidosRepository;
     private final OrdenesServicioRepository ordenesRepository;
@@ -51,16 +53,17 @@ public class ComprobantePdfService {
     @Value("${empresa.logo:reports/logo.png}")
     private String logoRuta;
 
-    private byte[] logoBytes; // se lee una sola vez
+    private byte[] logoBytes;
 
-    // ---------------------------------------------------------------- PEDIDOS (productos)
-
+    // PEDIDOS (productos)
     @Transactional(readOnly = true)
-    public ComprobantePdf generarDePedido(Long idPedido, Usuario solicitante) {
+    // El ADMIN y GERENTE entran directo. Si es VENDEDOR debe ser su idUsuario. Si es CLIENTE debe ser su idUsuario.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE_GENERAL') " +
+            "|| (hasRole('VENDEDOR') && @pedidosRepository.findById(#idPedido).orElse(null)?.vendedor?.idUsuario == principal.idUsuario) " +
+            "|| (hasRole('CLIENTE') && @pedidosRepository.findById(#idPedido).orElse(null)?.cliente?.idUsuario == principal.idUsuario)")
+    public ComprobantePdf generarDePedido(Long idPedido) { // <-- Ya no necesitas pasar el 'Usuario solicitante' como parámetro
         Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido ", idPedido));
-
-        validarAccesoPedido(pedido, solicitante);
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido", idPedido));
 
         if (pedido.getNumeroComprobantePedido() == null) {
             throw new OperacionNoPermitidaException(
@@ -86,14 +89,14 @@ public class ComprobantePdfService {
         return new ComprobantePdf(nombreArchivo(numero), reporteService.generarPdf("comprobante", p, filas));
     }
 
-    // ---------------------------------------------------------------- ÓRDENES DE SERVICIO
-
+    // ÓRDENES DE SERVICIO
     @Transactional(readOnly = true)
-    public ComprobantePdf generarDeOrdenServicio(Long idOrden, Usuario solicitante) {
+    // ADMIN, GERENTE y VENDEDOR entran directo. CLIENTE solo si es su orden.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE_GENERAL', 'VENDEDOR') " +
+            "|| (hasRole('CLIENTE') && @ordenesServicioRepository.findById(#idOrden).orElse(null)?.cliente?.idUsuario == principal.idUsuario)")
+    public ComprobantePdf generarDeOrdenServicio(Long idOrden) { // <-- Tampoco necesitas el 'Usuario solicitante' aquí
         OrdenesServicio orden = ordenesRepository.findById(idOrden)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio ", idOrden));
-
-        validarAccesoOrden(orden, solicitante);
+                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", idOrden));
 
         if (orden.getNumeroComprobanteServicio() == null) {
             throw new OperacionNoPermitidaException(
@@ -117,44 +120,6 @@ public class ComprobantePdfService {
 
         return new ComprobantePdf(nombreArchivo(numero), reporteService.generarPdf("comprobante", p, filas));
     }
-
-    // ---------------------------------------------------------------- permisos
-
-    // ADMIN y GERENTE ven todo. VENDEDOR solo los pedidos que él confirmó. CLIENTE solo los suyos.
-    private void validarAccesoPedido(Pedidos pedido, Usuario u) {
-        switch (rolDe(u)) {
-            case "ADMINISTRADOR", "GERENTE_GENERAL" -> { }
-            case "VENDEDOR" -> {
-                boolean esSuVenta = pedido.getVendedor() != null
-                        && pedido.getVendedor().getIdUsuario().equals(u.getIdUsuario());
-                if (!esSuVenta) throw denegado();
-            }
-            case "CLIENTE" -> {
-                if (!pedido.getCliente().getIdUsuario().equals(u.getIdUsuario())) throw denegado();
-            }
-            default -> throw denegado();
-        }
-    }
-
-    // En servicios el vendedor ya ve todas las órdenes, por eso aquí también.
-    private void validarAccesoOrden(OrdenesServicio orden, Usuario u) {
-        switch (rolDe(u)) {
-            case "ADMINISTRADOR", "GERENTE_GENERAL", "VENDEDOR" -> { }
-            case "CLIENTE" -> {
-                if (!orden.getCliente().getIdUsuario().equals(u.getIdUsuario())) throw denegado();
-            }
-            default -> throw denegado();
-        }
-    }
-
-    private String rolDe(Usuario u) {
-        return u.getRol() != null ? u.getRol().getNombreRol() : "";
-    }
-
-    private OperacionNoPermitidaException denegado() {
-        return new OperacionNoPermitidaException("Acceso denegado: no puedes ver este comprobante");
-    }
-
     // ---------------------------------------------------------------- parámetros del reporte
 
     private Map<String, Object> parametrosBase(Usuario cliente, String serie, String numeroCompleto,

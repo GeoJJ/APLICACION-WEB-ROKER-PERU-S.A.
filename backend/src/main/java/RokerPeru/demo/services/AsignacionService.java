@@ -32,7 +32,7 @@ public class AsignacionService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", dto.idOrdenServicio()));
 
         EmpleadosServicio empleado = empleadosRepository.findById(dto.idEmpleado())
-                .orElseThrow(() -> new RuntimeException("Empleado de servicio no encontrado: " + dto.idEmpleado()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Empleado de servicio", dto.idEmpleado()));
 
         // Validar que no esté duplicada la asignación
         if (asignacionesRepository.existsByOrdenServicio_IdOrdenServicioAndEmpleado_IdEmpleadoServicio(
@@ -76,6 +76,6 @@ public class AsignacionService {
     public AsignacionDTO.Response buscarAsignacionPorId(Long id) {
         return asignacionesRepository.findById(id)
                 .map(AsignacionDTO.Response::fromEntity)
-                .orElseThrow(() -> new RuntimeException("Asignación no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Asignación", id));
     }
 }

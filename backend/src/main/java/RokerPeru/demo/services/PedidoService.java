@@ -79,7 +79,7 @@ public class PedidoService {
     public PedidoDTO.ResponseVendedor confirmarYAsignarPedido(Long idPedido, PedidoDTO.RequestAsignacionVendedor dto, Long idVendedorLogueado) {
         // Obtener el pedido
         Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + idPedido));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido", idPedido));
 
         // Validar regla de negocio: solo se pueden procesar pedidos pendientes
         if (!"PENDIENTE".equals(pedido.getEstadoPedido())) {
@@ -130,7 +130,7 @@ public class PedidoService {
 
         // Obtener el pedido
         Pedidos pedido = pedidosRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + idPedido));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido", idPedido));
 
         // Delegar la actualización de estado e incidentes al DTO
         dto.applyTo(pedido);
@@ -188,7 +188,7 @@ public class PedidoService {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Intento de buscar usuario con ID inexistente: {}", id);
-                    return new RuntimeException("Usuario no encontrado con ID: " + id);
+                    return new RecursoNoEncontradoException("Usuario", id);
                 });
     }
 

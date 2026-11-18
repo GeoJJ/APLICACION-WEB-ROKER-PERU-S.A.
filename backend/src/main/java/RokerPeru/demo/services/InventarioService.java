@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import RokerPeru.demo.exception.StockInsuficienteException;
+import RokerPeru.demo.exception.RecursoNoEncontradoException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +43,7 @@ public class InventarioService {
     private MovimientoDTO.Response procesarMovimiento(MovimientoDTO.Request request, String tipo) {
         // Con bloqueo de fila: dos peticiones simultáneas sobre el mismo producto se procesan en fila
         Producto producto = productoRepository.buscarParaActualizarStock(request.productoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + request.productoId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Producto", request.productoId()));
 
         int stockAnterior = producto.getStockProducto();
         int nuevoStock = tipo.equals("INGRESO")
@@ -51,7 +53,7 @@ public class InventarioService {
         if (nuevoStock < 0) {
             log.warn("{} rechazado, producto id={}: stock insuficiente (disponible={}, solicitado={})",
                     tipo, producto.getIdProducto(), stockAnterior, request.cantidad());
-            throw new RuntimeException("Stock insuficiente. Disponible: " + stockAnterior);
+            throw new StockInsuficienteException(producto.getNombreProducto(), stockAnterior, request.cantidad());
         }
 
         producto.setStockProducto(nuevoStock);
@@ -71,7 +73,7 @@ public class InventarioService {
 
     public Integer consultarStock(Long idProducto) {
         return productoRepository.consultarStockPorId(idProducto)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + idProducto));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Producto", idProducto));
     }
 
     public List<MovimientoDTO.Response> listarMovimientos() {
