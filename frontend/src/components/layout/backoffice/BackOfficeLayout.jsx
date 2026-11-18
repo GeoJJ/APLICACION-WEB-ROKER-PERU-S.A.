@@ -19,7 +19,6 @@ export default function BackOfficeLayout({ role = "manager" }) {
                     {loading ? <p className="p-8 text-gray-500">Cargando información del servidor...</p> : error ? <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6"><p>{error}</p><button className="mt-3 text-brand underline" onClick={refresh}>Reintentar</button></div> : <Outlet />}
                 </div>
             </main>
-            <div className="md:ml-64"><PublicFooter /></div>
         </div>
     );
 }

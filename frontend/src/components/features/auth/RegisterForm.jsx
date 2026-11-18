@@ -1,15 +1,24 @@
-import { api } from '@/lib/api';
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock } from "lucide-react";
+import { User, Mail, Lock, Building, FileText, Phone, MapPin } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import api from '@/lib/axiosConfig';
 
 export default function RegisterForm() {
     const navigate = useNavigate();
-    const [error,setError]=useState('');
-    const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "", documento: "" });
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({ 
+        tipoPersona: "NATURAL", // Por defecto Natural (DNI)
+        name: "", 
+        email: "", 
+        documento: "", 
+        telefono: "",
+        direccion: "",
+        password: "", 
+        confirmPassword: "" 
+    });
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e) => {
@@ -20,11 +29,37 @@ export default function RegisterForm() {
             return;
         }
 
-        setIsLoading(true);
+        // Validaciones previas según el tipo de persona que exige el backend de tu compañero
+        if (formData.tipoPersona === "NATURAL" && formData.documento.length !== 8) {
+            alert("El DNI de una persona natural debe tener exactamente 8 dígitos");
+            return;
+        }
 
+        if (formData.tipoPersona === "JURIDICA" && formData.documento.length !== 11) {
+            alert("El RUC de una persona jurídica debe tener exactamente 11 dígitos");
+            return;
+        }
+
+        setIsLoading(true);
         setError('');
-        try { await api('/auth/register',{method:'POST',body:JSON.stringify({nombre:formData.name,email:formData.email,documento:formData.documento,password:formData.password})}); navigate('/login'); }
-        catch(e){setError(e.message);}finally{setIsLoading(false);}
+
+        try {
+            await api.post('/auth/register', {
+                nombreUsuario: formData.name,
+                correoUsuario: formData.email,
+                tipoPersonaUsuario: formData.tipoPersona, // "NATURAL" o "JURIDICA"
+                numeroDocumentoUsuario: formData.documento, // DNI (8) o RUC (11)[cite: 21]
+                telefonoUsuario: formData.telefono || null,
+                direccionUsuario: formData.direccion || null,
+                passwordUsuario: formData.password
+            });
+            
+            navigate('/login');
+        } catch (e) {
+            setError(e.response?.data?.mensaje || e.response?.data?.message || 'Error al registrarse en el servidor');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -36,11 +71,49 @@ export default function RegisterForm() {
                 </p>
             </div>
 
-            <p role="status" className="mb-5 rounded-xl bg-blue-50 p-4 text-sm text-brand">El registro de cuentas está pendiente de integración con el backend.</p><form onSubmit={handleSubmit} className="space-y-4">{error&&<p role="alert" className="text-sm text-red-700">{error}</p>}<Input placeholder="DNI (8 dígitos)" aria-label="DNI" pattern="[0-9]{8}" required value={formData.documento} onChange={e=>setFormData({...formData,documento:e.target.value})} />
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+                
+                {/* Selector para elegir entre Persona Natural o Jurídica */}
+                <div className="grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setFormData({...formData, tipoPersona: "NATURAL", documento: ""})}
+                        className={`py-2 text-xs font-semibold rounded-lg border transition ${
+                            formData.tipoPersona === "NATURAL" 
+                                ? "bg-blue-600 text-white border-blue-600" 
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                    >
+                        Persona Natural
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFormData({...formData, tipoPersona: "JURIDICA", documento: ""})}
+                        className={`py-2 text-xs font-semibold rounded-lg border transition ${
+                            formData.tipoPersona === "JURIDICA" 
+                                ? "bg-blue-600 text-white border-blue-600" 
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                    >
+                        Persona Jurídica
+                    </button>
+                </div>
+
+                <Input 
+                    icon={FileText}
+                    placeholder={formData.tipoPersona === "NATURAL" ? "DNI (8 dígitos)" : "RUC (11 dígitos)"} 
+                    aria-label="Documento" 
+                    maxLength={formData.tipoPersona === "NATURAL" ? 8 : 11}
+                    required 
+                    value={formData.documento} 
+                    onChange={e => setFormData({...formData, documento: e.target.value})} 
+                />
+                
                 <Input
-                    icon={User}
+                    icon={formData.tipoPersona === "NATURAL" ? User : Building}
                     type="text"
-                    placeholder="Nombre completo"
+                    placeholder={formData.tipoPersona === "NATURAL" ? "Nombre completo" : "Razón social / Nombre de empresa"}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
@@ -56,9 +129,26 @@ export default function RegisterForm() {
                 />
 
                 <Input
+                    icon={Phone}
+                    type="tel"
+                    placeholder="Teléfono (9 dígitos, opcional)"
+                    maxLength={9}
+                    value={formData.telefono}
+                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                />
+
+                <Input
+                    icon={MapPin}
+                    type="text"
+                    placeholder="Dirección (opcional)"
+                    value={formData.direccion}
+                    onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                />
+
+                <Input
                     icon={Lock}
                     type="password"
-                    placeholder="Contraseña"
+                    placeholder="Contraseña (mínimo 8 caracteres)"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -74,7 +164,7 @@ export default function RegisterForm() {
                     required
                 />
 
-                <Button type="submit" className="mt-2 w-full" disabled={true}>
+                <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? "Creando cuenta..." : "Registrarse"}
                 </Button>
             </form>

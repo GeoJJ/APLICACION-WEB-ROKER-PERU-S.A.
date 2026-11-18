@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import api from '@/lib/axiosConfig'; 
-import { ROLES } from '@/data/roles'; // 1. IMPORTANTE: Importar tu tabla de roles
+import { ROLES } from '@/data/roles';
 
 const Context = createContext(null);
 
@@ -12,7 +12,6 @@ export default function AuthProvider({ children }) {
     const [isInitialized, setIsInitialized] = useState(false);
     const navigate = useNavigate();
 
-    // 2. EFECTO AL REFRESCAR (F5)
     useEffect(() => {
         const checkToken = () => {
             const token = localStorage.getItem('token');
@@ -20,16 +19,12 @@ export default function AuthProvider({ children }) {
                 try {
                     const decoded = jwtDecode(token);
                     if (decoded.exp * 1000 < Date.now()) {
-                        logout();
+                        logoutLocally();
                     } else {
-                        // Extraemos el rol de Spring ("ADMINISTRADOR")
                         const springRole = decoded.role ? decoded.role.replace('ROLE_', '') : 'ADMINISTRADOR';
-                        
-                        // Buscamos el ID corto ("admin") en tu tabla
                         const frontendRoleObj = ROLES.find(r => r.code === springRole);
                         const userRole = frontendRoleObj ? frontendRoleObj.id : 'customer';
 
-                        // Agrega el usuario con datos de respaldo
                         setUser({
                             email: decoded.sub,
                             correoUsuario: decoded.sub,
@@ -40,7 +35,7 @@ export default function AuthProvider({ children }) {
                     }
                 } catch (error) {
                     console.error("Token corrupto", error);
-                    logout();
+                    logoutLocally();
                 }
             }
             setIsInitialized(true);
@@ -48,7 +43,6 @@ export default function AuthProvider({ children }) {
         checkToken();
     }, []);
 
-    // 3. FUNCIÓN DE LOGIN
     async function login(email, password) {
         try {
             const response = await api.post('/auth/login', { 
@@ -63,20 +57,16 @@ export default function AuthProvider({ children }) {
             const loggedUser = {
                 email: decoded.sub,
                 correoUsuario: decoded.sub,
-                // Extraemos el texto antes del @ para usarlo como nombre temporal (ej. "admin")
                 nombreUsuario: decoded.sub.split('@')[0],
                 name: decoded.sub.split('@')[0]
             };
 
-            // Extraemos el rol de Spring ("ADMINISTRADOR")
             const springRole = decoded.role ? decoded.role.replace('ROLE_', '') : 'ADMINISTRADOR';
-            
-            // Buscamos el ID corto ("admin") en tu tabla
             const frontendRoleObj = ROLES.find(r => r.code === springRole);
             const userRole = frontendRoleObj ? frontendRoleObj.id : 'customer';
 
             setUser(loggedUser);
-            setRole(userRole); // Guardamos "admin"
+            setRole(userRole);
 
             return { ...loggedUser, role: userRole };
 
@@ -88,11 +78,29 @@ export default function AuthProvider({ children }) {
         }
     }
 
-    function logout() {
+    // Función auxiliar para limpiar estados locales
+    const logoutLocally = () => {
         localStorage.removeItem('token');
         setUser(null);
         setRole(null);
-        navigate('/login');
+    };
+
+    // Función oficial de logout conectada al backend
+    async function logout() {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Notificamos al backend de tu compañero enviando el token en el header
+                await api.post('/auth/logout', {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+        } catch (error) {
+            console.error("Error al cerrar sesión en el servidor", error);
+        } finally {
+            logoutLocally();
+            navigate('/login');
+        }
     }
 
     if (!isInitialized) return null;
