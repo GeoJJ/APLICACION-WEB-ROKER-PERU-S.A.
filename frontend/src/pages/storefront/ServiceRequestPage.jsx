@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CalendarDays, CheckCircle2, ClipboardList, MapPin, UserRound } from 'lucide-react';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { useCatalog } from '@/hooks/useCatalog';
 import { api } from '@/lib/api';
 import { localDate } from '@/data/backofficeStore';

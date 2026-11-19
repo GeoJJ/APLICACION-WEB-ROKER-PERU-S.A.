@@ -4,20 +4,20 @@ import { User, Mail, Lock, Building, FileText, Phone, MapPin } from "lucide-reac
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import api from '@/lib/axiosConfig';
-
+import { useAuth } from '@/hooks/useAuth';
 export default function RegisterForm() {
     const navigate = useNavigate();
+    const { register } = useAuth();
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState({ 
+    const [formData, setFormData] = useState({
         tipoPersona: "NATURAL", // Por defecto Natural (DNI)
-        name: "", 
-        email: "", 
-        documento: "", 
+        name: "",
+        email: "",
+        documento: "",
         telefono: "",
         direccion: "",
-        password: "", 
-        confirmPassword: "" 
+        password: "",
+        confirmPassword: ""
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export default function RegisterForm() {
         setError('');
 
         try {
-            await api.post('/auth/register', {
+            await register({
                 nombreUsuario: formData.name,
                 correoUsuario: formData.email,
                 tipoPersonaUsuario: formData.tipoPersona, // "NATURAL" o "JURIDICA"
@@ -53,10 +53,10 @@ export default function RegisterForm() {
                 direccionUsuario: formData.direccion || null,
                 passwordUsuario: formData.password
             });
-            
+
             navigate('/login');
         } catch (e) {
-            setError(e.response?.data?.mensaje || e.response?.data?.message || 'Error al registrarse en el servidor');
+            setError(e.message);
         } finally {
             setIsLoading(false);
         }
@@ -73,43 +73,41 @@ export default function RegisterForm() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-                
+
                 {/* Selector para elegir entre Persona Natural o Jurídica */}
                 <div className="grid grid-cols-2 gap-2">
                     <button
                         type="button"
-                        onClick={() => setFormData({...formData, tipoPersona: "NATURAL", documento: ""})}
-                        className={`py-2 text-xs font-semibold rounded-lg border transition ${
-                            formData.tipoPersona === "NATURAL" 
-                                ? "bg-blue-600 text-white border-blue-600" 
+                        onClick={() => setFormData({ ...formData, tipoPersona: "NATURAL", documento: "" })}
+                        className={`py-2 text-xs font-semibold rounded-lg border transition ${formData.tipoPersona === "NATURAL"
+                                ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                        }`}
+                            }`}
                     >
                         Persona Natural
                     </button>
                     <button
                         type="button"
-                        onClick={() => setFormData({...formData, tipoPersona: "JURIDICA", documento: ""})}
-                        className={`py-2 text-xs font-semibold rounded-lg border transition ${
-                            formData.tipoPersona === "JURIDICA" 
-                                ? "bg-blue-600 text-white border-blue-600" 
+                        onClick={() => setFormData({ ...formData, tipoPersona: "JURIDICA", documento: "" })}
+                        className={`py-2 text-xs font-semibold rounded-lg border transition ${formData.tipoPersona === "JURIDICA"
+                                ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                        }`}
+                            }`}
                     >
                         Persona Jurídica
                     </button>
                 </div>
 
-                <Input 
+                <Input
                     icon={FileText}
-                    placeholder={formData.tipoPersona === "NATURAL" ? "DNI (8 dígitos)" : "RUC (11 dígitos)"} 
-                    aria-label="Documento" 
+                    placeholder={formData.tipoPersona === "NATURAL" ? "DNI (8 dígitos)" : "RUC (11 dígitos)"}
+                    aria-label="Documento"
                     maxLength={formData.tipoPersona === "NATURAL" ? 8 : 11}
-                    required 
-                    value={formData.documento} 
-                    onChange={e => setFormData({...formData, documento: e.target.value})} 
+                    required
+                    value={formData.documento}
+                    onChange={e => setFormData({ ...formData, documento: e.target.value })}
                 />
-                
+
                 <Input
                     icon={formData.tipoPersona === "NATURAL" ? User : Building}
                     type="text"

@@ -1,5 +1,5 @@
 import { useCart } from '@/components/cart/CartProvider';
-import AccountMenu from '@/components/auth/AccountMenu';
+import AccountMenu from '@/components/shared/AccountMenu';
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Search, ShoppingCart, Menu, X } from "lucide-react";

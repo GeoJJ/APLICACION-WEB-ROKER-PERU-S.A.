@@ -9,7 +9,7 @@ export default function Reportes() {
         setLoading(true);
         setError('');
         try {
-            const blob = await api('/reportes/productos/excel', { blob: true });
+            const blob = await api('/gerente/reportes/productos/excel', { blob: true });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;

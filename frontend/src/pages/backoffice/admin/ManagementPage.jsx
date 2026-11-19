@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Users, Package, ShoppingCart, Plus, Pencil } from 'lucide-react';
 import { useBackOffice } from '@/components/layout/backoffice/BackOfficeProvider';
-import { ROLES } from '@/data/roles';
+import { ROLES } from '@/lib/auth';
 import { money, stockState } from '@/data/backofficeStore';
 import { SectionHeader, Panel, Field, Modal, FormActions, SearchBox } from '@/components/shared/ManagementUI';
 import DataTable from '@/components/shared/DataTable';

@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { emptyPanel, loadPanel } from '@/lib/backofficeApi';
 const Context = createContext(null);
 export default function BackOfficeProvider({ children }) {
     const { role } = useAuth(); const [data, setData] = useState(emptyPanel); const [loaded, setLoaded] = useState(''); const [notice, setNotice] = useState(''); const [notes, setNotes] = useState([]); const [actorId, setActorId] = useState(''); const generation = useRef(0);
-    const roleId = role?.id || '', key = roleId + ':' + actorId;
+    const roleId = role || '', key = roleId + ':' + actorId;
     useEffect(() => {
         let active = true; const token = ++generation.current; if (!roleId) return;
         loadPanel(roleId, actorId).then(result => { if (active && token === generation.current) { setData(result.data); setNotes(result.notes); setLoaded(key); } });

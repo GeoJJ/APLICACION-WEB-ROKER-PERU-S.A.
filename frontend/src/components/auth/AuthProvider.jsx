@@ -1,115 +1,59 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import api from '@/lib/axiosConfig'; 
-import { ROLES } from '@/data/roles';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { tokenStore, sessionFromToken, SESSION_EXPIRED } from '@/lib/auth';
+import { AuthContext } from '@/hooks/useAuth';
 
-const Context = createContext(null);
+function storedSession() {
+    const token = tokenStore.get();
+    if (!token) return null;
+    const session = sessionFromToken(token);
+    if (!session) tokenStore.clear();
+    return session;
+}
 
 export default function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [role, setRole] = useState(null);
-    const [isInitialized, setIsInitialized] = useState(false);
-    const navigate = useNavigate();
+    const [session, setSession] = useState(storedSession);
 
     useEffect(() => {
-        const checkToken = () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    const decoded = jwtDecode(token);
-                    if (decoded.exp * 1000 < Date.now()) {
-                        logoutLocally();
-                    } else {
-                        const springRole = decoded.role ? decoded.role.replace('ROLE_', '') : 'ADMINISTRADOR';
-                        const frontendRoleObj = ROLES.find(r => r.code === springRole);
-                        const userRole = frontendRoleObj ? frontendRoleObj.id : 'customer';
-
-                        setUser({
-                            email: decoded.sub,
-                            correoUsuario: decoded.sub,
-                            nombreUsuario: decoded.sub.split('@')[0],
-                            name: decoded.sub.split('@')[0]
-                        });
-                        setRole(userRole);
-                    }
-                } catch (error) {
-                    console.error("Token corrupto", error);
-                    logoutLocally();
-                }
-            }
-            setIsInitialized(true);
-        };
-        checkToken();
+        const onExpired = () => setSession(null);
+        window.addEventListener(SESSION_EXPIRED, onExpired);
+        return () => window.removeEventListener(SESSION_EXPIRED, onExpired);
     }, []);
 
     async function login(email, password) {
+        let data;
         try {
-            const response = await api.post('/auth/login', { 
-                correoUsuario: email, 
-                passwordUsuario: password 
-            });
-
-            const { token } = response.data;
-            localStorage.setItem('token', token);
-            
-            const decoded = jwtDecode(token);
-            const loggedUser = {
-                email: decoded.sub,
-                correoUsuario: decoded.sub,
-                nombreUsuario: decoded.sub.split('@')[0],
-                name: decoded.sub.split('@')[0]
-            };
-
-            const springRole = decoded.role ? decoded.role.replace('ROLE_', '') : 'ADMINISTRADOR';
-            const frontendRoleObj = ROLES.find(r => r.code === springRole);
-            const userRole = frontendRoleObj ? frontendRoleObj.id : 'customer';
-
-            setUser(loggedUser);
-            setRole(userRole);
-
-            return { ...loggedUser, role: userRole };
-
-        } catch (error) {
-            if (error.response?.status === 403 || error.response?.status === 401) {
-                throw new Error('Correo o contraseña incorrectos');
-            }
-            throw new Error(error.response?.data?.mensaje || 'Error de conexión con el servidor');
+            data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ correoUsuario: email.trim(), passwordUsuario: password }) });
+        } catch (e) {
+            if ([400, 401, 403].includes(e.status)) throw new Error('Correo o contraseña incorrectos', { cause: e });
+            throw e;
         }
+        const next = data?.token && sessionFromToken(data.token);
+        if (!next) throw new Error('El servidor no envió el rol de tu cuenta en el token. Revisa AuthService.login en el backend.');
+        tokenStore.set(data.token);
+        setSession(next);
+        return next;
     }
 
-    // Función auxiliar para limpiar estados locales
-    const logoutLocally = () => {
-        localStorage.removeItem('token');
-        setUser(null);
-        setRole(null);
-    };
-
-    // Función oficial de logout conectada al backend
-    async function logout() {
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                // Notificamos al backend de tu compañero enviando el token en el header
-                await api.post('/auth/logout', {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
-        } catch (error) {
-            console.error("Error al cerrar sesión en el servidor", error);
-        } finally {
-            logoutLocally();
-            navigate('/login');
-        }
+    async function register(form) {
+        await api('/auth/register', { method: 'POST', body: JSON.stringify(form) });
     }
 
-    if (!isInitialized) return null;
+    function logout() {
+        const token = tokenStore.get();
+        if (token) {
+            api('/auth/logout', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            }).catch(() => { });
+        }
+        tokenStore.clear();
+        setSession(null);
+    }
 
     return (
-        <Context.Provider value={{ user, role, login, logout }}>
+        <AuthContext.Provider value={{ user: session, role: session?.role ?? null, login, register, logout }}>
             {children}
-        </Context.Provider>
+        </AuthContext.Provider>
     );
 }
-
-export const useAuth = () => useContext(Context);
