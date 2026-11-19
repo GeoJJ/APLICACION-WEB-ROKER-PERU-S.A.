@@ -1,0 +1,34 @@
+meta {
+  name: Ajuste mayor al stock disponible
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/admin/inventario/ajuste
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd2}},
+    "cantidad": 9999,
+    "tipoMovimiento": "AJUSTE",
+    "justificacion": "Prueba automatizada"
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

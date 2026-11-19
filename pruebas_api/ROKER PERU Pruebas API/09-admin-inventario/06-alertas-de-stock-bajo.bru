@@ -1,0 +1,29 @@
+meta {
+  name: Alertas de stock bajo
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/admin/inventario/alertas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("Cada alerta trae nivel de urgencia", function() {
+    expect(res.body.every(a => typeof a.nivelUrgencia === "string")).to.equal(true);
+  });
+}

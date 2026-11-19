@@ -1,0 +1,25 @@
+meta {
+  name: Confirmar otra vez la misma orden
+  type: http
+  seq: 19
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden1}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

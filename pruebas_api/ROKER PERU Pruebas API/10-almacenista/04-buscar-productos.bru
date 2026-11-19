@@ -1,0 +1,26 @@
+meta {
+  name: Buscar productos
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/almacenista/productos/buscar?texto=Alcohol
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd2", function() {
+    const ids = res.body.map(x => Number(x.idProducto));
+    expect(ids).to.include(Number(bru.getVar("idProd2")));
+  });
+}

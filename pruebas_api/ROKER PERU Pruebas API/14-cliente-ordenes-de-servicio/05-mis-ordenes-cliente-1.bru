@@ -1,0 +1,45 @@
+meta {
+  name: Mis ordenes (cliente 1)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idOrden1", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden1")));
+  });
+
+  test("La lista incluye idOrden3", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden3")));
+  });
+
+  test("La lista incluye idOrden4", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden4")));
+  });
+
+  test("La lista NO incluye idOrden2", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.not.include(Number(bru.getVar("idOrden2")));
+  });
+}

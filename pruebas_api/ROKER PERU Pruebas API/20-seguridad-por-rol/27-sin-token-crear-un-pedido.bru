@@ -1,0 +1,29 @@
+meta {
+  name: Sin token: crear un pedido
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      {
+        "idProducto": {{idProd1}},
+        "cantidadProducto": 1
+      }
+    ]
+  }
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

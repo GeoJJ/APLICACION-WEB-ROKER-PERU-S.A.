@@ -1,0 +1,22 @@
+meta {
+  name: Buscar servicios sin token
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/cliente/servicios/buscar?texto=Limpieza
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idServicio1", function() {
+    const ids = res.body.map(x => Number(x.idServicio));
+    expect(ids).to.include(Number(bru.getVar("idServicio1")));
+  });
+}

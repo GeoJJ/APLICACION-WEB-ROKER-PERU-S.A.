@@ -21,6 +21,7 @@ import Stock from '@/pages/backoffice/warehouse/StockOverviewPage';
 import Orders from '@/pages/backoffice/seller/OrdersManagementPage';
 import Deliveries from '@/pages/backoffice/delivery/DeliveryManagementPage';
 import Management from '@/pages/backoffice/admin/ManagementPage';
+import AdminInventoryPage from '@/pages/backoffice/admin/AdminInventoryPage';
 import Entries from '@/pages/backoffice/warehouse/StockEntriesPage';
 // import Reports from '@/pages/backoffice/admin/Reportes';
 import StaffPage from '@/pages/backoffice/staff/StaffPage';
@@ -41,6 +42,9 @@ export default function AppRouter() {
             <Route path="/admin/productos" element={<Management key="products" kind="products" />} />
             <Route path="/admin/servicios" element={<Management key="services" kind="services" />} />
             <Route path="/admin/proveedores" element={<Management key="providers" kind="providers" />} />
+            <Route path="/admin/personal" element={<Management key="employees" kind="employees" />} />
+            <Route path="/admin/roles" element={<Management key="roles" kind="roles" />} />
+            <Route path="/admin/inventario" element={<AdminInventoryPage />} />
         </Route></Route>
         <Route element={<RequireRole role="warehouse" />}><Route element={<BackOfficeLayout role="warehouse" />}>
             <Route path="/warehouse" element={<Stock />} /><Route path="/warehouse/productos" element={<Management kind="products" readonly />} /><Route path="/warehouse/ingresos" element={<Entries />} />

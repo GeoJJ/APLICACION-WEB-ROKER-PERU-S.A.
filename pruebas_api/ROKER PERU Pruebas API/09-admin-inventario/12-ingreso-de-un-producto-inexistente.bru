@@ -1,0 +1,32 @@
+meta {
+  name: Ingreso de un producto inexistente
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/admin/inventario/ingreso
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "productoId": 999999,
+    "cantidad": 5
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

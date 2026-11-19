@@ -1,0 +1,21 @@
+meta {
+  name: Ruta que no existe
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/ruta-que-no-existe
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 404", function() {
+    expect([404]).to.include(res.status);
+  });
+}

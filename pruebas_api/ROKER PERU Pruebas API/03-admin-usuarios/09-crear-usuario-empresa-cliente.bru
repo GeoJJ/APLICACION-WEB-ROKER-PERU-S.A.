@@ -1,0 +1,52 @@
+meta {
+  name: Crear usuario empresa (CLIENTE)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Clinica Salud Total SAC {{run}}",
+    "correoUsuario": "empresa.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "JURIDICA",
+    "numeroDocumentoUsuario": "{{rucEmpresa}}",
+    "telefonoUsuario": "987654321",
+    "direccionUsuario": "Av. Ejemplo 123, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idEmpresa", res.body.idUsuario);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("CLIENTE");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

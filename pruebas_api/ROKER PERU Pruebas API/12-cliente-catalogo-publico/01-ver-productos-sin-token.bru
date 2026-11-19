@@ -1,0 +1,34 @@
+meta {
+  name: Ver productos sin token
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idProd1", function() {
+    const ids = res.body.map(x => Number(x.idProducto));
+    expect(ids).to.include(Number(bru.getVar("idProd1")));
+  });
+
+  test("Cada producto trae lo necesario para pedir", function() {
+    expect(res.body.every(p => p.idProducto && p.nombreProducto && typeof p.precioProducto === "number" && typeof p.disponible === "boolean")).to.equal(true);
+  });
+
+  test("No expone stock ni proveedor", function() {
+    expect(res.body.every(p => !("stockProducto" in p) && !("idProveedor" in p) && !("nombreProveedor" in p))).to.equal(true);
+  });
+}

@@ -1,0 +1,44 @@
+meta {
+  name: Asignar empleado 1 a la orden 1
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden1}},
+    "idEmpleado": {{idEmp1}},
+    "nombreResponsableAsignacion": "Vendedor Prueba",
+    "descripcionAsignacion": "Limpieza general del area"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idAsig1", res.body.idAsignacion);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Trae el nombre del empleado", function() {
+    expect(res.body.nombreCompletoEmpleado).to.be.a("string");
+  });
+
+  test("Fecha de asignacion", function() {
+    expect(res.body.fechaAsignacion).to.exist;
+  });
+}

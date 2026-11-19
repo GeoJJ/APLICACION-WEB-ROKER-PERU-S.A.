@@ -1,0 +1,49 @@
+meta {
+  name: Mis entregas (repartidor 1)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/repartidor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido1")));
+  });
+
+  test("La lista incluye idPedido2", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido2")));
+  });
+
+  test("La lista incluye idPedido4", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido4")));
+  });
+
+  test("La lista NO incluye idPedido3", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido3")));
+  });
+
+  test("Trae direccion y telefono del cliente", function() {
+    expect(res.body.every(p => "direccionEntregaCliente" in p && "telefonoCliente" in p)).to.equal(true);
+  });
+}

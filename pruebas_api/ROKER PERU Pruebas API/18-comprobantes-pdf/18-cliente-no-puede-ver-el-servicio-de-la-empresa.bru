@@ -1,0 +1,25 @@
+meta {
+  name: Cliente NO puede ver el servicio de la empresa
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/ordenes-servicio/{{idOrden2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

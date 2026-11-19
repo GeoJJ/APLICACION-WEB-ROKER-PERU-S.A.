@@ -1,0 +1,50 @@
+meta {
+  name: Mis ventas (vendedor 1)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/vendedor/pedidos/mis-ventas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido1")));
+  });
+
+  test("La lista incluye idPedido2", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido2")));
+  });
+
+  test("La lista incluye idPedido3", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido3")));
+  });
+
+  test("La lista NO incluye idPedido4", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido4")));
+  });
+
+  test("La lista NO incluye idPedido5", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido5")));
+  });
+}

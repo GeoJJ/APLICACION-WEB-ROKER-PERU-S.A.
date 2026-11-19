@@ -1,0 +1,31 @@
+meta {
+  name: Mis pedidos (cliente 2) no ve los de otros
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente2}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idPedido4", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido4")));
+  });
+
+  test("La lista NO incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido1")));
+  });
+}

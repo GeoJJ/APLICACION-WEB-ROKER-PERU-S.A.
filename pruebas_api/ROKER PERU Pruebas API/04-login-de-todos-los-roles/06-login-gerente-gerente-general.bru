@@ -1,0 +1,32 @@
+meta {
+  name: Login gerente (GERENTE_GENERAL)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correoUsuario": "gerente.{{run}}@rokerperu.test",
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("tokenGerente", res.body.token); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve un token JWT", function() {
+    expect(res.body.token.split(".").length).to.equal(3);
+  });
+}

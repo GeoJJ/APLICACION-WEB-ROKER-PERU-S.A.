@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,10 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByCorreoUsuario(request.correoUsuario()).orElseThrow();
 
         // 3. Generamos el token con sus datos y su rol (gracias a UserDetails)
-        String token = jwtService.generateToken(usuario);
+        String token = jwtService.generateToken(
+                Map.of("rol", usuario.getRol().getNombreRol(),
+                        "nombre", usuario.getNombreUsuario()),
+                usuario);
         log.info("Inicio de sesión exitoso para el usuario: {} con rol: {}", usuario.getCorreoUsuario(), usuario.getRol().getNombreRol());
         // 4. Devolvemos el token envuelto en el DTO
         return new AuthDTO.Response(token);
@@ -49,7 +53,7 @@ public class AuthService {
                 TokenInvalido tokenInvalido = new TokenInvalido(token, LocalDateTime.now());
                 tokenInvalidoRepository.save(tokenInvalido);
                 log.info("Sesión cerrada correctamente. Token enviado a la lista negra.");
-            }else{
+            } else {
                 log.warn("Intento de logout fallido: Cabecera 'Authorization' malformada o vacía.");
             }
         }

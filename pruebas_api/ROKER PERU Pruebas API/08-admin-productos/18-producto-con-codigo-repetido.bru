@@ -1,0 +1,38 @@
+meta {
+  name: Producto con codigo repetido
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-{{run}}-1",
+    "nombreProducto": "Copia",
+    "categoriaProducto": "bioseguridad",
+    "precioProducto": 5.0,
+    "stockProducto": 1,
+    "stockMinimo": 0,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv1}}
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

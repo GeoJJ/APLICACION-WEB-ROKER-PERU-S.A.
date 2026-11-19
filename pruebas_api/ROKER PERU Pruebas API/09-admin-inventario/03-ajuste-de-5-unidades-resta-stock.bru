@@ -1,0 +1,38 @@
+meta {
+  name: Ajuste de 5 unidades (resta stock)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/admin/inventario/ajuste
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd2}},
+    "cantidad": 5,
+    "tipoMovimiento": "AJUSTE",
+    "justificacion": "Cajas danadas"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Tipo AJUSTE", function() {
+    expect(res.body.tipoMovimiento).to.equal("AJUSTE");
+  });
+
+  test("Stock resultante 35", function() {
+    expect(res.body.stockResultante).to.equal(35);
+  });
+}

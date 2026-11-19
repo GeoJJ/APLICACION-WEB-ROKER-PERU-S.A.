@@ -1,0 +1,30 @@
+meta {
+  name: Ver asignaciones de la orden 1
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/vendedor/asignaciones/orden/{{idOrden1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Una asignacion", function() {
+    expect(res.body.length).to.equal(1);
+  });
+
+  test("La lista incluye idAsig1", function() {
+    const ids = res.body.map(x => Number(x.idAsignacion));
+    expect(ids).to.include(Number(bru.getVar("idAsig1")));
+  });
+}

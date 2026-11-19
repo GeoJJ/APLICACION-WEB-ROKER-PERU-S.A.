@@ -1,0 +1,40 @@
+meta {
+  name: Orden 2 (empresa): servicio 2 (S/ 400)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEmpresa}}
+}
+
+body:json {
+  {
+    "idServicio": {{idServicio2}},
+    "fechaProgramadaServicio": "2030-03-10T09:00:00",
+    "metodoPagoServicio": "factura",
+    "incidenciaServicio": "Ingresar por la puerta lateral"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idOrden2", res.body.idOrdenServicio);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Monto S/ 400", function() {
+    expect(res.body.montoTotalServicio).to.be.closeTo(400, 0.01);
+  });
+}

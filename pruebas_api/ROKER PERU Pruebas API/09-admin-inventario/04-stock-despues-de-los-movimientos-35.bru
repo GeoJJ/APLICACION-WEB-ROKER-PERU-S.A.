@@ -1,0 +1,25 @@
+meta {
+  name: Stock despues de los movimientos (35)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/inventario/stock/{{idProd2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Stock = 35", function() {
+    expect(res.body).to.equal(35);
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Servicio sin precio
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/admin/servicios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "categoriaServicio": "limpieza",
+    "nombreServicio": "Sin precio",
+    "tipoServicio": "preventivo",
+    "descripcionServicio": "Servicio de prueba automatizada",
+    "duracionEstimadaServicio": "4 horas",
+    "cantidadPersonalServicio": "1"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Buscar proveedor por texto
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/proveedores/buscar?texto=Bioseguridad
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProv1", function() {
+    const ids = res.body.map(x => Number(x.idProveedor));
+    expect(ids).to.include(Number(bru.getVar("idProv1")));
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Stock tras la venta (30)
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Stock = 30", function() {
+    expect(res.body).to.equal(30);
+  });
+}

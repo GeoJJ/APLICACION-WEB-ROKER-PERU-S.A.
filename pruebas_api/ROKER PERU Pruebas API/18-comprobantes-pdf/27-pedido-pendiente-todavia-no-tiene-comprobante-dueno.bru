@@ -1,0 +1,25 @@
+meta {
+  name: Pedido pendiente todavia no tiene comprobante (dueno)
+  type: http
+  seq: 27
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/pedidos/{{idPedido5}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Vendedor intenta crear una orden de servicio (solo cliente)
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idServicio": {{idServicio1}},
+    "fechaProgramadaServicio": "2030-03-10T09:00:00",
+    "metodoPagoServicio": "transferencia",
+    "incidenciaServicio": "Ingresar por la puerta lateral"
+  }
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

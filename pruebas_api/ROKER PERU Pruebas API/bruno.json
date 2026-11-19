@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "ROKER PERU - Pruebas API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

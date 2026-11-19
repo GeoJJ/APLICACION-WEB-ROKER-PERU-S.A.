@@ -1,0 +1,25 @@
+meta {
+  name: Ver producto 1 por id
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/admin/productos/{{idProd1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Precio", function() {
+    expect(res.body.precioProducto).to.equal(20);
+  });
+}

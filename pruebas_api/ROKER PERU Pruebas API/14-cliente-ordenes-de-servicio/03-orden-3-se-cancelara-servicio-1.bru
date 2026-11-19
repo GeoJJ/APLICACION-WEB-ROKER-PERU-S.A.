@@ -1,0 +1,36 @@
+meta {
+  name: Orden 3 (se cancelara): servicio 1
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "idServicio": {{idServicio1}},
+    "fechaProgramadaServicio": "2030-03-10T09:00:00",
+    "metodoPagoServicio": "efectivo",
+    "incidenciaServicio": "Ingresar por la puerta lateral"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idOrden3", res.body.idOrdenServicio);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

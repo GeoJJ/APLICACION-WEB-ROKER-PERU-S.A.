@@ -1,0 +1,21 @@
+meta {
+  name: Ver un producto inexistente
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos/999999
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Ruta protegida sin token
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

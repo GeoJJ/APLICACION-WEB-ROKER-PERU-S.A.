@@ -1,0 +1,31 @@
+meta {
+  name: Actualizar un pedido inexistente
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/999999/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+body:json {
+  {
+    "nuevoEstado": "ENTREGADO"
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

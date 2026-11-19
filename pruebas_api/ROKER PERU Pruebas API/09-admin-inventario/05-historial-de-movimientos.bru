@@ -1,0 +1,33 @@
+meta {
+  name: Historial de movimientos
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/admin/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("Incluye los movimientos del producto 2", function() {
+    expect(res.body.filter(m => m.nombreProducto.includes("Alcohol")).length).to.be.at.least(2);
+  });
+
+  test("Cada movimiento trae fecha", function() {
+    expect(res.body.every(m => m.fechaOperacion)).to.equal(true);
+  });
+}

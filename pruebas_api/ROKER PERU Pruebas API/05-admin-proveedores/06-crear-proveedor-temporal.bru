@@ -1,0 +1,36 @@
+meta {
+  name: Crear proveedor temporal
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/admin/proveedores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreProveedor": "Proveedor Temporal {{run}}",
+    "rucProveedor": "{{rucProvTemp}}",
+    "telefonoProveedor": "054123456",
+    "correoProveedor": "ventas{{run}}@proveedor.test"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idProvTemp", res.body.idProveedor);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

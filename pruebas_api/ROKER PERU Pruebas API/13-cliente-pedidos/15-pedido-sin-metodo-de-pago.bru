@@ -1,0 +1,36 @@
+meta {
+  name: Pedido sin metodo de pago
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "detalles": [
+      {
+        "idProducto": {{idProd1}},
+        "cantidadProducto": 1
+      }
+    ]
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Cancelar la orden 3 con motivo
+  type: http
+  seq: 24
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden3}}/cancelar?incidencia=El%20cliente%20desistio%20del%20servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CANCELADO", function() {
+    expect(res.body.estadoServicio).to.equal("CANCELADO");
+  });
+
+  test("Motivo guardado", function() {
+    expect(res.body.incidenciaServicio).to.contain("desistio");
+  });
+
+  test("Una orden cancelada no emite comprobante", function() {
+    expect(res.body.serieComprobanteServicio).to.equal(null);
+  });
+}

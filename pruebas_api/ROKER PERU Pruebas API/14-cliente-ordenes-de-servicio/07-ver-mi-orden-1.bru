@@ -1,0 +1,25 @@
+meta {
+  name: Ver mi orden 1
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio/{{idOrden1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Es la orden pedida", function() {
+    expect(res.body.idOrdenServicio).to.equal(Number(bru.getVar("idOrden1")));
+  });
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Actualizar descripcion del servicio 1
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/admin/servicios/{{idServicio1}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "categoriaServicio": "limpieza",
+    "nombreServicio": "Limpieza integral de oficinas {{run}}",
+    "tipoServicio": "preventivo",
+    "descripcionServicio": "Descripcion actualizada",
+    "precioServicio": 150.0,
+    "duracionEstimadaServicio": "4 horas",
+    "cantidadPersonalServicio": "1"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Descripcion actualizada", function() {
+    expect(res.body.descripcionServicio).to.equal("Descripcion actualizada");
+  });
+}

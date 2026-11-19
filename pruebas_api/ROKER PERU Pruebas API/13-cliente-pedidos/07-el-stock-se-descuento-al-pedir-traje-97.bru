@@ -1,0 +1,25 @@
+meta {
+  name: El stock se descuento al pedir (traje 97)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd3}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("100 - 1 - 2 = 97", function() {
+    expect(res.body).to.equal(97);
+  });
+}

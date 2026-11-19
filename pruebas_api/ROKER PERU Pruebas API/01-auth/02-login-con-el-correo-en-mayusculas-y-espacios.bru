@@ -1,0 +1,24 @@
+meta {
+  name: Login con el correo en mayusculas y espacios
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correoUsuario": "  ADMIN@ROKERPERU.COM ",
+    "passwordUsuario": "{{adminPassword}}"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Almacenista intenta confirmar un pedido
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido5}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor}}
+  }
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

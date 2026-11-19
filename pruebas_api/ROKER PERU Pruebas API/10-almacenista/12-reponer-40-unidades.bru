@@ -1,0 +1,34 @@
+meta {
+  name: Reponer 40 unidades
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/almacenista/inventario/ingreso
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd2}},
+    "cantidad": 40,
+    "tipoMovimiento": "INGRESO",
+    "justificacion": "Prueba automatizada"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Stock resultante 40", function() {
+    expect(res.body.stockResultante).to.equal(40);
+  });
+}

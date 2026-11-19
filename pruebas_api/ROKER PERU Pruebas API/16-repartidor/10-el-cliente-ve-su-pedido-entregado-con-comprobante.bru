@@ -1,0 +1,31 @@
+meta {
+  name: El cliente ve su pedido entregado con comprobante
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Pedido 1 entregado y con comprobante", function() {
+    const p = res.body.find(x => Number(x.idPedido) === Number(bru.getVar("idPedido1")));
+    expect(p.estadoPedido).to.equal("ENTREGADO");
+    expect(p.serieComprobantePedido).to.equal("B001");
+    expect(p.numeroComprobantePedido).to.match(/^\d{8}$/);
+    expect(p.fechaEmisionComprobante).to.exist;
+    expect(p.fechaEntregaPedido).to.exist;
+    expect(p.nombreVendedor).to.contain("Vendedor Prueba");
+  });
+}

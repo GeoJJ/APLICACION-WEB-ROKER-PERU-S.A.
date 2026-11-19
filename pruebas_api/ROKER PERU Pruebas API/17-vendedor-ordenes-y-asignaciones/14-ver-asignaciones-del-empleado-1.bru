@@ -1,0 +1,26 @@
+meta {
+  name: Ver asignaciones del empleado 1
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/vendedor/asignaciones/empleado/{{idEmp1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idAsig1", function() {
+    const ids = res.body.map(x => Number(x.idAsignacion));
+    expect(ids).to.include(Number(bru.getVar("idAsig1")));
+  });
+}

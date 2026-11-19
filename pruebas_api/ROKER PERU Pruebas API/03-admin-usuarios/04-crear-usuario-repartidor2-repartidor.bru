@@ -1,0 +1,52 @@
+meta {
+  name: Crear usuario repartidor2 (REPARTIDOR)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Repartidor Dos {{run}}",
+    "correoUsuario": "repartidor2.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniRepartidor2}}",
+    "telefonoUsuario": "987654321",
+    "direccionUsuario": "Av. Ejemplo 123, Arequipa",
+    "idRol": {{idRolRepartidor}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idRepartidor2", res.body.idUsuario);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("REPARTIDOR");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

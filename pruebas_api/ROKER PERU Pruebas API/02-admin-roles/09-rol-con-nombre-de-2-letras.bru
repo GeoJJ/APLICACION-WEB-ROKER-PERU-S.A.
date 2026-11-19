@@ -1,0 +1,31 @@
+meta {
+  name: Rol con nombre de 2 letras
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/admin/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreRol": "AB"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

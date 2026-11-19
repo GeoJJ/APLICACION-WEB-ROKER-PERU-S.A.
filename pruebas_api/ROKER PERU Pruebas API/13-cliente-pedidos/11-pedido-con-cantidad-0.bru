@@ -1,0 +1,37 @@
+meta {
+  name: Pedido con cantidad 0
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      {
+        "idProducto": {{idProd1}},
+        "cantidadProducto": 0
+      }
+    ]
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

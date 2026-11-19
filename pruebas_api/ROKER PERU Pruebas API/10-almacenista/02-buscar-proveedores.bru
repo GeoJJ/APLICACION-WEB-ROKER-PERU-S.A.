@@ -1,0 +1,26 @@
+meta {
+  name: Buscar proveedores
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/almacenista/proveedores/buscar?texto=Bioseguridad
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProv1", function() {
+    const ids = res.body.map(x => Number(x.idProveedor));
+    expect(ids).to.include(Number(bru.getVar("idProv1")));
+  });
+}

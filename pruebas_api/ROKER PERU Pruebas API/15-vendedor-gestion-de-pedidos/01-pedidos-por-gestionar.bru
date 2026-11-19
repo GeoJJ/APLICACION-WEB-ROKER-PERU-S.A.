@@ -1,0 +1,43 @@
+meta {
+  name: Pedidos por gestionar
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/vendedor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido1")));
+  });
+
+  test("La lista incluye idPedido5", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido5")));
+  });
+
+  test("Todos estan PENDIENTES", function() {
+    expect(res.body.every(p => p.estadoPedido === "PENDIENTE")).to.equal(true);
+  });
+
+  test("Trae datos del cliente", function() {
+    expect(res.body.every(p => p.nombreCliente)).to.equal(true);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Buscar usuarios con texto vacio
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios/buscar?texto=
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200 o 400", function() {
+    expect([200,400]).to.include(res.status);
+  });
+}

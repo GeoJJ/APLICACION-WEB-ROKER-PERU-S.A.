@@ -1,0 +1,25 @@
+meta {
+  name: Repartidor intenta ver los pedidos del vendedor
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/vendedor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Orden 2: asignar solo 1 de 2 personas
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden2}},
+    "idEmpleado": {{idEmp2}},
+    "nombreResponsableAsignacion": "Vendedor Prueba",
+    "descripcionAsignacion": "Limpieza general del area"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Orden sin servicio
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "fechaProgramadaServicio": "2030-03-10T09:00:00",
+    "metodoPagoServicio": "transferencia",
+    "incidenciaServicio": "Ingresar por la puerta lateral"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

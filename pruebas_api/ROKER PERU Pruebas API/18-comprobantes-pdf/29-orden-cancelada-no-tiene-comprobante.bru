@@ -1,0 +1,25 @@
+meta {
+  name: Orden cancelada no tiene comprobante
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/ordenes-servicio/{{idOrden3}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

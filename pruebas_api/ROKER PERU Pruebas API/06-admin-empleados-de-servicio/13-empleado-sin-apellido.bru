@@ -1,0 +1,33 @@
+meta {
+  name: Empleado sin apellido
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/admin/empleados-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreEmpleadoServicio": "Luis",
+    "apellidoEmpleadoServicio": "",
+    "telefonoEmpleadoServicio": "987000111"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

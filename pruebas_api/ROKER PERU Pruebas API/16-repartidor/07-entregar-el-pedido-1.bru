@@ -1,0 +1,35 @@
+meta {
+  name: Entregar el pedido 1
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/{{idPedido1}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+body:json {
+  {
+    "nuevoEstado": "entregado"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado ENTREGADO", function() {
+    expect(res.body.estadoPedido).to.equal("ENTREGADO");
+  });
+
+  test("Fecha de entrega registrada", function() {
+    expect(res.body.fechaEntregaPedido).to.exist;
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Historial de movimientos
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+}

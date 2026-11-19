@@ -1,0 +1,38 @@
+meta {
+  name: Producto con proveedor inexistente
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-NOPROV",
+    "nombreProducto": "Malo",
+    "categoriaProducto": "bioseguridad",
+    "precioProducto": 5.0,
+    "stockProducto": 1,
+    "stockMinimo": 0,
+    "estadoProducto": "activo",
+    "idProveedor": 999999
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

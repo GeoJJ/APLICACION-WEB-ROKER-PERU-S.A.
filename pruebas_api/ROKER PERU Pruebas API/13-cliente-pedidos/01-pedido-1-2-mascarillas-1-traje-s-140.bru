@@ -1,0 +1,64 @@
+meta {
+  name: Pedido 1: 2 mascarillas + 1 traje (S/ 140)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      {
+        "idProducto": {{idProd1}},
+        "cantidadProducto": 2
+      },
+      {
+        "idProducto": {{idProd3}},
+        "cantidadProducto": 1
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idPedido1", res.body.idPedido);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Estado PENDIENTE", function() {
+    expect(res.body.estadoPedido).to.equal("PENDIENTE");
+  });
+
+  test("Monto total S/ 140", function() {
+    expect(res.body.montoTotalPedido).to.be.closeTo(140, 0.01);
+  });
+
+  test("Metodo de pago normalizado", function() {
+    expect(res.body.metodoPagoPedido).to.equal("EFECTIVO");
+  });
+
+  test("Dos detalles", function() {
+    expect(res.body.detalles.length).to.equal(2);
+  });
+
+  test("Aun sin comprobante ni vendedor", function() {
+    expect(res.body.serieComprobantePedido).to.equal(null);
+    expect(res.body.nombreVendedor).to.equal("Por asignar");
+  });
+}

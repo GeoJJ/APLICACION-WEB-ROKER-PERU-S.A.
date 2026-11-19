@@ -1,0 +1,33 @@
+meta {
+  name: Login del administrador
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correoUsuario": "{{adminCorreo}}",
+    "passwordUsuario": "{{adminPassword}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("tokenAdmin", res.body.token); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve un token JWT (3 partes)", function() {
+    expect(res.body.token).to.be.a("string");
+    expect(res.body.token.split(".").length).to.equal(3);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Ver stock (50)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/stock/{{idProd2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Stock = 50", function() {
+    expect(res.body).to.equal(50);
+  });
+}

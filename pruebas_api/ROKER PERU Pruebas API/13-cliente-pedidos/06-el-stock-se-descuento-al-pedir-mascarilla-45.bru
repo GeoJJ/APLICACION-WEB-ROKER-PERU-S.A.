@@ -1,0 +1,25 @@
+meta {
+  name: El stock se descuento al pedir (mascarilla 45)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("50 - 2 - 1 - 1 - 1 = 45", function() {
+    expect(res.body).to.equal(45);
+  });
+}

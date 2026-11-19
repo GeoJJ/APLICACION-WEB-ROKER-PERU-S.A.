@@ -1,0 +1,33 @@
+meta {
+  name: Descargar reporte de productos en Excel
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/gerente/reportes/productos/excel
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenGerente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Es un archivo Excel", function() {
+    expect(res.getHeader("content-type")).to.contain("spreadsheetml");
+  });
+
+  test("Nombre del archivo", function() {
+    expect(res.getHeader("content-disposition")).to.contain("reporte_productos.xlsx");
+  });
+
+  test("El archivo no esta vacio", function() {
+    expect(res.getSize().body).to.be.greaterThan(500);
+  });
+}

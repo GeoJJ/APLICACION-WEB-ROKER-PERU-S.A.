@@ -1,0 +1,26 @@
+meta {
+  name: El pedido 5 sigue pendiente tras los intentos no autorizados
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Pedido 5 PENDIENTE", function() {
+    const p = res.body.find(x => Number(x.idPedido) === Number(bru.getVar("idPedido5")));
+    expect(p.estadoPedido).to.equal("PENDIENTE");
+  });
+}

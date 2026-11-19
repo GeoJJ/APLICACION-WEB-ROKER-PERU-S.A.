@@ -1,0 +1,33 @@
+meta {
+  name: Ver la orden 1 (requiere 1, tiene 0)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Requiere 1", function() {
+    expect(res.body.cantidadPersonalRequerida).to.equal(1);
+  });
+
+  test("Asignadas 0", function() {
+    expect(res.body.cantidadPersonalAsignada).to.equal(0);
+  });
+
+  test("Estado PENDIENTE", function() {
+    expect(res.body.estadoServicio).to.equal("PENDIENTE");
+  });
+}

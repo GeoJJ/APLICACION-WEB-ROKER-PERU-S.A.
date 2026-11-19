@@ -1,0 +1,35 @@
+meta {
+  name: Servidor responde y genera datos unicos de la corrida
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const base = Date.now();
+  bru.setVar("run", String(base).slice(-8));
+  const dni = (i) => String((base + i * 104729) % 100000000).padStart(8, "0");
+  const ruc = (i) => "20" + String((base + i * 7919) % 1000000000).padStart(9, "0");
+  ["Vendedor","Vendedor2","Repartidor","Repartidor2","Almacenista","Gerente","Cliente","Cliente2","Temporal"]
+    .forEach((n, i) => bru.setVar("dni" + n, dni(i + 1)));
+  bru.setVar("rucEmpresa", ruc(1));
+  bru.setVar("rucProv1", ruc(2));
+  bru.setVar("rucProv2", ruc(3));
+  bru.setVar("rucProvTemp", ruc(4));
+  bru.setVar("rucProvDup", ruc(5));
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+}

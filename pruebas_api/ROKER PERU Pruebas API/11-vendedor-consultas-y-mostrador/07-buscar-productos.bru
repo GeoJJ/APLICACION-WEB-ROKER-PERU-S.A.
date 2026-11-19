@@ -1,0 +1,26 @@
+meta {
+  name: Buscar productos
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/vendedor/productos/buscar?texto=Tyvek
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd3", function() {
+    const ids = res.body.map(x => Number(x.idProducto));
+    expect(ids).to.include(Number(bru.getVar("idProd3")));
+  });
+}

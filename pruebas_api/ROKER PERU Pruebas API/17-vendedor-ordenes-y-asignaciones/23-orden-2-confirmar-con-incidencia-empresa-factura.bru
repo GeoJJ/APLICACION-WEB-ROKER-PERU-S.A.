@@ -1,0 +1,42 @@
+meta {
+  name: Orden 2: confirmar con incidencia (empresa -> factura)
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden2}}/confirmar?incidencia=Cliente%20pide%20retirar%20mercaderia%20antes
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compOrden2", res.body.serieComprobanteServicio + "-" + res.body.numeroComprobanteServicio); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CONFIRMADO", function() {
+    expect(res.body.estadoServicio).to.equal("CONFIRMADO");
+  });
+
+  test("Serie F002 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("F002");
+    expect(res.body.numeroComprobanteServicio).to.match(/^\d{8}$/);
+  });
+
+  test("Fecha de emision presente", function() {
+    expect(res.body.fechaEmisionComprobante).to.exist;
+  });
+
+  test("Incidencia guardada", function() {
+    expect(res.body.incidenciaServicio).to.contain("retirar mercaderia");
+  });
+}

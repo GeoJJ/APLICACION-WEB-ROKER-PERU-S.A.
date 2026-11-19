@@ -1,0 +1,25 @@
+meta {
+  name: Un pedido rechazado no descuenta stock
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Sigue en 45", function() {
+    expect(res.body).to.equal(45);
+  });
+}

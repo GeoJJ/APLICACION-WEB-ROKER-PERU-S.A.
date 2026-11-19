@@ -1,0 +1,29 @@
+meta {
+  name: Confirmar sin indicar repartidor
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

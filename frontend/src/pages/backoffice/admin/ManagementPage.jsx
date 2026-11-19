@@ -1,36 +1,191 @@
 import { useState } from 'react';
-import { Users, Package, ShoppingCart, Plus, Pencil } from 'lucide-react';
+import { Users, Package, ShoppingCart, ShieldCheck, UserCog, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useBackOffice } from '@/components/layout/backoffice/BackOfficeProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/auth';
 import { money, stockState } from '@/data/backofficeStore';
 import { SectionHeader, Panel, Field, Modal, FormActions, SearchBox } from '@/components/shared/ManagementUI';
 import DataTable from '@/components/shared/DataTable';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+
+// Una configuración por pantalla. Cada campo:
+//   key      → nombre en el registro de la interfaz (el paso a DTO está en lib/adminApi.js)
+//   type     → 'text' (por defecto) | 'email' | 'tel' | 'number' | 'role' | 'provider' | 'status'
+//   optional → el backend lo acepta vacío
+//   onlyNew  → solo se muestra al crear
+// columns: qué campos se ven en la tabla.  canDelete: el backend tiene DELETE para este recurso.
 const configs = {
-    providers: { title: 'Gestión de Proveedores', singular: 'proveedor', icon: Package, fields: [['nombre', 'Proveedor'], ['ruc', 'RUC (11 dígitos)'], ['telefono', 'Teléfono', 'tel'], ['email', 'Correo', 'email']] },
-    workers: { title: 'Gestión de Trabajadores', singular: 'trabajador', icon: Users, fields: [['nombre', 'Nombre completo'], ['email', 'Correo electrónico', 'email'], ['telefono', 'Teléfono', 'tel'], ['documento', 'Documento'], ['direccion', 'Dirección'], ['rol', 'Rol', 'role'], ['estado', 'Estado', 'status']] },
-    products: { title: 'Gestión de Productos', singular: 'producto', icon: Package, fields: [['codigo', 'Código'], ['producto', 'Producto'], ['categoria', 'Categoría'], ['precio', 'Precio (S/)', 'number'], ['umbral', 'Umbral de stock', 'number'], ['idProveedor', 'Proveedor', 'provider'], ['estado', 'Estado', 'status']] },
-    services: { title: 'Gestión de Servicios', singular: 'servicio', icon: ShoppingCart, fields: [['categoria', 'Categoría'], ['nombre', 'Servicio'], ['descripcion', 'Descripción'], ['precio', 'Tarifa (S/)', 'number'], ['duracion', 'Duración estimada'], ['personal', 'Personal requerido', 'number'], ['estado', 'Estado', 'status']] },
+    workers: {
+        title: 'Gestión de Trabajadores', singular: 'trabajador', icon: Users, canDelete: true,
+        columns: ['nombre', 'email', 'telefono', 'idRol'],
+        fields: [
+            { key: 'nombre', label: 'Nombre completo' },
+            { key: 'email', label: 'Correo electrónico', type: 'email' },
+            { key: 'telefono', label: 'Teléfono', type: 'tel', pattern: '[0-9]{9}', hint: '9 dígitos', optional: true },
+            { key: 'documento', label: 'DNI (8) o RUC (11)', pattern: '[0-9]{8}|[0-9]{11}', hint: '8 dígitos (DNI) u 11 dígitos (RUC)' },
+            { key: 'direccion', label: 'Dirección', optional: true },
+            { key: 'idRol', label: 'Rol', type: 'role' },
+        ],
+    },
+    products: {
+        title: 'Gestión de Productos', singular: 'producto', icon: Package, canDelete: true,
+        columns: ['codigo', 'producto', 'categoria', 'precio', 'umbral', 'estado'],
+        fields: [
+            { key: 'codigo', label: 'Código' },
+            { key: 'producto', label: 'Producto' },
+            { key: 'categoria', label: 'Categoría' },
+            { key: 'precio', label: 'Precio (S/)', type: 'number' },
+            { key: 'umbral', label: 'Umbral de stock', type: 'number' },
+            { key: 'stock', label: 'Stock inicial', type: 'number', onlyNew: true },
+            { key: 'idProveedor', label: 'Proveedor', type: 'provider' },
+            { key: 'estado', label: 'Estado', type: 'status' },
+        ],
+    },
+    services: {
+        title: 'Gestión de Servicios', singular: 'servicio', icon: ShoppingCart, canDelete: true,
+        columns: ['categoria', 'nombre', 'precio', 'personal'],
+        fields: [
+            { key: 'categoria', label: 'Categoría' },
+            { key: 'nombre', label: 'Servicio' },
+            { key: 'tipo', label: 'Tipo de servicio', optional: true },
+            { key: 'descripcion', label: 'Descripción', optional: true },
+            { key: 'precio', label: 'Tarifa (S/)', type: 'number' },
+            { key: 'duracion', label: 'Duración estimada', optional: true },
+            { key: 'personal', label: 'Personal requerido', type: 'number', optional: true },
+        ],
+    },
+    providers: {
+        title: 'Gestión de Proveedores', singular: 'proveedor', icon: Package, canDelete: true,
+        columns: ['nombre', 'ruc', 'telefono', 'email'],
+        fields: [
+            { key: 'nombre', label: 'Proveedor' },
+            { key: 'ruc', label: 'RUC (11 dígitos)', pattern: '[0-9]{11}', hint: '11 dígitos' },
+            { key: 'telefono', label: 'Teléfono', type: 'tel', optional: true },
+            { key: 'email', label: 'Correo', type: 'email', optional: true },
+        ],
+    },
+    employees: {
+        title: 'Personal de servicio', singular: 'empleado', icon: UserCog, canDelete: true,
+        description: 'Empleados que ejecutan los servicios. No son usuarios del sistema.',
+        columns: ['nombre', 'apellido', 'telefono'],
+        fields: [
+            { key: 'nombre', label: 'Nombre' },
+            { key: 'apellido', label: 'Apellido' },
+            { key: 'telefono', label: 'Teléfono', type: 'tel', pattern: '[0-9]{9}', hint: '9 dígitos', optional: true },
+        ],
+    },
+    roles: {
+        title: 'Gestión de Roles', singular: 'rol', icon: ShieldCheck, canDelete: false,
+        description: 'El nombre del rol es el que usa el backend para dar permisos.',
+        note: `El panel solo reconoce estos nombres, escritos exactamente así: ${ROLES.map(r => r.code).join(', ')}. ` +
+            'Cambiar el nombre de un rol existente deja sin acceso a sus usuarios. El backend no permite eliminar roles.',
+        columns: ['nombre', 'panel'],
+        fields: [{ key: 'nombre', label: 'Nombre del rol (MAYÚSCULAS_CON_GUION_BAJO)', pattern: '[A-Z_]{3,50}', hint: 'Solo mayúsculas y guion bajo, mínimo 3 letras' }],
+    },
 };
+
+const COLUMN_LABELS = { nombre: 'Nombre', apellido: 'Apellido', telefono: 'Teléfono', email: 'Correo', idRol: 'Rol', panel: 'Acceso al panel', codigo: 'Código', producto: 'Producto', categoria: 'Categoría', precio: 'Precio', umbral: 'Umbral de stock', estado: 'Estado', personal: 'Personal requerido', ruc: 'RUC' };
+const roleLabel = name => ROLES.find(r => r.code === name)?.label ?? name;
+const itemName = r => r.nombre ?? r.producto ?? '';
+
 export default function ManagementPage({ kind, readonly = false }) {
-    const { data, update } = useBackOffice();
+    const { data, save, remove } = useBackOffice();
+    const { user } = useAuth();
     const config = configs[kind];
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('');
     const [draft, setDraft] = useState(null);
-    const roles = ROLES.filter(r => r.id !== 'customer');
-    const options = type => type === 'provider' ? data.providers.map(p => [p.id, p.nombre]) : type === 'role' ? roles.map(r => [r.id, r.label]) : [['Activo', 'Activo'], ['Inactivo', 'Inactivo']];
-    const columns = config.fields.filter(([key]) => !({ workers: ['documento', 'direccion'], products: ['idProveedor'], services: ['descripcion', 'duracion'] }[kind] || []).includes(key)).map(([key, label, type]) => ({ key, label, render: r => type === 'provider' ? data.providers.find(p => String(p.id) === String(r.idProveedor))?.nombre : type === 'role' ? ROLES.find(role => role.id === r.rol)?.label : type === 'status' ? <Badge variant={r.estado === 'Activo' ? 'success' : 'warning'}>{r.estado}</Badge> : key === 'precio' ? money(r[key]) : r[key] }));
+    const [toDelete, setToDelete] = useState(null);
+    const [busy, setBusy] = useState(false);
+
+    const options = type => type === 'provider' ? data.providers.map(p => [p.id, p.nombre])
+        : type === 'role' ? data.roles.map(r => [r.id, roleLabel(r.nombre)])
+            : [['Activo', 'Activo'], ['Inactivo', 'Inactivo']];
+
+    const filters = {
+        workers: { all: 'Todos los roles', options: options('role'), test: (r, f) => String(r.idRol) === f },
+        products: { all: 'Todos los estados', options: options('status'), test: (r, f) => r.estado === f },
+    }[kind];
+
+    const cell = (key, r) => key === 'idRol' ? roleLabel(r.nombreRol)
+        : key === 'estado' ? <Badge variant={r.estado === 'Activo' ? 'success' : 'warning'}>{r.estado}</Badge>
+            : key === 'panel' ? (ROLES.some(x => x.code === r.nombre) ? <Badge variant="success">Reconocido</Badge> : <Badge variant="warning">Sin panel</Badge>)
+                : key === 'precio' ? money(r.precio)
+                    : r[key];
+    const columns = config.columns.map(key => ({ key, label: COLUMN_LABELS[key], render: r => cell(key, r) }));
     if (kind === 'products') columns.push({ key: 'stock', label: 'Stock', render: r => <>{r.stock}<p className="text-xs text-gray-500">{stockState(r)}</p></> });
-    if (!readonly) columns.push({ key: 'action', label: 'Acción', render: r => <Button size="sm" variant="outline" onClick={() => setDraft({ ...r })}><Pencil size={15} className="mr-2" />Editar</Button> });
-    async function save(e) {
+    if (!readonly) columns.push({
+        key: 'action', label: 'Acción', render: r => <div className="flex justify-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setDraft({ ...r })}><Pencil size={15} className="mr-2" />Editar</Button>
+            {config.canDelete && r.email !== user?.email && <button type="button" onClick={() => setToDelete(r)} aria-label={`Eliminar ${itemName(r)}`}
+                className="inline-flex cursor-pointer items-center rounded-xl border-2 border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"><Trash2 size={15} /></button>}
+        </div>,
+    });
+
+    const rows = data[kind].filter(r => Object.values(r).join(' ').toLowerCase().includes(search.toLowerCase()) && (!filter || filters.test(r, filter)));
+    const newRecord = () => setDraft(kind === 'products' ? { estado: 'Activo', stock: 0 } : {});
+
+    async function submit(e) {
         e.preventDefault();
-        const record = { ...draft };
-        config.fields.forEach(([key, , type]) => { record[key] = type === 'number' ? Number(record[key]) : String(record[key] ?? '').trim(); });
-        if (kind === 'workers' && data.workers.some(w => w.id !== record.id && w.email.toLowerCase() === record.email.toLowerCase())) { e.currentTarget.elements.email.setCustomValidity('Este correo ya está registrado.'); e.currentTarget.reportValidity(); return; }
-        if (await update(old => ({ ...old, [kind]: record.id ? old[kind].map(r => r.id === record.id ? record : r) : [...old[kind], { ...record, id: crypto.randomUUID(), ...(kind === 'products' ? { stock: 0 } : {}) }] }))) setDraft(null);
+        setBusy(true);
+        const ok = await save(kind, draft);
+        setBusy(false);
+        if (ok) setDraft(null);
     }
-    return <><SectionHeader icon={config.icon} title={readonly ? 'Consulta de Productos' : config.title} description="Consulta y administra la información del sistema." action={!readonly && <Button onClick={() => setDraft({ estado: 'Activo', rol: 'seller', tipoPersona: 'NATURAL', personal: 1 })}><Plus size={18} className="mr-2" />Nuevo {config.singular}</Button>} /><Panel><div className="mb-6 flex flex-wrap gap-3"><SearchBox value={search} onChange={setSearch} placeholder={`Buscar ${config.singular}...`} />{kind !== 'providers' && <select aria-label="Filtrar" className="bo-input sm:max-w-56" value={filter} onChange={e => setFilter(e.target.value)}><option value="">{kind === 'workers' ? 'Todos los roles' : 'Todos los estados'}</option>{options(kind === 'workers' ? 'role' : 'status').map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>}</div><DataTable columns={columns} rows={data[kind].filter(r => Object.values(r).join(' ').toLowerCase().includes(search.toLowerCase()) && (!filter || (kind === 'workers' ? r.rol : r.estado) === filter))} /></Panel>
-        {draft && <Modal title={`${draft.id ? 'Editar' : 'Nuevo'} ${config.singular}`} onClose={() => setDraft(null)}><form onSubmit={save}><div className="grid gap-4 sm:grid-cols-2">{config.fields.map(([key, label, type]) => <Field key={key} label={label}>{['role', 'status', 'provider'].includes(type) ? <select required className="bo-input" value={draft[key] || ''} onChange={e => setDraft({ ...draft, [key]: e.target.value })}><option value="">Seleccionar</option>{options(type).map(([id, text]) => <option key={id} value={id}>{text}</option>)}</select> : <input name={key} required={!(draft.id && ['telefono', 'direccion'].includes(key))} className="bo-input" type={type || 'text'} min={key === 'personal' ? 1 : 0} step={key === 'precio' ? '0.01' : '1'} pattern={type === 'tel' ? '[0-9]{9}' : key === 'ruc' ? '[0-9]{11}' : key === 'documento' ? '[0-9]{8}' : undefined} value={draft[key] ?? ''} onChange={e => { e.target.setCustomValidity(''); setDraft({ ...draft, [key]: e.target.value }); }} />}</Field>)}</div>{kind === 'workers' && <div className="mt-4"><Field label={draft.id ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}><input className="bo-input" type="password" autoComplete="new-password" minLength={8} maxLength={72} required={!draft.id} value={draft.password || ''} onChange={e => setDraft({ ...draft, password: e.target.value })} /></Field></div>}<FormActions onClose={() => setDraft(null)} /></form></Modal>}</>;
+    async function confirmDelete() {
+        setBusy(true);
+        const ok = await remove(kind, toDelete.id);
+        setBusy(false);
+        if (ok) setToDelete(null);
+    }
+
+    return <>
+        <SectionHeader icon={config.icon} title={readonly ? 'Consulta de Productos' : config.title} description={config.description || 'Consulta y administra la información del sistema.'}
+            action={!readonly && <Button onClick={newRecord}><Plus size={18} className="mr-2" />Nuevo {config.singular}</Button>} />
+        <Panel>
+            {config.note && !readonly && <p className="mb-5 rounded-lg bg-amber-50 p-4 text-sm leading-6 text-amber-800">{config.note}</p>}
+            <div className="mb-6 flex flex-wrap gap-3">
+                <SearchBox value={search} onChange={setSearch} placeholder={`Buscar ${config.singular}...`} />
+                {filters && <select aria-label="Filtrar" className="bo-input sm:max-w-56" value={filter} onChange={e => setFilter(e.target.value)}>
+                    <option value="">{filters.all}</option>
+                    {filters.options.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+                </select>}
+            </div>
+            <DataTable columns={columns} rows={rows} />
+        </Panel>
+
+        {draft && <Modal title={`${draft.id ? 'Editar' : 'Nuevo'} ${config.singular}`} onClose={() => setDraft(null)}>
+            <form onSubmit={submit}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {config.fields.filter(f => !f.onlyNew || !draft.id).map(f => <Field key={f.key} label={f.label}>
+                        {['role', 'status', 'provider'].includes(f.type)
+                            ? <select required name={f.key} className="bo-input" value={draft[f.key] ?? ''} onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}>
+                                <option value="">Seleccionar</option>
+                                {options(f.type).map(([id, text]) => <option key={id} value={id}>{text}</option>)}
+                            </select>
+                            : <input name={f.key} required={!f.optional} className="bo-input" type={f.type || 'text'} min={f.type === 'number' ? 0 : undefined}
+                                step={f.key === 'precio' ? '0.01' : f.type === 'number' ? '1' : undefined} pattern={f.pattern} title={f.hint}
+                                value={draft[f.key] ?? ''} onChange={e => setDraft({ ...draft, [f.key]: e.target.value })} />}
+                    </Field>)}
+                </div>
+                {kind === 'workers' && <div className="mt-4">
+                    <Field label={draft.id ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}>
+                        <input name="password" className="bo-input" type="password" autoComplete="new-password" minLength={8} maxLength={72} required={!draft.id}
+                            value={draft.password || ''} onChange={e => setDraft({ ...draft, password: e.target.value })} />
+                    </Field>
+                </div>}
+                <FormActions onClose={() => setDraft(null)} busy={busy} />
+            </form>
+        </Modal>}
+
+        {toDelete && <Modal title={`Eliminar ${config.singular}`} onClose={() => setToDelete(null)}>
+            <p className="text-sm leading-6 text-gray-600">¿Seguro que quieres eliminar <strong>{itemName(toDelete)}</strong>? Esta acción no se puede deshacer.</p>
+            <div className="mt-6 flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setToDelete(null)}>Cancelar</Button>
+                <button type="button" disabled={busy} onClick={confirmDelete}
+                    className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-red-600 px-6 py-2.5 font-semibold text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Eliminando…' : 'Eliminar'}</button>
+            </div>
+        </Modal>}
+    </>;
 }

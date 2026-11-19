@@ -1,0 +1,34 @@
+meta {
+  name: Asignar un empleado inexistente
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden1}},
+    "idEmpleado": 999999,
+    "nombreResponsableAsignacion": "Vendedor Prueba",
+    "descripcionAsignacion": "Limpieza general del area"
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Crear empleado temporal
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/admin/empleados-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreEmpleadoServicio": "Temporal",
+    "apellidoEmpleadoServicio": "Borrar",
+    "telefonoEmpleadoServicio": "987000111"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idEmpTemp", res.body.idEmpleadoServicio);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

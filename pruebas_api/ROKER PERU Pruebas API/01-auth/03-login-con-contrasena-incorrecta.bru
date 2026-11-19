@@ -1,0 +1,28 @@
+meta {
+  name: Login con contrasena incorrecta
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correoUsuario": "{{adminCorreo}}",
+    "passwordUsuario": "incorrecta999"
+  }
+}
+
+tests {
+  test("Responde 401", function() {
+    expect(res.status).to.equal(401);
+  });
+
+  test("Cuerpo de error con status 401", function() {
+    expect(res.body.status).to.equal(401);
+  });
+}
