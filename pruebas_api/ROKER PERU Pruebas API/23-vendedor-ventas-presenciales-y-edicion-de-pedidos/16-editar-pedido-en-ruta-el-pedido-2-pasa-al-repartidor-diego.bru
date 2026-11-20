@@ -1,0 +1,35 @@
+meta {
+  name: Editar pedido en ruta: el pedido 2 pasa al repartidor Diego
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor2}}
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Nuevo repartidor", function() {
+    expect(res.body.idDelivery).to.equal(Number(bru.getVar("idRepartidor2")));
+  });
+
+  test("Sigue EN_RUTA", function() {
+    expect(res.body.estadoPedido).to.equal("EN_RUTA");
+  });
+}

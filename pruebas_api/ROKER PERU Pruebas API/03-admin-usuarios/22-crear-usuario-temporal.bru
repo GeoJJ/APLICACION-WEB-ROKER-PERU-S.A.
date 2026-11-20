@@ -1,0 +1,40 @@
+meta {
+  name: Crear usuario temporal
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Usuario Temporal {{run}}",
+    "correoUsuario": "temporal.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniTemporal}}",
+    "telefonoUsuario": "987654321",
+    "direccionUsuario": "Av. Ejemplo 123, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idTemporal", res.body.idUsuario);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

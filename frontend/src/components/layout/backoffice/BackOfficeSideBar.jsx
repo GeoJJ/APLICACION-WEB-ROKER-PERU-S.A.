@@ -10,6 +10,7 @@ import {
     UserCog,
     ShieldCheck,
     Boxes,
+    Store,
 } from "lucide-react";
 
 const menuConfig = {
@@ -35,10 +36,10 @@ const menuConfig = {
         { to: "/warehouse/ingresos", icon: LogOut, label: "Ingresos" },
     ],
     seller: [
-        { to: "/seller/solicitudes", icon: FileText, label: "Solicitudes de servicios" },
-        { to: "/seller", icon: BarChart3, label: "Inicio" },
-        { to: "/seller/pedidos", icon: ClipboardList, label: "Pedidos" },
+        { to: "/seller/solicitudes", icon: FileText, label: "Solicitudes de servicio" },
+        { to: "/seller/pedidos", icon: ClipboardList, label: "Pedidos de productos" },
         { to: "/seller/ventas", icon: ShoppingCart, label: "Ventas" },
+        { to: "/seller/mostrador", icon: Store, label: "Mostrador y Catálogo" },
     ],
     delivery: [
         { to: "/delivery", icon: BarChart3, label: "Mis entregas" },
@@ -64,19 +65,17 @@ export default function BackOfficeSidebar({ role = "manager" }) {
                         <Link
                             key={item.to}
                             to={item.to}
-                            className={`group relative flex shrink-0 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${
-                                isActive
+                            className={`group relative flex shrink-0 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 ${isActive
                                     ? "bg-brand text-white shadow-sm"
                                     : "text-gray-600 hover:bg-gray-100/90 hover:text-gray-900"
-                            }`}
+                                }`}
                         >
                             <Icon
                                 size={19}
-                                className={`shrink-0 transition-transform duration-150 ${
-                                    isActive
+                                className={`shrink-0 transition-transform duration-150 ${isActive
                                         ? "text-white"
                                         : "text-gray-400 group-hover:scale-105 group-hover:text-brand"
-                                }`}
+                                    }`}
                             />
                             <span className="truncate">{item.label}</span>
                         </Link>

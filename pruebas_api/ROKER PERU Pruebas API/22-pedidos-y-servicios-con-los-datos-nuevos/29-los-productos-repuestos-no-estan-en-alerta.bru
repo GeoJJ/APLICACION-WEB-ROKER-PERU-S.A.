@@ -1,0 +1,27 @@
+meta {
+  name: Los productos repuestos no estan en alerta
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/alertas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respiradores y mascarillas quirurgicas no aparecen", function() {
+    const ids = res.body.map(a => Number(a.productoId));
+    expect(ids).to.not.include(Number(bru.getVar("idProd6")));
+    expect(ids).to.not.include(Number(bru.getVar("idProd5")));
+  });
+}

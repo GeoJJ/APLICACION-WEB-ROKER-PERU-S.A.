@@ -1,0 +1,50 @@
+meta {
+  name: Crear usuario clienteb: Carmen Rosa Huaman Pinto (CLIENTE)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Carmen Rosa Huaman Pinto",
+    "correoUsuario": "carmen.huaman.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniClienteB}}",
+    "telefonoUsuario": "957345678",
+    "direccionUsuario": "Urb. Los Alamos B-14, Yanahuara, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idClienteB", res.body.idUsuario); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("CLIENTE");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

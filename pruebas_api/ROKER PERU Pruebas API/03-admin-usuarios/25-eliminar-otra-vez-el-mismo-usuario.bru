@@ -1,0 +1,25 @@
+meta {
+  name: Eliminar otra vez el mismo usuario
+  type: http
+  seq: 25
+}
+
+delete {
+  url: {{baseUrl}}/admin/usuarios/{{idTemporal}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: El stock de los guantes bajo a 78
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd4}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("80 - 2 = 78", function() {
+    expect(res.body).to.equal(78);
+  });
+}

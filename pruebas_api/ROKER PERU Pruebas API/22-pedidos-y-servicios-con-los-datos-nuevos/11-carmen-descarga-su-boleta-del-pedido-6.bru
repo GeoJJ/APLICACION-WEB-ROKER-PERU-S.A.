@@ -1,0 +1,33 @@
+meta {
+  name: Carmen descarga su boleta del pedido 6
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/pedidos/{{idPedido6}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Es un PDF", function() {
+    expect(res.getHeader("content-type")).to.contain("application/pdf");
+  });
+
+  test("Nombre de archivo correcto", function() {
+    expect(res.getHeader("content-disposition")).to.contain("comprobante-" + bru.getVar("compPedido6"));
+  });
+
+  test("El PDF no esta vacio", function() {
+    expect(res.getSize().body).to.be.greaterThan(1000);
+  });
+}

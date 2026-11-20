@@ -58,7 +58,7 @@ tests {
   });
 
   test("Aun sin comprobante ni vendedor", function() {
-    expect(res.body.serieComprobantePedido).to.equal(null);
+    expect(res.body.serieComprobantePedido).to.not.exist;
     expect(res.body.nombreVendedor).to.equal("Por asignar");
   });
 }

@@ -1,0 +1,25 @@
+meta {
+  name: Cambiar estado con valor vacio
+  type: http
+  seq: 22
+}
+
+patch {
+  url: {{baseUrl}}/admin/productos/{{idProdTemp}}/estado?estado=
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

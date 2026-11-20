@@ -1,0 +1,21 @@
+meta {
+  name: Eliminar empleado temporal
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/admin/empleados-servicio/{{idEmpTemp}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

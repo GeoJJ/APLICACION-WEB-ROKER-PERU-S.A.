@@ -47,6 +47,6 @@ tests {
   });
 
   test("Aun sin comprobante", function() {
-    expect(res.body.serieComprobanteServicio).to.equal(null);
+    expect(res.body.serieComprobanteServicio).to.not.exist;
   });
 }

@@ -1,0 +1,17 @@
+meta {
+  name: Sin token: ver perfil
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/cliente/perfil
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

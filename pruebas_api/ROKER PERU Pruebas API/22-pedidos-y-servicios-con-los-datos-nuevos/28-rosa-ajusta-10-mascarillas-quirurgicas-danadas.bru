@@ -1,0 +1,38 @@
+meta {
+  name: Rosa ajusta 10 mascarillas quirurgicas danadas
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{baseUrl}}/almacenista/inventario/ajuste
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd5}},
+    "cantidad": 10,
+    "tipoMovimiento": "AJUSTE",
+    "justificacion": "Cajas humedas por filtracion"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Tipo AJUSTE", function() {
+    expect(res.body.tipoMovimiento).to.equal("AJUSTE");
+  });
+
+  test("Stock resultante 190", function() {
+    expect(res.body.stockResultante).to.equal(190);
+  });
+}

@@ -1,0 +1,33 @@
+meta {
+  name: La orden 6 requiere 2 personas y tiene 0
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden6}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Requiere 2", function() {
+    expect(res.body.cantidadPersonalRequerida).to.equal(2);
+  });
+
+  test("Asignadas 0", function() {
+    expect(res.body.cantidadPersonalAsignada).to.equal(0);
+  });
+
+  test("Estado PENDIENTE", function() {
+    expect(res.body.estadoServicio).to.equal("PENDIENTE");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Confirmar la orden 6 con 1 de 2 personas falla
+  type: http
+  seq: 19
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden6}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor2}}
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

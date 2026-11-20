@@ -1,0 +1,57 @@
+meta {
+  name: Listar productos incluye los nuevos
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/admin/productos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd4", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd4")));
+  });
+
+  test("La lista incluye idProd5", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd5")));
+  });
+
+  test("La lista incluye idProd6", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd6")));
+  });
+
+  test("La lista incluye idProd7", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd7")));
+  });
+
+  test("La lista incluye idProd8", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd8")));
+  });
+
+  test("La lista incluye idProd9", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd9")));
+  });
+
+  test("La lista incluye idProd10", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd10")));
+  });
+
+  test("La lista incluye idProd11", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd11")));
+  });
+
+  test("La lista incluye idProd12", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd12")));
+  });
+}

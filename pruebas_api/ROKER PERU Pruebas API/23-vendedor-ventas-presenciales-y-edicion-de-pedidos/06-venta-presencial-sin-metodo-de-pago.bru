@@ -1,0 +1,33 @@
+meta {
+  name: Venta presencial sin metodo de pago
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "detalles": [
+      { "idProducto": {{idProd12}}, "cantidadProducto": 1 }
+    ]
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

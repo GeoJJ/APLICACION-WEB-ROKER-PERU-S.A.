@@ -1,0 +1,21 @@
+meta {
+  name: Buscar servicios por categoria JARDINERIA sin token
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/cliente/servicios/buscar?texto=jardineria
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idServicio7", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio7")));
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Ver servicio 1 por id
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/admin/servicios/{{idServicio1}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Es el servicio pedido", function() {
+    expect(res.body.idServicio).to.equal(Number(bru.getVar("idServicio1")));
+  });
+}

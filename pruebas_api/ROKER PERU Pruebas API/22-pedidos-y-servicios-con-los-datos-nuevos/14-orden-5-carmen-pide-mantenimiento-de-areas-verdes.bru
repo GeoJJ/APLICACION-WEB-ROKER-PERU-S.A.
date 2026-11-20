@@ -1,0 +1,46 @@
+meta {
+  name: Orden 5: Carmen pide mantenimiento de areas verdes
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+body:json {
+  {
+    "idServicio": {{idServicio7}},
+    "fechaProgramadaServicio": "2030-04-15T08:00:00",
+    "metodoPagoServicio": "yape",
+    "incidenciaServicio": "Traer herramientas propias"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idOrden5", res.body.idOrdenServicio); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Estado PENDIENTE", function() {
+    expect(res.body.estadoServicio).to.equal("PENDIENTE");
+  });
+
+  test("Monto S/ 180", function() {
+    expect(res.body.montoTotalServicio).to.be.closeTo(180, 0.01);
+  });
+
+  test("Servicio correcto", function() {
+    expect(res.body.nombreServicio).to.equal("Mantenimiento de areas verdes");
+  });
+}

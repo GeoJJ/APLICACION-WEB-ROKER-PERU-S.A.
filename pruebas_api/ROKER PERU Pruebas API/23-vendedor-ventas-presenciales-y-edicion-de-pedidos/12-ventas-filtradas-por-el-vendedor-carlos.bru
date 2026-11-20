@@ -1,0 +1,37 @@
+meta {
+  name: Ventas filtradas por el vendedor Carlos
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/vendedor/pedidos/ventas?idVendedor={{idVendedor}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idPedidoPresencial", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.include(Number(bru.getVar("idPedidoPresencial")));
+  });
+
+  test("La lista incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.include(Number(bru.getVar("idPedido1")));
+  });
+
+  test("La lista NO incluye idPedidoPresencial2 (es de Lucia)", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.not.include(Number(bru.getVar("idPedidoPresencial2")));
+  });
+
+  test("La lista NO incluye idPedido4 (es de Lucia)", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.not.include(Number(bru.getVar("idPedido4")));
+  });
+}

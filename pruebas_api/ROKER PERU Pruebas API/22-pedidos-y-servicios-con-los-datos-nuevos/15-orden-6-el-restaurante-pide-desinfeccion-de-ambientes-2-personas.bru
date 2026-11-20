@@ -1,0 +1,38 @@
+meta {
+  name: Orden 6: el restaurante pide desinfeccion de ambientes (2 personas)
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEmpresa2}}
+}
+
+body:json {
+  {
+    "idServicio": {{idServicio3}},
+    "fechaProgramadaServicio": "2030-04-16T07:00:00",
+    "metodoPagoServicio": "factura",
+    "incidenciaServicio": "Atender antes de abrir el local"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idOrden6", res.body.idOrdenServicio); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Monto S/ 280", function() {
+    expect(res.body.montoTotalServicio).to.be.closeTo(280, 0.01);
+  });
+}

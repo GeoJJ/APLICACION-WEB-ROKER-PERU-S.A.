@@ -28,6 +28,6 @@ tests {
   });
 
   test("Una orden cancelada no emite comprobante", function() {
-    expect(res.body.serieComprobanteServicio).to.equal(null);
+    expect(res.body.serieComprobanteServicio).to.not.exist;
   });
 }

@@ -1,0 +1,38 @@
+meta {
+  name: Crear proveedor 3: Distribuidora Medica del Sur SAC
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/admin/proveedores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreProveedor": "Distribuidora Medica del Sur SAC",
+    "rucProveedor": "{{rucProv3}}",
+    "telefonoProveedor": "054234567",
+    "correoProveedor": "ventas@distmedicasur.test"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idProv3", res.body.idProveedor); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Nombre en mayusculas", function() {
+    expect(res.body.nombreProveedor).to.equal(res.body.nombreProveedor.toUpperCase());
+  });
+}

@@ -5,6 +5,7 @@ import { SectionHeader, Panel, Modal, Field, FormActions, SearchBox, Summary } f
 import DataTable from '@/components/shared/DataTable';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import Select from '@/components/ui/Select';
 
 const MODES = {
     ingreso: { title: 'Registrar ingreso', help: 'Suma unidades al stock del producto (recepción de mercadería).' },
@@ -23,8 +24,8 @@ const urgency = nivel =>
     nivel.startsWith('AGOTADO') || nivel.startsWith('CRÍTICO')
         ? 'danger'
         : nivel.startsWith('ADVERTENCIA')
-        ? 'warning'
-        : 'success';
+            ? 'warning'
+            : 'success';
 
 const movementBadge = tipo =>
     tipo === 'INGRESO' ? 'success' : tipo === 'AJUSTE' ? 'warning' : 'info';
@@ -123,11 +124,10 @@ export default function AdminInventoryPage() {
                                 key={level}
                                 type="button"
                                 onClick={() => setAlertFilter(level)}
-                                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                                    alertFilter === level
-                                        ? 'bg-brand text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium transition ${alertFilter === level
+                                    ? 'bg-brand text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
                             >
                                 {level}
                             </button>
@@ -180,33 +180,30 @@ export default function AdminInventoryPage() {
                         <SearchBox value={search} onChange={setSearch} placeholder="Buscar producto..." />
                     </div>
 
-                    <select
+                    <Select
                         aria-label="Filtrar por tipo de movimiento"
-                        className="bo-input"
                         value={typeFilter}
                         onChange={e => setTypeFilter(e.target.value)}
-                    >
-                        {movementTypes.map(type => (
-                            <option key={type} value={type}>
-                                {type === 'TODOS' ? 'Todos los tipos' : type}
-                            </option>
-                        ))}
-                    </select>
+                        options={movementTypes.map(type => ({
+                            value: type,
+                            label: type === 'TODOS' ? 'Todos los tipos' : type,
+                        }))}
+                    />
 
                     <div className="flex gap-2">
-                        <select
+                        <Select
                             aria-label="Filtrar por producto"
-                            className="bo-input w-full"
+                            className="w-full"
                             value={productFilter}
                             onChange={e => setProductFilter(e.target.value)}
-                        >
-                            <option value="TODOS">Todos los productos</option>
-                            {data.products.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.producto}
-                                </option>
-                            ))}
-                        </select>
+                            options={[
+                                { value: 'TODOS', label: 'Todos los productos' },
+                                ...data.products.map(p => ({
+                                    value: p.id,
+                                    label: p.producto,
+                                })),
+                            ]}
+                        />
 
                         {hasMovementFilters && (
                             <button
@@ -247,22 +244,18 @@ export default function AdminInventoryPage() {
                         <p className="mb-4 text-sm text-gray-600">{MODES[draft.type].help}</p>
                         <div className="grid gap-4">
                             <Field label="Producto">
-                                <select
+                                <Select
                                     required
-                                    name="productId"
-                                    className="bo-input"
+                                    placeholder="Seleccionar producto"
                                     value={draft.productId}
                                     onChange={e => setDraft({ ...draft, productId: e.target.value })}
-                                >
-                                    <option value="">Seleccionar producto</option>
-                                    {data.products
+                                    options={data.products
                                         .filter(p => p.estado === 'Activo')
-                                        .map(p => (
-                                            <option key={p.id} value={p.id}>
-                                                {p.producto}
-                                            </option>
-                                        ))}
-                                </select>
+                                        .map(p => ({
+                                            value: p.id,
+                                            label: p.producto,
+                                        }))}
+                                />
                             </Field>
                             {product && (
                                 <p className="text-sm text-gray-500">

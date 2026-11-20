@@ -1,0 +1,45 @@
+meta {
+  name: Listar servicios incluye los nuevos
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/admin/servicios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idServicio3", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio3")));
+  });
+
+  test("La lista incluye idServicio4", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio4")));
+  });
+
+  test("La lista incluye idServicio5", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio5")));
+  });
+
+  test("La lista incluye idServicio6", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio6")));
+  });
+
+  test("La lista incluye idServicio7", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio7")));
+  });
+
+  test("La lista incluye idServicio8", function() {
+    const ids = res.body.map(x => Number(x.idServicio)); expect(ids).to.include(Number(bru.getVar("idServicio8")));
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Patricia ve sus pedidos (aun no tiene ninguno)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteD}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Lista vacia", function() {
+    expect(res.body).to.be.an("array");
+    expect(res.body.length).to.equal(0);
+  });
+}

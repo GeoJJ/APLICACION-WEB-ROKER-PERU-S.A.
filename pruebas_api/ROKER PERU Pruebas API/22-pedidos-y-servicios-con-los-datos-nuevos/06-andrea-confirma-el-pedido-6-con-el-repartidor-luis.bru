@@ -1,0 +1,52 @@
+meta {
+  name: Andrea confirma el pedido 6 con el repartidor Luis
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido6}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor3}}
+  }
+}
+
+script:post-response {
+  if (res.status === 200 || res.status === 201) { bru.setVar("compPedido6", res.body.serieComprobantePedido + "-" + res.body.numeroComprobantePedido); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado EN_RUTA", function() {
+    expect(res.body.estadoPedido).to.equal("EN_RUTA");
+  });
+
+  test("Serie B001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("B001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Vendedora asignada", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor3")));
+  });
+
+  test("Repartidor asignado", function() {
+    expect(res.body.idDelivery).to.equal(Number(bru.getVar("idRepartidor3")));
+  });
+
+  test("Trae el nombre del cliente", function() {
+    expect(res.body.nombreCliente).to.equal("Carmen Rosa Huaman Pinto");
+  });
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Producto con stock negativo
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-NEG",
+    "nombreProducto": "Malo",
+    "categoriaProducto": "bioseguridad",
+    "precioProducto": 5.0,
+    "stockProducto": -1,
+    "stockMinimo": 0,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv1}}
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

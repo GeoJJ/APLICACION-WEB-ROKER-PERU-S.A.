@@ -1,0 +1,36 @@
+meta {
+  name: Carmen ve su orden 5 confirmada y con boleta
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idOrden5", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio)); expect(ids).to.include(Number(bru.getVar("idOrden5")));
+  });
+
+  test("La lista NO incluye idOrden6", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio)); expect(ids).to.not.include(Number(bru.getVar("idOrden6")));
+  });
+
+  test("Orden 5 confirmada con B002 y vendedora", function() {
+    const o = res.body.find(x => Number(x.idOrdenServicio) === Number(bru.getVar("idOrden5")));
+    expect(o.estadoServicio).to.equal("CONFIRMADO");
+    expect(o.serieComprobanteServicio).to.equal("B002");
+    expect(o.nombreVendedor).to.contain("Andrea Sofia");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Carmen no puede ver la orden del restaurante
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio/{{idOrden6}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

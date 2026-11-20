@@ -1,0 +1,50 @@
+meta {
+  name: Crear producto 5: Mascarilla quirurgica 3 pliegues caja x50
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-{{run}}-5",
+    "nombreProducto": "Mascarilla quirurgica 3 pliegues caja x50",
+    "categoriaProducto": "bioseguridad",
+    "precioProducto": 15.0,
+    "stockProducto": 200,
+    "stockMinimo": 30,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv1}}
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idProd5", res.body.idProducto); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Stock inicial", function() {
+    expect(res.body.stockProducto).to.equal(200);
+  });
+
+  test("Categoria en mayusculas", function() {
+    expect(res.body.categoriaProducto).to.equal("BIOSEGURIDAD");
+  });
+
+  test("Estado ACTIVO", function() {
+    expect(res.body.estadoProducto).to.equal("ACTIVO");
+  });
+}

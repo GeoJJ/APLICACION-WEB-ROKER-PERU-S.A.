@@ -8,6 +8,7 @@ import { SectionHeader, Panel, Field, Modal, FormActions, SearchBox } from '@/co
 import DataTable from '@/components/shared/DataTable';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import Select from '@/components/ui/Select';
 
 // Una configuración por pantalla. Cada campo:
 //   key      → nombre en el registro de la interfaz (el paso a DTO está en lib/adminApi.js)
@@ -77,9 +78,6 @@ const configs = {
     },
     roles: {
         title: 'Gestión de Roles', singular: 'rol', icon: ShieldCheck, canDelete: false,
-        description: 'El nombre del rol es el que usa el backend para dar permisos.',
-        note: `El panel solo reconoce estos nombres, escritos exactamente así: ${ROLES.map(r => r.code).join(', ')}. ` +
-            'Cambiar el nombre de un rol existente deja sin acceso a sus usuarios. El backend no permite eliminar roles.',
         columns: ['nombre', 'panel'],
         fields: [{ key: 'nombre', label: 'Nombre del rol (MAYÚSCULAS_CON_GUION_BAJO)', pattern: '[A-Z_]{3,50}', hint: 'Solo mayúsculas y guion bajo, mínimo 3 letras' }],
     },
@@ -147,10 +145,19 @@ export default function ManagementPage({ kind, readonly = false }) {
             {config.note && !readonly && <p className="mb-5 rounded-lg bg-amber-50 p-4 text-sm leading-6 text-amber-800">{config.note}</p>}
             <div className="mb-6 flex flex-wrap gap-3">
                 <SearchBox value={search} onChange={setSearch} placeholder={`Buscar ${config.singular}...`} />
-                {filters && <select aria-label="Filtrar" className="bo-input sm:max-w-56" value={filter} onChange={e => setFilter(e.target.value)}>
-                    <option value="">{filters.all}</option>
-                    {filters.options.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-                </select>}
+                {filters && (
+                    <Select
+                        aria-label="Filtrar"
+                        className="w-full sm:w-56"
+                        placeholder={filters.all}
+                        value={filter}
+                        onChange={e => setFilter(e.target.value)}
+                        options={filters.options.map(([id, label]) => ({
+                            value: id,
+                            label,
+                        }))}
+                    />
+                )}
             </div>
             <DataTable columns={columns} rows={rows} />
         </Panel>
@@ -160,10 +167,16 @@ export default function ManagementPage({ kind, readonly = false }) {
                 <div className="grid gap-4 sm:grid-cols-2">
                     {config.fields.filter(f => !f.onlyNew || !draft.id).map(f => <Field key={f.key} label={f.label}>
                         {['role', 'status', 'provider'].includes(f.type)
-                            ? <select required name={f.key} className="bo-input" value={draft[f.key] ?? ''} onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}>
-                                <option value="">Seleccionar</option>
-                                {options(f.type).map(([id, text]) => <option key={id} value={id}>{text}</option>)}
-                            </select>
+                            ? <Select
+                                required
+                                placeholder="Seleccionar"
+                                value={draft[f.key] ?? ''}
+                                onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}
+                                options={options(f.type).map(([id, text]) => ({
+                                    value: id,
+                                    label: text,
+                                }))}
+                            />
                             : <input name={f.key} required={!f.optional} className="bo-input" type={f.type || 'text'} min={f.type === 'number' ? 0 : undefined}
                                 step={f.key === 'precio' ? '0.01' : f.type === 'number' ? '1' : undefined} pattern={f.pattern} title={f.hint}
                                 value={draft[f.key] ?? ''} onChange={e => setDraft({ ...draft, [f.key]: e.target.value })} />}

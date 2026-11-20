@@ -1,0 +1,32 @@
+meta {
+  name: Editar con entrega anterior a la salida
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor2}},
+    "fechaEntregaPedido": "2029-12-31T10:00:00"
+  }
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

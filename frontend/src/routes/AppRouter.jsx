@@ -3,7 +3,7 @@ import MovementsPage from '@/pages/backoffice/warehouse/MovementsPage';
 import CartPage from '@/pages/storefront/CartPage';
 import ServiceRequestPage from '@/pages/storefront/ServiceRequestPage';
 import ServiceRequestsPage from '@/pages/storefront/ServiceRequestsPage';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import PublicLayout from '@/components/layout/storefront/PublicLayout';
 import AuthLayout from '@/components/layout/auth/AuthLayout';
 import HomePage from '@/pages/storefront/HomePage';
@@ -19,6 +19,8 @@ import BackOfficeLayout from '@/components/layout/backoffice/BackOfficeLayout';
 import Dashboard from '@/pages/backoffice/admin/AdminDashboardPage';
 import Stock from '@/pages/backoffice/warehouse/StockOverviewPage';
 import Orders from '@/pages/backoffice/seller/OrdersManagementPage';
+import ServiceOrdersPage from '@/pages/backoffice/seller/ServiceOrdersPage';
+import SellerCatalogAndPosPage from '@/pages/backoffice/seller/SellerCatalogAndPosPage';
 import Deliveries from '@/pages/backoffice/delivery/DeliveryManagementPage';
 import Management from '@/pages/backoffice/admin/ManagementPage';
 import AdminInventoryPage from '@/pages/backoffice/admin/AdminInventoryPage';
@@ -50,7 +52,11 @@ export default function AppRouter() {
             <Route path="/warehouse" element={<Stock />} /><Route path="/warehouse/productos" element={<Management kind="products" readonly />} /><Route path="/warehouse/ingresos" element={<Entries />} />
         </Route></Route>
         <Route element={<RequireRole role="seller" />}><Route element={<BackOfficeLayout role="seller" />}>
-            <Route path="/seller" element={<Orders home />} /><Route path="/seller/solicitudes" element={<ServiceRequestsPage management />} /><Route path="/seller/pedidos" element={<Orders />} /><Route path="/seller/ventas" element={<Orders sales />} />
+            <Route path="/seller" element={<Navigate to="/seller/solicitudes" replace />} />
+            <Route path="/seller/solicitudes" element={<ServiceOrdersPage />} />
+            <Route path="/seller/pedidos" element={<Orders />} />
+            <Route path="/seller/ventas" element={<Orders sales />} />
+            <Route path="/seller/mostrador" element={<SellerCatalogAndPosPage />} />
         </Route></Route>
         <Route element={<RequireRole role="delivery" />}><Route element={<BackOfficeLayout role="delivery" />}>
             <Route path="/delivery" element={<Deliveries />} /><Route path="/delivery/historial" element={<Deliveries history />} />

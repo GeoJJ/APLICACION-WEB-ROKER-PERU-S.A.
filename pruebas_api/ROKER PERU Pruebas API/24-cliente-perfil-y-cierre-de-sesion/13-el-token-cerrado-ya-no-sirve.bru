@@ -1,0 +1,21 @@
+meta {
+  name: El token cerrado ya no sirve
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteD}}
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

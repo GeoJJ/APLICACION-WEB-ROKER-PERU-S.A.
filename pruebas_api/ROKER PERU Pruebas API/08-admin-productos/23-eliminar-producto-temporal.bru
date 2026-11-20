@@ -1,0 +1,21 @@
+meta {
+  name: Eliminar producto temporal
+  type: http
+  seq: 23
+}
+
+delete {
+  url: {{baseUrl}}/admin/productos/{{idProdTemp}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

@@ -15,13 +15,17 @@ script:pre-request {
   bru.setVar("run", String(base).slice(-8));
   const dni = (i) => String((base + i * 104729) % 100000000).padStart(8, "0");
   const ruc = (i) => "20" + String((base + i * 7919) % 1000000000).padStart(9, "0");
-  ["Vendedor","Vendedor2","Repartidor","Repartidor2","Almacenista","Gerente","Cliente","Cliente2","Temporal"]
+  ["Vendedor","Vendedor2","Repartidor","Repartidor2","Almacenista","Gerente","Cliente","Cliente2","Temporal","Vendedor3","Repartidor3","ClienteB","ClienteC","ClienteD"]
     .forEach((n, i) => bru.setVar("dni" + n, dni(i + 1)));
   bru.setVar("rucEmpresa", ruc(1));
   bru.setVar("rucProv1", ruc(2));
   bru.setVar("rucProv2", ruc(3));
   bru.setVar("rucProvTemp", ruc(4));
   bru.setVar("rucProvDup", ruc(5));
+  bru.setVar("rucEmpresa2", ruc(6));
+  bru.setVar("rucEmpresa3", ruc(7));
+  bru.setVar("rucProv3", ruc(8));
+  bru.setVar("rucProv4", ruc(9));
 }
 
 tests {

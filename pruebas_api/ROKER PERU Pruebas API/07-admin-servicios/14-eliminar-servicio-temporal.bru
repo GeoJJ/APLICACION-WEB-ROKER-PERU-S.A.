@@ -1,0 +1,21 @@
+meta {
+  name: Eliminar servicio temporal
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{baseUrl}}/admin/servicios/{{idServicioTemp}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

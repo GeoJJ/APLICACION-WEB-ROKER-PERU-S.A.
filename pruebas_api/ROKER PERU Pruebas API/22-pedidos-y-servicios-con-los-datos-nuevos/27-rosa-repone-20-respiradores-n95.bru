@@ -1,0 +1,38 @@
+meta {
+  name: Rosa repone 20 respiradores N95
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{baseUrl}}/almacenista/inventario/ingreso
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd6}},
+    "cantidad": 20,
+    "tipoMovimiento": "INGRESO",
+    "justificacion": "Reposicion de respiradores N95"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Tipo INGRESO", function() {
+    expect(res.body.tipoMovimiento).to.equal("INGRESO");
+  });
+
+  test("Stock resultante 80", function() {
+    expect(res.body.stockResultante).to.equal(80);
+  });
+}

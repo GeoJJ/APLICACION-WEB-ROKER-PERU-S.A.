@@ -1,0 +1,30 @@
+meta {
+  name: Listar servicios
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/admin/servicios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idServicio1", function() {
+    const ids = res.body.map(x => Number(x.idServicio));
+    expect(ids).to.include(Number(bru.getVar("idServicio1")));
+  });
+}

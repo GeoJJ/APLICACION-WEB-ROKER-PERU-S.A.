@@ -23,7 +23,7 @@ tests {
     const o = res.body.find(x => Number(x.idOrdenServicio) === Number(bru.getVar("idOrden1")));
     expect(o.estadoServicio).to.equal("CONFIRMADO");
     expect(o.serieComprobanteServicio).to.equal("B002");
-    expect(o.nombreVendedor).to.contain("Vendedor Prueba");
+    expect(o.nombreVendedor).to.contain("Carlos Alberto Mendoza Rojas");
   });
 
   test("Orden 3 cancelada", function() {

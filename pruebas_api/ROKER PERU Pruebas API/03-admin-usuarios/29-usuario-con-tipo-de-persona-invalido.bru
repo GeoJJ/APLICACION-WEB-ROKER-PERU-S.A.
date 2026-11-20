@@ -1,0 +1,38 @@
+meta {
+  name: Usuario con tipo de persona invalido
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Usuario Malo {{run}}",
+    "correoUsuario": "malo.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "EXTRANJERO",
+    "numeroDocumentoUsuario": "{{dniTemporal}}",
+    "telefonoUsuario": "987654321",
+    "direccionUsuario": "Av. Ejemplo 123, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

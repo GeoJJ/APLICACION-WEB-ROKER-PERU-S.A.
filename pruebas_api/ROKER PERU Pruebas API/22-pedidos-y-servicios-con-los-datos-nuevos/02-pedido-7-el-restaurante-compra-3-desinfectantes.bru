@@ -1,0 +1,38 @@
+meta {
+  name: Pedido 7: el restaurante compra 3 desinfectantes
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEmpresa2}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "transferencia",
+    "detalles": [
+      { "idProducto": {{idProd11}}, "cantidadProducto": 3 }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idPedido7", res.body.idPedido); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Monto total S/ 138", function() {
+    expect(res.body.montoTotalPedido).to.be.closeTo(138, 0.01);
+  });
+}

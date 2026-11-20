@@ -1,0 +1,26 @@
+meta {
+  name: Buscar producto por texto
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/admin/productos/buscar?texto=Mascarilla
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd1", function() {
+    const ids = res.body.map(x => Number(x.idProducto));
+    expect(ids).to.include(Number(bru.getVar("idProd1")));
+  });
+}

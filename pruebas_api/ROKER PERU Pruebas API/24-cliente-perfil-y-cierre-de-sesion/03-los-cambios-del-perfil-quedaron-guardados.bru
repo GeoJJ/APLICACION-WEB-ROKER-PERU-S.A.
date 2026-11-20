@@ -1,0 +1,29 @@
+meta {
+  name: Los cambios del perfil quedaron guardados
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/cliente/perfil
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteC}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Telefono guardado", function() {
+    expect(res.body.telefonoUsuario).to.equal("951234567");
+  });
+
+  test("Direccion guardada", function() {
+    expect(res.body.direccionUsuario).to.equal("Calle Mercaderes 245, Cercado, Arequipa");
+  });
+}
