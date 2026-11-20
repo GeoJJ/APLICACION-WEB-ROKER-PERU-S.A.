@@ -118,4 +118,38 @@ public class UsuarioService {
                     return new RecursoNoEncontradoException("Usuario", id);
                 });
     }
+
+    @Transactional(readOnly = true)
+    public UsuarioDTO.PerfilResponse obtenerPerfil(Long idUsuario) {
+        Usuario usuario = obtenerUsuario(idUsuario);
+        return UsuarioDTO.PerfilResponse.fromEntity(usuario);
+    }
+
+    @Transactional
+    public UsuarioDTO.PerfilResponse actualizarPerfil(Long idUsuario, UsuarioDTO.PerfilRequest dto) {
+        Usuario usuario = obtenerUsuario(idUsuario);
+        validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), idUsuario);
+
+        if (dto.nombreUsuario() != null && !dto.nombreUsuario().isBlank()) {
+            usuario.setNombreUsuario(dto.nombreUsuario().trim());
+        }
+        if (dto.correoUsuario() != null && !dto.correoUsuario().isBlank()) {
+            usuario.setCorreoUsuario(dto.correoUsuario().trim());
+        }
+        if (dto.telefonoUsuario() != null) {
+            usuario.setTelefonoUsuario(dto.telefonoUsuario().trim());
+        }
+        if (dto.numeroDocumentoUsuario() != null && !dto.numeroDocumentoUsuario().isBlank()) {
+            usuario.setNumeroDocumentoUsuario(dto.numeroDocumentoUsuario().trim());
+        }
+        if (dto.direccionUsuario() != null) {
+            usuario.setDireccionUsuario(dto.direccionUsuario().trim());
+        }
+        if (dto.passwordUsuario() != null && !dto.passwordUsuario().isBlank()) {
+            usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
+        }
+
+        log.info("Perfil actualizado: idUsuario={}", idUsuario);
+        return UsuarioDTO.PerfilResponse.fromEntity(usuario);
+    }
 }

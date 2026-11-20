@@ -101,4 +101,36 @@ public final class UsuarioDTO {
             );
         }
     }
+
+    public record PerfilRequest(
+            String nombreUsuario,
+            String correoUsuario,
+            String telefonoUsuario,
+            String numeroDocumentoUsuario,
+            String direccionUsuario,
+            String passwordUsuario
+    ) {
+    }
+
+    public record PerfilResponse(
+            Long idUsuario,
+            String nombreUsuario,
+            String correoUsuario,
+            String telefonoUsuario,
+            String numeroDocumentoUsuario,
+            String direccionUsuario,
+            String nombreRol
+    ) {
+        public static PerfilResponse fromEntity(Usuario u) {
+            return new PerfilResponse(
+                    u.getIdUsuario(),
+                    u.getNombreUsuario(),
+                    u.getCorreoUsuario(),
+                    u.getTelefonoUsuario(),
+                    u.getNumeroDocumentoUsuario(),
+                    u.getDireccionUsuario(),
+                    u.getRol() != null ? u.getRol().getNombreRol() : null
+            );
+        }
+    }
 }

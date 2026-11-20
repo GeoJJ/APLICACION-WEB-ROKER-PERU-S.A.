@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,5 +47,31 @@ public class VendedorPedidoController {
     @GetMapping("/mis-ventas")
     public ResponseEntity<List<PedidoDTO.ResponseVendedor>> listarMisVentas(@AuthenticationPrincipal Usuario vendedor) {
         return ResponseEntity.ok(pedidoService.listarVentasDelVendedor(vendedor.getIdUsuario()));
+    }
+
+    // GET /vendedor/pedidos/ventas?idVendedor=...
+    @GetMapping("/ventas")
+    public ResponseEntity<List<PedidoDTO.ResponseVendedor>> listarVentas(
+            @RequestParam(required = false) Long idVendedor) {
+        return ResponseEntity.ok(pedidoService.listarTodasLasVentas(idVendedor));
+    }
+
+    // PUT /vendedor/pedidos/{idPedido}
+    @PutMapping("/{idPedido}")
+    public ResponseEntity<PedidoDTO.ResponseVendedor> editarPedido(
+            @PathVariable Long idPedido,
+            @Valid @RequestBody PedidoDTO.RequestAsignacionVendedor dto,
+            @AuthenticationPrincipal(expression = "idUsuario") Long idVendedor) {
+        return ResponseEntity.ok(pedidoService.editarPedidoConfirmado(idPedido, dto, idVendedor));
+    }
+
+    // POST /vendedor/pedidos/presencial
+    @PostMapping("/presencial")
+    public ResponseEntity<PedidoDTO.ResponseVendedor> registrarVentaPresencial(
+            @Valid @RequestBody PedidoDTO.RequestCliente dto,
+            @RequestParam(required = false) Long idCliente,
+            @AuthenticationPrincipal(expression = "idUsuario") Long idVendedor) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(pedidoService.registrarVentaPresencial(dto, idCliente, idVendedor));
     }
 }

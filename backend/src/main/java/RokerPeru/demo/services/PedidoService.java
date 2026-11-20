@@ -183,6 +183,115 @@ public class PedidoService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseVendedor> listarTodasLasVentas(Long idVendedor) {
+        List<Pedidos> base = (idVendedor != null)
+                ? pedidosRepository.findByVendedor_IdUsuarioOrderByFechaPedidoDesc(idVendedor)
+                : pedidosRepository.findAll();
+
+        return base.stream()
+                .filter(p -> p.getNumeroComprobantePedido() != null || !"PENDIENTE".equalsIgnoreCase(p.getEstadoPedido()))
+                .sorted((a, b) -> {
+                    if (a.getFechaPedido() == null && b.getFechaPedido() == null) return 0;
+                    if (a.getFechaPedido() == null) return 1;
+                    if (b.getFechaPedido() == null) return -1;
+                    return b.getFechaPedido().compareTo(a.getFechaPedido());
+                })
+                .map(PedidoDTO.ResponseVendedor::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public PedidoDTO.ResponseVendedor editarPedidoConfirmado(
+            Long idPedido,
+            PedidoDTO.RequestAsignacionVendedor dto,
+            Long idVendedorLogueado) {
+        Pedidos pedido = pedidosRepository.findById(idPedido)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido", idPedido));
+
+        if ("PENDIENTE".equalsIgnoreCase(pedido.getEstadoPedido())) {
+            return confirmarYAsignarPedido(idPedido, dto, idVendedorLogueado);
+        }
+
+        if ("CANCELADO".equalsIgnoreCase(pedido.getEstadoPedido())) {
+            throw new OperacionNoPermitidaException("No se puede editar un pedido cancelado");
+        }
+
+        Usuario delivery = obtenerUsuario(dto.idDelivery());
+        if (delivery.getRol() == null || !"REPARTIDOR".equalsIgnoreCase(delivery.getRol().getNombreRol())) {
+            throw new ReglaNegocioException("El usuario seleccionado no tiene el rol de REPARTIDOR");
+        }
+
+        if (pedido.getVendedor() == null && idVendedorLogueado != null) {
+            pedido.setVendedor(obtenerUsuario(idVendedorLogueado));
+        }
+
+        dto.applyTo(pedido, delivery);
+
+        if (pedido.getFechaSalidaPedido() != null
+                && pedido.getFechaEntregaPedido() != null
+                && pedido.getFechaEntregaPedido().isBefore(pedido.getFechaSalidaPedido())) {
+            throw new ReglaNegocioException("La fecha de entrega no puede ser anterior a la fecha de salida");
+        }
+
+        Pedidos actualizado = pedidosRepository.save(pedido);
+        log.info("Vendedor {} editó el pedido #{} (repartidor: {})", idVendedorLogueado, idPedido, delivery.getNombreUsuario());
+        return PedidoDTO.ResponseVendedor.fromEntity(actualizado);
+    }
+
+    // Registrar venta presencial en mostrador (sin repartidor, pasa directo a COMPLETADO con comprobante)
+    @Transactional
+    public PedidoDTO.ResponseVendedor registrarVentaPresencial(
+            PedidoDTO.RequestCliente dto,
+            Long idClienteOpcional,
+            Long idVendedorLogueado) {
+
+        Usuario vendedor = obtenerUsuario(idVendedorLogueado);
+
+        // Si no se indica un cliente específico, se asocia al mismo vendedor o a un cliente genérico de mostrador
+        Usuario cliente = (idClienteOpcional != null)
+                ? obtenerUsuario(idClienteOpcional)
+                : vendedor;
+
+        Pedidos pedido = dto.toEntity(cliente);
+        pedido.setFechaPedido(LocalDateTime.now());
+        pedido.setFechaSalidaPedido(LocalDateTime.now());
+        pedido.setFechaEntregaPedido(LocalDateTime.now());
+        pedido.setVendedor(vendedor);
+        pedido.setDelivery(null);
+        pedido.setEstadoPedido("COMPLETADO");
+
+        double montoTotal = 0.0;
+
+        for (DetallePedidoDTO.Request detalleDto : dto.detalles()) {
+            Producto producto = productoRepository.findById(detalleDto.idProducto())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Producto", detalleDto.idProducto()));
+
+            if (producto.getStockProducto() < detalleDto.cantidadProducto()) {
+                throw new StockInsuficienteException(
+                        producto.getNombreProducto(),
+                        producto.getStockProducto(),
+                        detalleDto.cantidadProducto()
+                );
+            }
+
+            DetallePedido detalle = detalleDto.toEntity(pedido, producto, producto.getPrecioProducto());
+            pedido.agregarDetalle(detalle);
+
+            producto.setStockProducto(producto.getStockProducto() - detalleDto.cantidadProducto());
+            montoTotal += detalle.getSubtotal();
+        }
+
+        pedido.setMontoTotalPedido(montoTotal);
+        emitirComprobante(pedido);
+
+        Pedidos pedidoGuardado = pedidosRepository.save(pedido);
+        log.info("Vendedor {} registró venta presencial #{} (COMPLETADO). Total: S/ {}",
+                vendedor.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
+
+        return PedidoDTO.ResponseVendedor.fromEntity(pedidoGuardado);
+    }
+
     // Métodos privados
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
