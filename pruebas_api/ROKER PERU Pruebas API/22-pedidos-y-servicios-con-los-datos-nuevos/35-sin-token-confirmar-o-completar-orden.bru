@@ -1,0 +1,17 @@
+meta {
+  name: Sin token: confirmar o completar orden
+  type: http
+  seq: 35
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden6}}/confirmar
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

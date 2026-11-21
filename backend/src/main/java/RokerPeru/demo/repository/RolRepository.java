@@ -5,8 +5,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RolRepository extends JpaRepository<Rol, Long> {
+    // usado por el registro público para buscar el rol CLIENTE
+    Optional<Rol> findByNombreRolIgnoreCase(String nombreRol);
+
     // validar que no se repita el nombre
     boolean existsByNombreRolIgnoreCase(String nombreRol);
 

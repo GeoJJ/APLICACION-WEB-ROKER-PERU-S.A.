@@ -10,12 +10,6 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Select from '@/components/ui/Select';
 
-// Una configuración por pantalla. Cada campo:
-//   key      → nombre en el registro de la interfaz (el paso a DTO está en lib/adminApi.js)
-//   type     → 'text' (por defecto) | 'email' | 'tel' | 'number' | 'role' | 'provider' | 'status'
-//   optional → el backend lo acepta vacío
-//   onlyNew  → solo se muestra al crear
-// columns: qué campos se ven en la tabla.  canDelete: el backend tiene DELETE para este recurso.
 const configs = {
     workers: {
         title: 'Gestión de Trabajadores', singular: 'trabajador', icon: Users, canDelete: true,
@@ -52,7 +46,7 @@ const configs = {
             { key: 'tipo', label: 'Tipo de servicio', optional: true },
             { key: 'descripcion', label: 'Descripción', optional: true },
             { key: 'precio', label: 'Tarifa (S/)', type: 'number' },
-            { key: 'duracion', label: 'Duración estimada', optional: true },
+            { key: 'duracion', label: 'Duración (horas)', type: 'number', hint: 'Solo cantidad de horas (ej. 1, 2)', optional: true },
             { key: 'personal', label: 'Personal requerido', type: 'number', optional: true },
         ],
     },
@@ -79,13 +73,24 @@ const configs = {
     roles: {
         title: 'Gestión de Roles', singular: 'rol', icon: ShieldCheck, canDelete: false,
         columns: ['nombre', 'panel'],
-        fields: [{ key: 'nombre', label: 'Nombre del rol (MAYÚSCULAS_CON_GUION_BAJO)', pattern: '[A-Z_]{3,50}', hint: 'Solo mayúsculas y guion bajo, mínimo 3 letras' }],
+        fields: [{
+            key: 'nombre',
+            label: 'Nombre del rol',
+            placeholder: 'MAYÚSCULAS_CON_GUION_BAJO',
+            pattern: '[A-Z_]{3,50}',
+            hint: 'Solo mayúsculas y guion bajo, mínimo 3 letras',
+        }],
     },
 };
 
 const COLUMN_LABELS = { nombre: 'Nombre', apellido: 'Apellido', telefono: 'Teléfono', email: 'Correo', idRol: 'Rol', panel: 'Acceso al panel', codigo: 'Código', producto: 'Producto', categoria: 'Categoría', precio: 'Precio', umbral: 'Umbral de stock', estado: 'Estado', personal: 'Personal requerido', ruc: 'RUC' };
 const roleLabel = name => ROLES.find(r => r.code === name)?.label ?? name;
 const itemName = r => r.nombre ?? r.producto ?? '';
+const extractHours = val => {
+    if (val === null || val === undefined || val === '') return '';
+    const match = String(val).match(/\d+(\.\d+)?/);
+    return match ? match[0] : '';
+};
 
 export default function ManagementPage({ kind, readonly = false }) {
     const { data, save, remove } = useBackOffice();
@@ -97,13 +102,24 @@ export default function ManagementPage({ kind, readonly = false }) {
     const [toDelete, setToDelete] = useState(null);
     const [busy, setBusy] = useState(false);
 
-    const options = type => type === 'provider' ? data.providers.map(p => [p.id, p.nombre])
-        : type === 'role' ? data.roles.map(r => [r.id, roleLabel(r.nombre)])
-            : [['Activo', 'Activo'], ['Inactivo', 'Inactivo']];
+    const visibleFields = draft ? config.fields.filter(f => !f.onlyNew || !draft.id) : [];
+
+    const getSelectOptions = type => {
+        if (type === 'provider') {
+            return data.providers.map(p => ({ value: p.id, label: p.nombre }));
+        }
+        if (type === 'role') {
+            return data.roles.map(r => ({ value: r.id, label: roleLabel(r.nombre) }));
+        }
+        return [
+            { value: 'Activo', label: 'Activo' },
+            { value: 'Inactivo', label: 'Inactivo' },
+        ];
+    };
 
     const filters = {
-        workers: { all: 'Todos los roles', options: options('role'), test: (r, f) => String(r.idRol) === f },
-        products: { all: 'Todos los estados', options: options('status'), test: (r, f) => r.estado === f },
+        workers: { all: 'Todos los roles', options: getSelectOptions('role'), test: (r, f) => String(r.idRol) === String(f) },
+        products: { all: 'Todos los estados', options: getSelectOptions('status'), test: (r, f) => r.estado === f },
     }[kind];
 
     const cell = (key, r) => key === 'idRol' ? roleLabel(r.nombreRol)
@@ -111,26 +127,41 @@ export default function ManagementPage({ kind, readonly = false }) {
             : key === 'panel' ? (ROLES.some(x => x.code === r.nombre) ? <Badge variant="success">Reconocido</Badge> : <Badge variant="warning">Sin panel</Badge>)
                 : key === 'precio' ? money(r.precio)
                     : r[key];
+
     const columns = config.columns.map(key => ({ key, label: COLUMN_LABELS[key], render: r => cell(key, r) }));
     if (kind === 'products') columns.push({ key: 'stock', label: 'Stock', render: r => <>{r.stock}<p className="text-xs text-gray-500">{stockState(r)}</p></> });
     if (!readonly) columns.push({
         key: 'action', label: 'Acción', render: r => <div className="flex justify-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setDraft({ ...r })}><Pencil size={15} className="mr-2" />Editar</Button>
+            <Button size="sm" variant="outline" onClick={() => setDraft({
+                ...r,
+                ...(kind === 'services' ? { duracion: extractHours(r.duracion) } : {}),
+            })}><Pencil size={15} className="mr-2" />Editar</Button>
             {config.canDelete && r.email !== user?.email && <button type="button" onClick={() => setToDelete(r)} aria-label={`Eliminar ${itemName(r)}`}
                 className="inline-flex cursor-pointer items-center rounded-xl border-2 border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"><Trash2 size={15} /></button>}
         </div>,
     });
 
-    const rows = data[kind].filter(r => Object.values(r).join(' ').toLowerCase().includes(search.toLowerCase()) && (!filter || filters.test(r, filter)));
+    const rows = data[kind].filter(r =>
+        Object.values(r).join(' ').toLowerCase().includes(search.toLowerCase()) &&
+        (filter === '' || !filters || filters.test(r, filter))
+    );
+
     const newRecord = () => setDraft(kind === 'products' ? { estado: 'Activo', stock: 0 } : {});
 
     async function submit(e) {
         e.preventDefault();
         setBusy(true);
-        const ok = await save(kind, draft);
+        const payload = kind === 'services'
+            ? {
+                ...draft,
+                duracion: draft.duracion === '' || draft.duracion === undefined ? null : Number(draft.duracion),
+            }
+            : draft;
+        const ok = await save(kind, payload);
         setBusy(false);
         if (ok) setDraft(null);
     }
+
     async function confirmDelete() {
         setBusy(true);
         const ok = await remove(kind, toDelete.id);
@@ -139,8 +170,12 @@ export default function ManagementPage({ kind, readonly = false }) {
     }
 
     return <>
-        <SectionHeader icon={config.icon} title={readonly ? 'Consulta de Productos' : config.title} description={config.description || 'Consulta y administra la información del sistema.'}
-            action={!readonly && <Button onClick={newRecord}><Plus size={18} className="mr-2" />Nuevo {config.singular}</Button>} />
+        <SectionHeader
+            icon={config.icon}
+            title={readonly ? 'Consulta de Productos' : config.title}
+            description={config.description || 'Consulta y administra la información del sistema.'}
+            action={!readonly && <Button onClick={newRecord}><Plus size={18} className="mr-2" />Nuevo {config.singular}</Button>}
+        />
         <Panel>
             {config.note && !readonly && <p className="mb-5 rounded-lg bg-amber-50 p-4 text-sm leading-6 text-amber-800">{config.note}</p>}
             <div className="mb-6 flex flex-wrap gap-3">
@@ -152,10 +187,7 @@ export default function ManagementPage({ kind, readonly = false }) {
                         placeholder={filters.all}
                         value={filter}
                         onChange={e => setFilter(e.target.value)}
-                        options={filters.options.map(([id, label]) => ({
-                            value: id,
-                            label,
-                        }))}
+                        options={filters.options}
                     />
                 )}
             </div>
@@ -164,23 +196,38 @@ export default function ManagementPage({ kind, readonly = false }) {
 
         {draft && <Modal title={`${draft.id ? 'Editar' : 'Nuevo'} ${config.singular}`} onClose={() => setDraft(null)}>
             <form onSubmit={submit}>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    {config.fields.filter(f => !f.onlyNew || !draft.id).map(f => <Field key={f.key} label={f.label}>
-                        {['role', 'status', 'provider'].includes(f.type)
-                            ? <Select
-                                required
-                                placeholder="Seleccionar"
-                                value={draft[f.key] ?? ''}
-                                onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}
-                                options={options(f.type).map(([id, text]) => ({
-                                    value: id,
-                                    label: text,
-                                }))}
-                            />
-                            : <input name={f.key} required={!f.optional} className="bo-input" type={f.type || 'text'} min={f.type === 'number' ? 0 : undefined}
-                                step={f.key === 'precio' ? '0.01' : f.type === 'number' ? '1' : undefined} pattern={f.pattern} title={f.hint}
-                                value={draft[f.key] ?? ''} onChange={e => setDraft({ ...draft, [f.key]: e.target.value })} />}
-                    </Field>)}
+                <div className={`grid gap-4 ${visibleFields.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+                    {visibleFields.map(f => (
+                        <Field key={f.key} label={f.label}>
+                            {['role', 'status', 'provider'].includes(f.type)
+                                ? <Select
+                                    aria-label={f.label}
+                                    required
+                                    placeholder="Seleccionar"
+                                    value={draft[f.key] ?? ''}
+                                    onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}
+                                    options={getSelectOptions(f.type)}
+                                />
+                                : <input
+                                    name={f.key}
+                                    required={!f.optional}
+                                    placeholder={f.placeholder}
+                                    className="bo-input"
+                                    type={f.type || 'text'}
+                                    min={f.type === 'number' ? 0 : undefined}
+                                    step={f.key === 'precio' ? '0.01' : f.key === 'duracion' ? '0.5' : f.type === 'number' ? '1' : undefined}
+                                    pattern={f.pattern}
+                                    title={f.hint}
+                                    value={draft[f.key] ?? ''}
+                                    onChange={e => {
+                                        const val = kind === 'roles'
+                                            ? e.target.value.toUpperCase().replace(/\s+/g, '_')
+                                            : e.target.value;
+                                        setDraft({ ...draft, [f.key]: val });
+                                    }}
+                                />}
+                        </Field>
+                    ))}
                 </div>
                 {kind === 'workers' && <div className="mt-4">
                     <Field label={draft.id ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}>

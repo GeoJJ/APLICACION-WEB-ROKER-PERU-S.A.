@@ -44,8 +44,16 @@ public class OrdenesServicio {
     @Column(name = "metodo_pago_servicio", length = 30)
     private String metodoPagoServicio;
 
+    // Notas del vendedor al confirmar / completar / cancelar
     @Column(name = "incidencia_servicio", columnDefinition = "TEXT")
     private String incidenciaServicio;
+
+    // Lo que el cliente indica al solicitar el servicio (dónde y qué necesita)
+    @Column(name = "direccion_servicio", length = 255)
+    private String direccionServicio;
+
+    @Column(name = "detalle_solicitud_servicio", columnDefinition = "TEXT")
+    private String detalleSolicitudServicio;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_servicio", nullable = false)

@@ -39,7 +39,9 @@ export function sessionFromToken(token) {
 
         const email = String(claims.sub ?? claims.correoUsuario ?? '');
         const nombre = claims.nombre ?? claims.nombreUsuario ?? claims.name ?? email.split('@')[0];
-        return { role, email, nombre, name: nombre };
+        // idUsuario viene en el token desde AuthService.login (sesiones anteriores no lo traen: hay que volver a entrar)
+        const idUsuario = claims.idUsuario ?? null;
+        return { role, email, nombre, name: nombre, idUsuario };
     } catch {
         return null;
     }

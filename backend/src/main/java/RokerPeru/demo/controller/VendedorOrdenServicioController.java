@@ -10,7 +10,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Vendedor: gestiona las órdenes de servicio. Para confirmar, la orden debe tener asignado todo el personal que requiere.
+ * Vendedor: gestiona las órdenes de servicio.
+ * Flujo: PENDIENTE -> (asignar personal) -> CONFIRMADO -> COMPLETADO. Se puede CANCELAR mientras no esté completada.
+ * Para confirmar, la orden debe tener asignado todo el personal que requiere el servicio.
  */
 @RestController
 @RequestMapping("/vendedor/ordenes-servicio")
@@ -44,11 +46,24 @@ public class VendedorOrdenServicioController {
         return ResponseEntity.ok(ordenServicioService.confirmarOrdenServicio(idOrden, gestion, idVendedor));
     }
 
+    // PUT /vendedor/ordenes-servicio/{idOrden}/completar?incidencia=...
+    @PutMapping("/{idOrden}/completar")
+    public ResponseEntity<OrdenServicioDTO.ResponseVendedor> completarOrdenServicio(
+            @PathVariable Long idOrden,
+            @RequestParam(required = false) String incidencia) {
+        OrdenServicioDTO.RequestGestionVendedor gestion =
+                new OrdenServicioDTO.RequestGestionVendedor("COMPLETADO", incidencia);
+        return ResponseEntity.ok(ordenServicioService.completarOrdenServicio(idOrden, gestion));
+    }
+
     // PUT /vendedor/ordenes-servicio/{idOrden}/cancelar?incidencia=...
     @PutMapping("/{idOrden}/cancelar")
-    public ResponseEntity<OrdenServicioDTO.ResponseVendedor> cancelarOrdenServicio(@PathVariable Long idOrden, @RequestParam(required = false) String incidencia) {
+    public ResponseEntity<OrdenServicioDTO.ResponseVendedor> cancelarOrdenServicio(
+            @PathVariable Long idOrden,
+            @RequestParam(required = false) String incidencia,
+            @AuthenticationPrincipal(expression = "idUsuario") Long idVendedor) {
         OrdenServicioDTO.RequestGestionVendedor gestion =
                 new OrdenServicioDTO.RequestGestionVendedor("CANCELADO", incidencia);
-        return ResponseEntity.ok(ordenServicioService.cancelarOrdenServicio(idOrden, gestion));
+        return ResponseEntity.ok(ordenServicioService.cancelarOrdenServicio(idOrden, gestion, idVendedor));
     }
 }

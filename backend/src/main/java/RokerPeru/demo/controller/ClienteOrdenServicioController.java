@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Cliente: solicita servicios y consulta solo sus órdenes.
- * TODO: cuando exista el login, idCliente debe salir del usuario autenticado y no de un parámetro.
+ * El idCliente sale siempre del usuario autenticado (token), nunca de un parámetro.
  */
 @RestController
 @RequestMapping("/cliente/ordenes-servicio")

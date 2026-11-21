@@ -20,10 +20,9 @@ export async function request(path, options = {}) {
 }
 
 export function publicProduct(p) { return { id: p.idProducto, name: p.nombreProducto, category: p.categoriaProducto, price: p.precioProducto, stock: p.stockProducto ?? (p.disponible ? null : 0), available: p.disponible !== false }; }
-export function publicService(s) { return { id: s.idServicio ?? s.nombreServicio, name: s.nombreServicio, category: s.categoriaServicio, description: s.descripcionServicio }; }
+export function publicService(s) { return { id: s.idServicio ?? s.nombreServicio, name: s.nombreServicio, category: s.categoriaServicio, description: s.descripcionServicio, price: s.precioServicio, duration: s.duracionEstimadaServicio, personnel: s.cantidadPersonalServicio }; }
 
 export async function api(path, options = {}) {
-    if (path.startsWith('/solicitudes')) throw pending('Solicitudes y cotizaciones');
     if (path.startsWith('/checkout')) throw pending('Confirmación de compras');
     if (path.startsWith('/panel')) throw pending('Gestión');
     if (path === '/cliente/productos') return (await request(path, options)).map(publicProduct);

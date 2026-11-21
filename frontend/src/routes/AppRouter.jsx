@@ -30,14 +30,24 @@ import StaffPage from '@/pages/backoffice/staff/StaffPage';
 export default function AppRouter() {
     return <Routes>
         <Route element={<PublicLayout />}>
-            <Route path="/carrito" element={<CartPage />} /><Route path="/servicios/:id/solicitar" element={<ServiceRequestPage />} /><Route element={<RequireRole role="customer" />}><Route path="/mis-solicitudes" element={<ServiceRequestsPage />} /></Route>
-            <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} /><Route path="/servicios" element={<ServicesPage />} /><Route path="/nosotros" element={<AboutPage />} /><Route path="/contacto" element={<ContactPage />} />
+            <Route path="/carrito" element={<CartPage />} />
+            <Route path="/servicios/:id/solicitar" element={<ServiceRequestPage />} />
+            <Route element={<RequireRole role="customer" />}>
+                <Route path="/mis-solicitudes" element={<ServiceRequestsPage />} />
+            </Route>
+            <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} />
+            <Route path="/servicios" element={<ServicesPage />} />
+            <Route path="/nosotros" element={<AboutPage />} />
+            <Route path="/contacto" element={<ContactPage />} />
             <Route element={<RequireRole />}><Route path="/perfil" element={<ProfilePage />} /></Route>
             <Route path="*" element={<div className="p-12 text-center">La página que buscas no existe.</div>} />
         </Route>
-        <Route element={<AuthLayout />}><Route path="/login" element={<LoginPage />} /><Route path="/register" element={<RegisterPage />} /></Route>
-        <Route element={<RequireRole role="manager" />}><Route element={<BackOfficeLayout role="manager" />}>
-<Route path="/manager" element={<Dashboard />} /><Route path="/manager/inventario" element={<MovementsPage />} />{/* <Route path="/manager/reportes" element={<Reports />} /> */}        </Route></Route>
+        <Route element={<AuthLayout />}><Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} /></Route>
+        <Route element={<RequireRole role="manager" />}>
+            <Route element={<BackOfficeLayout role="manager" />}>
+                <Route path="/manager" element={<Dashboard />} />
+                <Route path="/manager/inventario" element={<MovementsPage />} />{/* <Route path="/manager/reportes" element={<Reports />} /> */}        </Route></Route>
         <Route element={<RequireRole role="admin" />}><Route element={<BackOfficeLayout role="admin" />}>
             <Route path="/admin" element={<AdministrationDashboardPage />} />
             <Route path="/admin/trabajadores" element={<Management key="workers" kind="workers" />} />

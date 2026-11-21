@@ -32,8 +32,8 @@ tests {
     expect(res.status).to.equal(201);
   });
 
-  test("Estado COMPLETADO", function() {
-    expect(res.body.estadoPedido).to.equal("COMPLETADO");
+  test("Estado ENTREGADO", function() {
+    expect(res.body.estadoPedido).to.equal("ENTREGADO");
   });
 
   test("Serie B001 y numero de 8 digitos", function() {

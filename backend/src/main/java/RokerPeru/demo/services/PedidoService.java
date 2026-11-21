@@ -239,7 +239,7 @@ public class PedidoService {
         return PedidoDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
-    // Registrar venta presencial en mostrador (sin repartidor, pasa directo a COMPLETADO con comprobante)
+    // Registrar venta presencial en mostrador (sin repartidor, pasa directo a ENTREGADO con comprobante)
     @Transactional
     public PedidoDTO.ResponseVendedor registrarVentaPresencial(
             PedidoDTO.RequestCliente dto,
@@ -259,7 +259,7 @@ public class PedidoService {
         pedido.setFechaEntregaPedido(LocalDateTime.now());
         pedido.setVendedor(vendedor);
         pedido.setDelivery(null);
-        pedido.setEstadoPedido("COMPLETADO");
+        pedido.setEstadoPedido("ENTREGADO");
 
         double montoTotal = 0.0;
 
@@ -286,7 +286,7 @@ public class PedidoService {
         emitirComprobante(pedido);
 
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Vendedor {} registró venta presencial #{} (COMPLETADO). Total: S/ {}",
+        log.info("Vendedor {} registró venta presencial #{} (ENTREGADO). Total: S/ {}",
                 vendedor.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
 
         return PedidoDTO.ResponseVendedor.fromEntity(pedidoGuardado);

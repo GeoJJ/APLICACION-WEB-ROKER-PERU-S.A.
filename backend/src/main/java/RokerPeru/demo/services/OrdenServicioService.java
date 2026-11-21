@@ -53,10 +53,11 @@ public class OrdenServicioService {
         // Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
         OrdenesServicio orden = obtenerOrdenConDetalles(idOrden);
 
-        if (!"PENDIENTE".equals(orden.getEstadoServicio())) {
-            throw new OperacionNoPermitidaException("Solo se pueden confirmar órdenes en estado PENDIENTE");
+        String estadoActual = orden.getEstadoServicio();
+        if (!"PENDIENTE".equals(estadoActual)) {
+            throw new OperacionNoPermitidaException(
+                    "Solo se pueden confirmar órdenes PENDIENTES. Estado actual: " + estadoActual);
         }
-
         int personalRequerido = 0;
         try {
             String soloNumeros = orden.getServicio().getCantidadPersonalServicio().replaceAll("\\D+", "");
@@ -89,11 +90,20 @@ public class OrdenServicioService {
 
     // Flujo del vendedor para cancelar orden
     @Transactional
-    public OrdenServicioDTO.ResponseVendedor cancelarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
+    public OrdenServicioDTO.ResponseVendedor cancelarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto, Long idVendedor) {
         OrdenesServicio orden = obtenerOrden(idOrden);
 
         if ("COMPLETADO".equals(orden.getEstadoServicio())) {
             throw new OperacionNoPermitidaException("No se puede cancelar una orden ya completada");
+        }
+        if ("CANCELADO".equals(orden.getEstadoServicio())) {
+            throw new OperacionNoPermitidaException("La orden ya está cancelada");
+        }
+
+        // Si nadie la había tomado todavía, queda a nombre de quien la cancela
+        // (así sigue apareciendo en su lista y se sabe quién la atendió).
+        if (orden.getVendedor() == null) {
+            orden.setVendedor(obtenerUsuario(idVendedor));
         }
 
         dto.applyTo(orden);
@@ -171,5 +181,22 @@ public class OrdenServicioService {
         orden.setSerieComprobanteServicio(numero.serie());
         orden.setNumeroComprobanteServicio(numero.numero());
         orden.setFechaEmisionComprobante(LocalDateTime.now());
+    }
+
+    @Transactional
+    public OrdenServicioDTO.ResponseVendedor completarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto) {
+        OrdenesServicio orden = obtenerOrden(idOrden);
+
+        String estadoActual = orden.getEstadoServicio();
+        if (!"CONFIRMADO".equals(estadoActual) && !"EN_PROCESO".equals(estadoActual)) {
+            throw new OperacionNoPermitidaException(
+                    "Solo se pueden completar órdenes CONFIRMADAS. Estado actual: " + estadoActual);
+        }
+
+        dto.applyTo(orden); // estado = COMPLETADO y, si viene, la observación
+        OrdenesServicio actualizado = ordenesRepository.save(orden);
+
+        log.info("Orden de servicio #{} completada", idOrden);
+        return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
 }

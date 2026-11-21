@@ -1,0 +1,25 @@
+meta {
+  name: Una orden completada no se puede cancelar
+  type: http
+  seq: 33
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden5}}/cancelar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

@@ -48,6 +48,12 @@ export function confirmServiceOrder(orderId, incidencia = '') {
     return request(`/vendedor/ordenes-servicio/${orderId}/confirmar${query}`, { method: 'PUT' });
 }
 
+export function completeServiceOrder(orderId, incidencia = '') {
+    const clean = text(incidencia);
+    const query = clean ? `?${new URLSearchParams({ incidencia: clean }).toString()}` : '';
+    return request(`/vendedor/ordenes-servicio/${orderId}/completar${query}`, { method: 'PUT' });
+}
+
 export function cancelServiceOrder(orderId, incidencia = '') {
     const clean = text(incidencia);
     const query = clean ? `?${new URLSearchParams({ incidencia: clean }).toString()}` : '';

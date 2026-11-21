@@ -1,5 +1,5 @@
 meta {
-  name: Confirmar otra vez la misma orden
+  name: Confirmar otra vez la orden 1 la completa (servicio realizado)
   type: http
   seq: 19
 }
@@ -15,11 +15,15 @@ auth:bearer {
 }
 
 tests {
-  test("Responde 409", function() {
-    expect(res.status).to.equal(409);
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
   });
 
-  test("Cuerpo de error con status 409", function() {
-    expect(res.body.status).to.equal(409);
+  test("Estado COMPLETADO", function() {
+    expect(res.body.estadoServicio).to.equal("COMPLETADO");
+  });
+
+  test("Conserva su comprobante B002", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("B002");
   });
 }
