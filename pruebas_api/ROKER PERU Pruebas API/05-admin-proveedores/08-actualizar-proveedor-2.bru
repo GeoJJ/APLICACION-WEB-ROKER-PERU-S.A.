@@ -1,0 +1,34 @@
+meta {
+  name: Actualizar proveedor 2
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/admin/proveedores/{{idProv2}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreProveedor": "Quimicos del Sur SRL",
+    "rucProveedor": "{{rucProv2}}",
+    "telefonoProveedor": "054999888",
+    "correoProveedor": "contacto@quimicosdelsur.test"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Telefono actualizado", function() {
+    expect(res.body.telefonoProveedor).to.equal("054999888");
+  });
+}

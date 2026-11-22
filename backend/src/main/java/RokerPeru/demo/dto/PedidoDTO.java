@@ -2,8 +2,11 @@ package RokerPeru.demo.dto;
 
 import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Usuario;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,15 +14,13 @@ import java.util.List;
 public final class PedidoDTO {
     private PedidoDTO() {
     }
+
     // Solo para que el CLIENTE cree el pedido
     public record RequestCliente(
             @NotBlank(message = "El método de pago es obligatorio")
             String metodoPagoPedido,
-
-            @NotNull(message = "El ID del cliente es obligatorio")
-            Long idCliente,
-
-            @NotNull(message = "El pedido debe contener al menos un detalle")
+            @NotEmpty(message = "El pedido debe contener al menos un detalle")
+            @Valid
             List<DetallePedidoDTO.Request> detalles
     ) {
         public RequestCliente {
@@ -38,6 +39,23 @@ public final class PedidoDTO {
             if (delivery != null) pedido.setDelivery(delivery);
 
             pedido.setMetodoPagoPedido(this.metodoPagoPedido);
+        }
+    }
+
+    // Venta PRESENCIAL en mostrador: solo se pide el DNI del cliente (no nombre ni dirección)
+    public record RequestPresencial(
+            @NotBlank(message = "El DNI del cliente es obligatorio")
+            @Pattern(regexp = "\\d{8}", message = "El DNI debe tener exactamente 8 dígitos")
+            String dniCliente,
+            @NotBlank(message = "El método de pago es obligatorio")
+            String metodoPagoPedido,
+            @NotEmpty(message = "La venta debe contener al menos un producto")
+            @Valid
+            List<DetallePedidoDTO.Request> detalles
+    ) {
+        public RequestPresencial {
+            dniCliente = dniCliente != null ? dniCliente.trim() : null;
+            metodoPagoPedido = metodoPagoPedido != null ? metodoPagoPedido.trim().toUpperCase() : null;
         }
     }
 
@@ -84,9 +102,12 @@ public final class PedidoDTO {
 
     // Lo que ve el CLIENTE
     public record ResponseCliente(
+            Long idPedido,
+            String codigoPedido,
             LocalDateTime fechaPedido,
             String serieComprobantePedido,
             String numeroComprobantePedido,
+            LocalDateTime fechaEmisionComprobante,
             LocalDateTime fechaSalidaPedido,
             LocalDateTime fechaEntregaPedido,
             String incidentePedido,
@@ -99,9 +120,12 @@ public final class PedidoDTO {
     ) {
         public static ResponseCliente fromEntity(Pedidos p) {
             return new ResponseCliente(
+                    p.getIdPedido(),
+                    p.getCodigoPedido(),
                     p.getFechaPedido(),
                     p.getSerieComprobantePedido(),
                     p.getNumeroComprobantePedido(),
+                    p.getFechaEmisionComprobante(),
                     p.getFechaSalidaPedido(),
                     p.getFechaEntregaPedido(),
                     p.getIncidentePedido(),
@@ -118,9 +142,11 @@ public final class PedidoDTO {
     // Lo que ve el VENDEDOR (TODO)
     public record ResponseVendedor(
             Long idPedido,
+            String codigoPedido,
             LocalDateTime fechaPedido,
             String serieComprobantePedido,
             String numeroComprobantePedido,
+            LocalDateTime fechaEmisionComprobante,
             LocalDateTime fechaSalidaPedido,
             LocalDateTime fechaEntregaPedido,
             String incidentePedido,
@@ -135,9 +161,11 @@ public final class PedidoDTO {
         public static ResponseVendedor fromEntity(Pedidos p) {
             return new ResponseVendedor(
                     p.getIdPedido(),
+                    p.getCodigoPedido(),
                     p.getFechaPedido(),
                     p.getSerieComprobantePedido(),
                     p.getNumeroComprobantePedido(),
+                    p.getFechaEmisionComprobante(),
                     p.getFechaSalidaPedido(),
                     p.getFechaEntregaPedido(),
                     p.getIncidentePedido(),
@@ -145,8 +173,8 @@ public final class PedidoDTO {
                     p.getMontoTotalPedido(),
                     p.getMetodoPagoPedido(),
                     p.getCliente() != null ? p.getCliente().getIdUsuario() : null,
-                    p.getCliente() != null ? p.getCliente().getNombreUsuario() : null,
-                    p.getCliente() != null ? p.getCliente().getDireccionUsuario() : null,
+                    PedidoDTO.textoNombreCliente(p),
+                    PedidoDTO.textoDireccionCliente(p),
                     p.getVendedor() != null ? p.getVendedor().getIdUsuario() : null,
                     p.getVendedor() != null ? p.getVendedor().getNombreUsuario() : null,
                     p.getDelivery() != null ? p.getDelivery().getIdUsuario() : null,
@@ -156,9 +184,23 @@ public final class PedidoDTO {
         }
     }
 
+    // Textos del cliente para el listado del vendedor. En presencial solo existe el DNI.
+    private static String textoNombreCliente(Pedidos p) {
+        if (p.getCliente() != null) return p.getCliente().getNombreUsuario();
+        if (p.getClientePresencial() != null) return "Mostrador - DNI " + p.getClientePresencial().getDniClientePresencial();
+        return null;
+    }
+
+    private static String textoDireccionCliente(Pedidos p) {
+        if (p.getCliente() != null) return p.getCliente().getDireccionUsuario();
+        if (p.getClientePresencial() != null) return "Venta presencial en tienda";
+        return null;
+    }
+
     // Lo que ve el REPARTIDOR (Solo lo esencial)
     public record ResponseRepartidor(
             Long idPedido,
+            String codigoPedido,
             String estadoPedido,
             String nombreCliente,
             String direccionEntregaCliente,
@@ -169,6 +211,7 @@ public final class PedidoDTO {
         public static ResponseRepartidor fromEntity(Pedidos p) {
             return new ResponseRepartidor(
                     p.getIdPedido(),
+                    p.getCodigoPedido(),
                     p.getEstadoPedido(),
                     p.getCliente() != null ? p.getCliente().getNombreUsuario() : "Desconocido",
                     p.getCliente() != null ? p.getCliente().getDireccionUsuario() : "Sin dirección",

@@ -1,0 +1,25 @@
+meta {
+  name: Buscar productos por codigo
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/admin/productos/buscar?texto=PRD-{{run}}-9
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd9", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd9")));
+  });
+}

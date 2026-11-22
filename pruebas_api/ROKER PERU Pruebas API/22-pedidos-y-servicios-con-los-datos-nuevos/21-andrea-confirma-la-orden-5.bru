@@ -1,0 +1,42 @@
+meta {
+  name: Andrea confirma la orden 5
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden5}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compOrden5", res.body.serieComprobanteServicio + "-" + res.body.numeroComprobanteServicio); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CONFIRMADO", function() {
+    expect(res.body.estadoServicio).to.equal("CONFIRMADO");
+  });
+
+  test("Serie B002 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("B002");
+    expect(res.body.numeroComprobanteServicio).to.match(/^\d{8}$/);
+  });
+
+  test("Queda registrada la vendedora", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor3")));
+  });
+
+  test("Personal asignado 1", function() {
+    expect(res.body.cantidadPersonalAsignada).to.equal(1);
+  });
+}

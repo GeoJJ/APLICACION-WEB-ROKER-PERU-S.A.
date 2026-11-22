@@ -1,0 +1,25 @@
+meta {
+  name: Cuerpo vacio en un POST
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/admin/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+
+}
+
+tests {
+  test("Responde 400 o 415", function() {
+    expect([400,415]).to.include(res.status);
+  });
+}

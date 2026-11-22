@@ -1,0 +1,29 @@
+meta {
+  name: Orden 2: confirmar con personal insuficiente
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden2}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+
+  test("Explica cuantas personas faltan", function() {
+    expect(res.body.detail).to.contain("2");
+  });
+}

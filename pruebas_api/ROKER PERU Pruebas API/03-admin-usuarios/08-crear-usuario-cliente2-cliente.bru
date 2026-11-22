@@ -1,0 +1,52 @@
+meta {
+  name: Crear usuario cliente2 (CLIENTE)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Juan Pablo Medina Arce",
+    "correoUsuario": "juan.medina.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniCliente2}}",
+    "telefonoUsuario": "980987654",
+    "direccionUsuario": "Calle Peral 142, Cercado, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idCliente2", res.body.idUsuario);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("CLIENTE");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

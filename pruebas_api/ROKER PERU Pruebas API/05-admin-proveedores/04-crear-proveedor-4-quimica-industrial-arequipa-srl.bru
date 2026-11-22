@@ -1,0 +1,38 @@
+meta {
+  name: Crear proveedor 4: Quimica Industrial Arequipa SRL
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/admin/proveedores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreProveedor": "Quimica Industrial Arequipa SRL",
+    "rucProveedor": "{{rucProv4}}",
+    "telefonoProveedor": "054345678",
+    "correoProveedor": "pedidos@quimicaindustrial.test"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idProv4", res.body.idProveedor); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Nombre en mayusculas", function() {
+    expect(res.body.nombreProveedor).to.equal(res.body.nombreProveedor.toUpperCase());
+  });
+}

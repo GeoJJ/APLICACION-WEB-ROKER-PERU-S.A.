@@ -1,0 +1,43 @@
+meta {
+  name: Pedido 3 (empresa): 2 trajes (S/ 200)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEmpresa}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "transferencia",
+    "detalles": [
+      {
+        "idProducto": {{idProd3}},
+        "cantidadProducto": 2
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idPedido3", res.body.idPedido);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Monto S/ 200", function() {
+    expect(res.body.montoTotalPedido).to.be.closeTo(200, 0.01);
+  });
+}

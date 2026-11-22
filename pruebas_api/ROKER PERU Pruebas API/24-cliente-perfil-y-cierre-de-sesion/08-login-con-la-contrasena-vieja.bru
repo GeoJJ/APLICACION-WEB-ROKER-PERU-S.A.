@@ -1,0 +1,28 @@
+meta {
+  name: Login con la contrasena vieja
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correoUsuario": "alberto.villanueva.{{run}}@rokerperu.test",
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+tests {
+  test("Responde 401", function() {
+    expect(res.status).to.equal(401);
+  });
+
+  test("Cuerpo de error con status 401", function() {
+    expect(res.body.status).to.equal(401);
+  });
+}

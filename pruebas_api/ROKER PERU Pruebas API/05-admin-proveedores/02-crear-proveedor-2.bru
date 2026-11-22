@@ -1,0 +1,36 @@
+meta {
+  name: Crear proveedor 2
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/admin/proveedores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreProveedor": "Quimicos del Sur SRL",
+    "rucProveedor": "{{rucProv2}}",
+    "telefonoProveedor": "054123456",
+    "correoProveedor": "contacto@quimicosdelsur.test"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idProv2", res.body.idProveedor);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

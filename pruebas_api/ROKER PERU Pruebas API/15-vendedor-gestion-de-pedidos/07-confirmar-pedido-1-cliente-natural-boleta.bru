@@ -1,0 +1,53 @@
+meta {
+  name: Confirmar pedido 1 (cliente natural -> boleta)
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido1}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor}}
+  }
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compPedido1", res.body.serieComprobantePedido + "-" + res.body.numeroComprobantePedido); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado EN_RUTA", function() {
+    expect(res.body.estadoPedido).to.equal("EN_RUTA");
+  });
+
+  test("Serie B001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("B001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Fecha de emision presente", function() {
+    expect(res.body.fechaEmisionComprobante).to.exist;
+  });
+
+  test("Vendedor y repartidor asignados", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor")));
+    expect(res.body.idDelivery).to.equal(Number(bru.getVar("idRepartidor")));
+  });
+
+  test("Fecha de salida puesta automaticamente", function() {
+    expect(res.body.fechaSalidaPedido).to.exist;
+  });
+}

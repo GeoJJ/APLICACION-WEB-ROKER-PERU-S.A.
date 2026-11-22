@@ -1,0 +1,64 @@
+meta {
+  name: Venta presencial a la constructora: 2 cascos y 1 par de botas
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial?idCliente={{idEmpresa3}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      { "idProducto": {{idProd8}}, "cantidadProducto": 2 },
+      { "idProducto": {{idProd9}}, "cantidadProducto": 1 }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201) { bru.setVar("idPedidoPresencial", res.body.idPedido); bru.setVar("compPresencial", res.body.serieComprobantePedido + "-" + res.body.numeroComprobantePedido); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Estado ENTREGADO", function() {
+    expect(res.body.estadoPedido).to.equal("ENTREGADO");
+  });
+
+  test("Serie F001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("F001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Monto total S/ 117.90", function() {
+    expect(res.body.montoTotalPedido).to.be.closeTo(117.9, 0.01);
+  });
+
+  test("El cliente es la constructora", function() {
+    expect(res.body.idCliente).to.equal(Number(bru.getVar("idEmpresa3")));
+  });
+
+  test("El vendedor es Carlos", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor")));
+  });
+
+  test("Sin repartidor", function() {
+    expect(res.body.idDelivery).to.not.exist;
+  });
+
+  test("Trae el nombre del cliente", function() {
+    expect(res.body.nombreCliente).to.contain("Constructora Andes");
+  });
+}

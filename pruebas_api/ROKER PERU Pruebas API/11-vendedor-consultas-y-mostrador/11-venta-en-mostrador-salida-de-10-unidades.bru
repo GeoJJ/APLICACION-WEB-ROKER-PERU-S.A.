@@ -1,0 +1,38 @@
+meta {
+  name: Venta en mostrador: salida de 10 unidades
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/vendedor/inventario/salida
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd2}},
+    "cantidad": 10,
+    "tipoMovimiento": "SALIDA",
+    "justificacion": "Venta en mostrador"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Tipo SALIDA", function() {
+    expect(res.body.tipoMovimiento).to.equal("SALIDA");
+  });
+
+  test("Stock resultante 30", function() {
+    expect(res.body.stockResultante).to.equal(30);
+  });
+}

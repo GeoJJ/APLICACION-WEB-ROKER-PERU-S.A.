@@ -1,0 +1,26 @@
+meta {
+  name: Sin token: venta presencial
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      { "idProducto": {{idProd12}}, "cantidadProducto": 1 }
+    ]
+  }
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

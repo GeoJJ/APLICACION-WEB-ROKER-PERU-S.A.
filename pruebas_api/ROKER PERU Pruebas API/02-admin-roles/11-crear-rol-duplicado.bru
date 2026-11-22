@@ -1,0 +1,31 @@
+meta {
+  name: Crear rol duplicado
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/admin/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreRol": "ADMINISTRADOR"
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

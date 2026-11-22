@@ -1,0 +1,32 @@
+meta {
+  name: Salida de un producto inexistente
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/vendedor/inventario/salida
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "productoId": 999999,
+    "cantidad": 1
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

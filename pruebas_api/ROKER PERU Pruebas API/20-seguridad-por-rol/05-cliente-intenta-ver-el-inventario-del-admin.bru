@@ -1,0 +1,25 @@
+meta {
+  name: Cliente intenta ver el inventario del admin
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/admin/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

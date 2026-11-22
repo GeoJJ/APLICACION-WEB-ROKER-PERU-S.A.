@@ -1,0 +1,25 @@
+meta {
+  name: El catalogo publico incluye los productos nuevos
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd4", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd4")));
+  });
+
+  test("La lista incluye idProd12", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd12")));
+  });
+}

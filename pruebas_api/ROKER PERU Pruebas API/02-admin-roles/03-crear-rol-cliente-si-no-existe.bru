@@ -1,0 +1,27 @@
+meta {
+  name: Crear rol CLIENTE (si no existe)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/admin/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreRol": "CLIENTE"
+  }
+}
+
+tests {
+  test("Responde 201 o 409", function() {
+    expect([201,409]).to.include(res.status);
+  });
+}

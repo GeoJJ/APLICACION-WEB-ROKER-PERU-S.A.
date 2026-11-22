@@ -1,0 +1,17 @@
+meta {
+  name: Sin token: ver mis pedidos
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{baseUrl}}/cliente/pedidos
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 401 o 403", function() {
+    expect([401,403]).to.include(res.status);
+  });
+}

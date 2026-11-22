@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import RokerPeru.demo.exception.SolicitudInvalidaException;
+import RokerPeru.demo.exception.ConflictoException;
 
 import java.util.List;
 
@@ -24,6 +26,9 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO.Response crearUsuario(UsuarioDTO.Request dto) {
+        if (dto.passwordUsuario() == null || dto.passwordUsuario().isBlank()) {
+            throw new SolicitudInvalidaException("La contraseña es obligatoria al crear un usuario");
+        }
         validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), null);
         Rol rol = rolService.obtenerRol(dto.idRol());
         Usuario usuario = dto.toEntity(rol);
@@ -94,7 +99,7 @@ public class UsuarioService {
                 : usuarioRepository.existsByCorreoUsuarioIgnoreCaseAndIdUsuarioNot(correo, idIgnorado);
 
         if (correoExiste) {
-            throw new RuntimeException("Ya existe un usuario con el correo: " + correo);
+            throw new ConflictoException("Ya existe un usuario con el correo: " + correo);
         }
 
         boolean docExiste = (idIgnorado == null)
@@ -102,7 +107,7 @@ public class UsuarioService {
                 : usuarioRepository.existsByNumeroDocumentoUsuarioAndIdUsuarioNot(documento, idIgnorado);
 
         if (docExiste) {
-            throw new RuntimeException("Ya existe un usuario con el documento: " + documento);
+            throw new ConflictoException("Ya existe un usuario con el documento: " + documento);
         }
     }
 
@@ -112,5 +117,39 @@ public class UsuarioService {
                     log.warn("Usuario no encontrado: id={}", id);
                     return new RecursoNoEncontradoException("Usuario", id);
                 });
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioDTO.PerfilResponse obtenerPerfil(Long idUsuario) {
+        Usuario usuario = obtenerUsuario(idUsuario);
+        return UsuarioDTO.PerfilResponse.fromEntity(usuario);
+    }
+
+    @Transactional
+    public UsuarioDTO.PerfilResponse actualizarPerfil(Long idUsuario, UsuarioDTO.PerfilRequest dto) {
+        Usuario usuario = obtenerUsuario(idUsuario);
+        validarDuplicados(dto.correoUsuario(), dto.numeroDocumentoUsuario(), idUsuario);
+
+        if (dto.nombreUsuario() != null && !dto.nombreUsuario().isBlank()) {
+            usuario.setNombreUsuario(dto.nombreUsuario().trim());
+        }
+        if (dto.correoUsuario() != null && !dto.correoUsuario().isBlank()) {
+            usuario.setCorreoUsuario(dto.correoUsuario().trim());
+        }
+        if (dto.telefonoUsuario() != null) {
+            usuario.setTelefonoUsuario(dto.telefonoUsuario().trim());
+        }
+        if (dto.numeroDocumentoUsuario() != null && !dto.numeroDocumentoUsuario().isBlank()) {
+            usuario.setNumeroDocumentoUsuario(dto.numeroDocumentoUsuario().trim());
+        }
+        if (dto.direccionUsuario() != null) {
+            usuario.setDireccionUsuario(dto.direccionUsuario().trim());
+        }
+        if (dto.passwordUsuario() != null && !dto.passwordUsuario().isBlank()) {
+            usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
+        }
+
+        log.info("Perfil actualizado: idUsuario={}", idUsuario);
+        return UsuarioDTO.PerfilResponse.fromEntity(usuario);
     }
 }

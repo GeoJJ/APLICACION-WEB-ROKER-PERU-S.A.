@@ -1,0 +1,27 @@
+meta {
+  name: Alertas: producto AGOTADO
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/alertas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("El producto 2 aparece en alertas con nivel AGOTADO", function() {
+    const a = res.body.find(x => Number(x.productoId) === Number(bru.getVar("idProd2")));
+    expect(a, "el producto 2 debe estar en alertas").to.exist;
+    expect(a.nivelUrgencia.startsWith("AGOTADO")).to.equal(true);
+  });
+}

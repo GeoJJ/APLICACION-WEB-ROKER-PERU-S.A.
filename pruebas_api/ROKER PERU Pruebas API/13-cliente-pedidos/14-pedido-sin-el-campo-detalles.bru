@@ -1,0 +1,31 @@
+meta {
+  name: Pedido sin el campo detalles
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "EFECTIVO"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

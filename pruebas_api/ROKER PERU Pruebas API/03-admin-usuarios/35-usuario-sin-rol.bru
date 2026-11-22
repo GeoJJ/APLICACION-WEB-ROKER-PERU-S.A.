@@ -1,0 +1,37 @@
+meta {
+  name: Usuario sin rol
+  type: http
+  seq: 35
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Usuario Malo {{run}}",
+    "correoUsuario": "malo.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniTemporal}}",
+    "telefonoUsuario": "987654321",
+    "direccionUsuario": "Av. Ejemplo 123, Arequipa",
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

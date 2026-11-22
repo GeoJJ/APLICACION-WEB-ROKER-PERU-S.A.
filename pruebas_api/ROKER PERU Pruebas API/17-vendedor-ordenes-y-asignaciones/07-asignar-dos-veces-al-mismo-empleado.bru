@@ -1,0 +1,34 @@
+meta {
+  name: Asignar dos veces al mismo empleado
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden1}},
+    "idEmpleado": {{idEmp1}},
+    "nombreResponsableAsignacion": "Carlos Alberto Mendoza Rojas",
+    "descripcionAsignacion": "Limpieza general del area"
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+}

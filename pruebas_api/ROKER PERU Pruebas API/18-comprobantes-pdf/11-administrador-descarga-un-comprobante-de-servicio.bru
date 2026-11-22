@@ -1,0 +1,33 @@
+meta {
+  name: Administrador descarga un comprobante de servicio
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/ordenes-servicio/{{idOrden2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Es un PDF", function() {
+    expect(res.getHeader("content-type")).to.contain("application/pdf");
+  });
+
+  test("Nombre de archivo correcto", function() {
+    expect(res.getHeader("content-disposition")).to.contain("comprobante-" + bru.getVar("compOrden2"));
+  });
+
+  test("El PDF no esta vacio", function() {
+    expect(res.getSize().body).to.be.greaterThan(1000);
+  });
+}

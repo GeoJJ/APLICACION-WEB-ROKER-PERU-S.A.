@@ -1,0 +1,25 @@
+meta {
+  name: Confirmar una orden PENDIENTE sin personal sigue dando 422 (orden 4)
+  type: http
+  seq: 27
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden4}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

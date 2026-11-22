@@ -1,0 +1,21 @@
+meta {
+  name: Logout sin la cabecera Authorization
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

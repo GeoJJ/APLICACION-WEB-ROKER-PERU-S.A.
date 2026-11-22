@@ -1,0 +1,34 @@
+meta {
+  name: Cliente intenta crear una asignacion
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden4}},
+    "idEmpleado": {{idEmp1}},
+    "nombreResponsableAsignacion": "Carlos Alberto Mendoza Rojas",
+    "descripcionAsignacion": "Limpieza general del area"
+  }
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Patricia cierra sesion
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteD}}
+}
+
+tests {
+  test("Responde 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

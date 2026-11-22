@@ -1,0 +1,25 @@
+meta {
+  name: Ver la orden 2 (requiere 2)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Requiere 2", function() {
+    expect(res.body.cantidadPersonalRequerida).to.equal(2);
+  });
+}

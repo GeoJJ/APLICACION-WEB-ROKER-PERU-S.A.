@@ -1,0 +1,25 @@
+meta {
+  name: Ver un producto
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/almacenista/productos/{{idProd2}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Stock 35", function() {
+    expect(res.body.stockProducto).to.equal(35);
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Luis ve su entrega del pedido 6
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/repartidor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor3}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idPedido6", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.include(Number(bru.getVar("idPedido6")));
+  });
+
+  test("La lista NO incluye idPedido7", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.not.include(Number(bru.getVar("idPedido7")));
+  });
+}

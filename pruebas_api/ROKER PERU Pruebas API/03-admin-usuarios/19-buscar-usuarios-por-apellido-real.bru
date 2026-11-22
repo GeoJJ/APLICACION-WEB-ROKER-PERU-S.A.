@@ -1,0 +1,25 @@
+meta {
+  name: Buscar usuarios por apellido real
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios/buscar?texto=Mendoza
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idVendedor (Carlos Mendoza)", function() {
+    const ids = res.body.map(x => Number(x.idUsuario)); expect(ids).to.include(Number(bru.getVar("idVendedor")));
+  });
+}

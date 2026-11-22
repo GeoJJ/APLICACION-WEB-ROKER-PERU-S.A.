@@ -1,0 +1,31 @@
+meta {
+  name: Mis ordenes (empresa)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEmpresa}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idOrden2", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden2")));
+  });
+
+  test("La lista NO incluye idOrden1", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.not.include(Number(bru.getVar("idOrden1")));
+  });
+}

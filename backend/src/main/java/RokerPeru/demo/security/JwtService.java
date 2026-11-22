@@ -1,5 +1,6 @@
 package RokerPeru.demo.security;
 
+import RokerPeru.demo.entities.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -45,10 +46,23 @@ public class JwtService {
                 .compact();
     }
 
-    // Valida que el token pertenezca al usuario y no haya expirado
+    // Valida que el token pertenezca al usuario, no haya expirado y su sesión siga vigente
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return (username.equals(userDetails.getUsername()))
+                && !isTokenExpired(token)
+                && coincideVersionSesion(token, userDetails);
+    }
+
+    // El token solo vale si lleva la misma versión de sesión que el usuario tiene ahora en la base de datos.
+    // Al cerrar sesión esa versión sube, así que los tokens anteriores quedan invalidados.
+    // Un token sin ese dato (emitido antes de este cambio) no se acepta: hay que volver a iniciar sesión.
+    private boolean coincideVersionSesion(String token, UserDetails userDetails) {
+        if (!(userDetails instanceof Usuario usuario)) {
+            return true;
+        }
+        Integer version = extractClaim(token, claims -> claims.get("ver", Integer.class));
+        return version != null && version == usuario.getVersionSesion();
     }
 
     private boolean isTokenExpired(String token) {

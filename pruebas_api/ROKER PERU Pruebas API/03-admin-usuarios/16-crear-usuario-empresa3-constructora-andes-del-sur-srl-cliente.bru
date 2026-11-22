@@ -1,0 +1,50 @@
+meta {
+  name: Crear usuario empresa3: Constructora Andes del Sur SRL (CLIENTE)
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Constructora Andes del Sur SRL",
+    "correoUsuario": "contacto.andes.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "JURIDICA",
+    "numeroDocumentoUsuario": "{{rucEmpresa3}}",
+    "telefonoUsuario": "953789012",
+    "direccionUsuario": "Av. Metropolitana 890, Paucarpata, Arequipa",
+    "idRol": {{idRolCliente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idEmpresa3", res.body.idUsuario); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("CLIENTE");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

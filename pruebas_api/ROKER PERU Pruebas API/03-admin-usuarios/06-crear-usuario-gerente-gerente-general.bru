@@ -1,0 +1,52 @@
+meta {
+  name: Crear usuario gerente (GERENTE_GENERAL)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Ricardo Manuel Delgado Nunez",
+    "correoUsuario": "ricardo.delgado.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniGerente}}",
+    "telefonoUsuario": "982109876",
+    "direccionUsuario": "Av. Goyeneche 612, Cercado, Arequipa",
+    "idRol": {{idRolGerente}},
+    "passwordUsuario": "{{passwordUsuarios}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idGerente", res.body.idUsuario);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Rol correcto", function() {
+    expect(res.body.nombreRol).to.equal("GERENTE_GENERAL");
+  });
+
+  test("Correo en minusculas", function() {
+    expect(res.body.correoUsuario).to.equal(res.body.correoUsuario.toLowerCase());
+  });
+
+  test("No devuelve la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

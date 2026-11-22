@@ -1,0 +1,27 @@
+meta {
+  name: Entregar el pedido 3 (repartidor 2)
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/{{idPedido3}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor2}}
+}
+
+body:json {
+  {
+    "nuevoEstado": "ENTREGADO"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

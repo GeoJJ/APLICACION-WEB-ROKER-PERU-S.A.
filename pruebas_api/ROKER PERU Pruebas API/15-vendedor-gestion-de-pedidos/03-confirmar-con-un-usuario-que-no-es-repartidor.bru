@@ -1,0 +1,31 @@
+meta {
+  name: Confirmar con un usuario que no es repartidor
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idCliente}}
+  }
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

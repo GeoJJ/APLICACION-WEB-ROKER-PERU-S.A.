@@ -1,0 +1,46 @@
+meta {
+  name: Por gestionar ahora solo queda el pedido 5
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/vendedor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idPedido5", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.include(Number(bru.getVar("idPedido5")));
+  });
+
+  test("La lista NO incluye idPedido1", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido1")));
+  });
+
+  test("La lista NO incluye idPedido2", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido2")));
+  });
+
+  test("La lista NO incluye idPedido3", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido3")));
+  });
+
+  test("La lista NO incluye idPedido4", function() {
+    const ids = res.body.map(x => Number(x.idPedido));
+    expect(ids).to.not.include(Number(bru.getVar("idPedido4")));
+  });
+}

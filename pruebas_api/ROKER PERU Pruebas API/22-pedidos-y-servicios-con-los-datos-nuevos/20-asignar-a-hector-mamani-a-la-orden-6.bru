@@ -1,0 +1,34 @@
+meta {
+  name: Asignar a Hector Mamani a la orden 6
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/vendedor/asignaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor2}}
+}
+
+body:json {
+  {
+    "idOrdenServicio": {{idOrden6}},
+    "idEmpleado": {{idEmp8}},
+    "nombreResponsableAsignacion": "Lucia Fernanda Paredes Salas",
+    "descripcionAsignacion": "Nebulizacion de cocina y almacen"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Nombre completo del empleado", function() {
+    expect(res.body.nombreCompletoEmpleado).to.equal("HECTOR MAMANI SUCSO");
+  });
+}

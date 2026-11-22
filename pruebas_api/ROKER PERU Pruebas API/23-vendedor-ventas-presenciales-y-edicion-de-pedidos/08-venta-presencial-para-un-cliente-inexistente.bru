@@ -1,0 +1,34 @@
+meta {
+  name: Venta presencial para un cliente inexistente
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial?idCliente=999999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      { "idProducto": {{idProd12}}, "cantidadProducto": 1 }
+    ]
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

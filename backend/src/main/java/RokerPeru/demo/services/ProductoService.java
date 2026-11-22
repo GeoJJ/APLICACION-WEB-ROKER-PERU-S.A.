@@ -3,7 +3,7 @@ package RokerPeru.demo.services;
 import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Proveedores;
-import RokerPeru.demo.exception.ConflictoException;
+import RokerPeru.demo.enums.TipoCodigoEnum;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.repository.ProductoRepository;
@@ -25,15 +25,16 @@ public class ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProveedoresRepository proveedoresRepository;
+    private final CodigoService codigoService;
 
     @Transactional
     public ProductoDTO.Response crearProducto(ProductoDTO.Request dto) {
-        if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), null)) {
-            throw new ConflictoException("Ya existe un producto con el código: " + dto.codigoProducto());
-        }
+        Producto producto = dto.toEntity(obtenerProveedor(dto.idProveedor()));
+        // El código (PRD-0001) lo asigna el backend; no viene del formulario
+        producto.setCodigoProducto(codigoService.generar(TipoCodigoEnum.PRODUCTO));
 
-        Producto guardado = productoRepository.save(dto.toEntity(obtenerProveedor(dto.idProveedor())));
-        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), dto.codigoProducto());
+        Producto guardado = productoRepository.save(producto);
+        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), guardado.getCodigoProducto());
 
         return ProductoDTO.Response.fromEntity(guardado);
     }
@@ -59,12 +60,9 @@ public class ProductoService {
     public ProductoDTO.Response actualizarProducto(Long id, ProductoDTO.Request dto) {
         Producto producto = obtenerProducto(id);
 
-        if (productoRepository.existeCodigoDuplicado(dto.codigoProducto(), id)) {
-            throw new ConflictoException("Ya existe un producto con el código: " + dto.codigoProducto());
-        }
-
+        // El código nunca cambia al editar: applyTo no lo toca
         dto.applyTo(producto, obtenerProveedor(dto.idProveedor()));
-        log.info("Producto actualizado: id={}, codigo={}", id, dto.codigoProducto());
+        log.info("Producto actualizado: id={}, codigo={}", id, producto.getCodigoProducto());
 
         return ProductoDTO.Response.fromEntity(producto);
     }

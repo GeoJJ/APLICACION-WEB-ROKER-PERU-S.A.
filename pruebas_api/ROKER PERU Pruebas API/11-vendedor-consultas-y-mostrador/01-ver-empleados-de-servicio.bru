@@ -1,0 +1,30 @@
+meta {
+  name: Ver empleados de servicio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/vendedor/empleados-servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idEmp1", function() {
+    const ids = res.body.map(x => Number(x.idEmpleadoServicio));
+    expect(ids).to.include(Number(bru.getVar("idEmp1")));
+  });
+}

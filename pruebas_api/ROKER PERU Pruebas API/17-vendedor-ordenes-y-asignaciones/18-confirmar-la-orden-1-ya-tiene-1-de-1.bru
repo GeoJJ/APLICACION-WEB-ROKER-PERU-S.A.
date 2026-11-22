@@ -1,0 +1,46 @@
+meta {
+  name: Confirmar la orden 1 (ya tiene 1 de 1)
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden1}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compOrden1", res.body.serieComprobanteServicio + "-" + res.body.numeroComprobanteServicio); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CONFIRMADO", function() {
+    expect(res.body.estadoServicio).to.equal("CONFIRMADO");
+  });
+
+  test("Serie B002 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("B002");
+    expect(res.body.numeroComprobanteServicio).to.match(/^\d{8}$/);
+  });
+
+  test("Fecha de emision presente", function() {
+    expect(res.body.fechaEmisionComprobante).to.exist;
+  });
+
+  test("Queda registrado el vendedor", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor")));
+  });
+
+  test("Personal asignado 1", function() {
+    expect(res.body.cantidadPersonalAsignada).to.equal(1);
+  });
+}

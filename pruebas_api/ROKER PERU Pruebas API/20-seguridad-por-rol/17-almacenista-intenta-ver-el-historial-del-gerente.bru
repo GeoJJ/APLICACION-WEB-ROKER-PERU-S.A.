@@ -1,0 +1,25 @@
+meta {
+  name: Almacenista intenta ver el historial del gerente
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/gerente/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

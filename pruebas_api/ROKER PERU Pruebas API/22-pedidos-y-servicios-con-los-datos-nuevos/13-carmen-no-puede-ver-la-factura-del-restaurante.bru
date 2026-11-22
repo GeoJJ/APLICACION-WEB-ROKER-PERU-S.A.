@@ -1,0 +1,25 @@
+meta {
+  name: Carmen no puede ver la factura del restaurante
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/comprobantes/pedidos/{{idPedido7}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

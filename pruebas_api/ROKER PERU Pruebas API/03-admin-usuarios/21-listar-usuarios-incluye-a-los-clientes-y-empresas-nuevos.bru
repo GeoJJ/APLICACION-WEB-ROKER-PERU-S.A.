@@ -1,0 +1,26 @@
+meta {
+  name: Listar usuarios incluye a los clientes y empresas nuevos
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Incluye idClienteB, idClienteC, idClienteD, idEmpresa2", function() {
+    const ids = res.body.map(x => Number(x.idUsuario));
+    ["idClienteB","idClienteC","idClienteD","idEmpresa2","idVendedor3","idRepartidor3"].forEach(v => expect(ids).to.include(Number(bru.getVar(v))));
+  });
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Vendedor intenta crear un producto (solo admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-SEG",
+    "nombreProducto": "Seguridad",
+    "categoriaProducto": "bioseguridad",
+    "precioProducto": 1.0,
+    "stockProducto": 1,
+    "stockMinimo": 0,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv1}}
+  }
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Alberto cambia su contrasena
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/cliente/perfil
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteC}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Alberto Jose Villanueva Zegarra",
+    "correoUsuario": "alberto.villanueva.{{run}}@rokerperu.test",
+    "telefonoUsuario": "951234567",
+    "numeroDocumentoUsuario": "{{dniClienteC}}",
+    "direccionUsuario": "Calle Mercaderes 245, Cercado, Arequipa",
+    "passwordUsuario": "NuevaClave456"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

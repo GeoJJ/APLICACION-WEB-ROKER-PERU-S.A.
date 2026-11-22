@@ -1,0 +1,25 @@
+meta {
+  name: Carmen ve su orden 5 como COMPLETADO
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{baseUrl}}/cliente/ordenes-servicio/{{idOrden5}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteB}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado COMPLETADO", function() {
+    expect(res.body.estadoServicio).to.equal("COMPLETADO");
+  });
+}

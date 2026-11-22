@@ -1,0 +1,25 @@
+meta {
+  name: Stock de un producto inexistente
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/admin/inventario/stock/999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

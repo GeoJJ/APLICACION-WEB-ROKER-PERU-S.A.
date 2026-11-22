@@ -1,0 +1,30 @@
+meta {
+  name: Ver servicios
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/vendedor/servicios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idServicio1", function() {
+    const ids = res.body.map(x => Number(x.idServicio));
+    expect(ids).to.include(Number(bru.getVar("idServicio1")));
+  });
+}

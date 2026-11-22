@@ -1,0 +1,39 @@
+meta {
+  name: Crear empleado 1 (Miguel Angel Quispe)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/empleados-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreEmpleadoServicio": "Miguel Angel",
+    "apellidoEmpleadoServicio": "Quispe",
+    "telefonoEmpleadoServicio": "987000111"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idEmp1", res.body.idEmpleadoServicio);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Nombre y apellido en mayusculas", function() {
+    expect(res.body.nombreEmpleadoServicio).to.equal(res.body.nombreEmpleadoServicio.toUpperCase());
+  });
+}

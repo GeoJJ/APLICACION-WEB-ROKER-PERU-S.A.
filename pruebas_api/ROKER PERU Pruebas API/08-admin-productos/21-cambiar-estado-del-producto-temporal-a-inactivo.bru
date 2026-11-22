@@ -1,0 +1,25 @@
+meta {
+  name: Cambiar estado del producto temporal a inactivo
+  type: http
+  seq: 21
+}
+
+patch {
+  url: {{baseUrl}}/admin/productos/{{idProdTemp}}/estado?estado=inactivo
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado INACTIVO", function() {
+    expect(res.body.estadoProducto).to.equal("INACTIVO");
+  });
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Ingreso de 10 unidades
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/admin/inventario/ingreso
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "productoId": {{idProd2}},
+    "cantidad": 10,
+    "tipoMovimiento": "INGRESO",
+    "justificacion": "Compra por guia 0001-2231"
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Tipo INGRESO", function() {
+    expect(res.body.tipoMovimiento).to.equal("INGRESO");
+  });
+
+  test("Stock resultante 40", function() {
+    expect(res.body.stockResultante).to.equal(40);
+  });
+}

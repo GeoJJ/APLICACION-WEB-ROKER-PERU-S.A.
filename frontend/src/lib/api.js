@@ -1,23 +1,31 @@
-export const INTEGRATION = { authentication: false, checkout: false, quotations: false };
+import http from './axiosConfig';
+
 export const pending = feature => new Error(feature + ' pendiente de integración con el backend de esta rama.');
-const base=(import.meta.env.VITE_API_URL||'/api').replace(/\/$/,'');
-export async function request(path,options={}){
- const response=await fetch(base+path,{...options,credentials:'include',headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
- if(!response.ok){const data=await response.json().catch(()=>({}));const error=new Error(data.message||data.mensaje||('No se pudo consultar el servidor ('+response.status+').'));error.status=response.status;throw error;}
- if(options.blob)return response.blob();
- const text=await response.text();return text?JSON.parse(text):null;
+
+// Todas las llamadas al backend pasan por aquí. La conexión (token, sesión vencida) vive en axiosConfig.js;
+// esta función solo convierte los errores de axios en mensajes legibles.
+export async function request(path, options = {}) {
+    const { blob, body, method = 'GET', headers } = options;
+    try {
+        const response = await http.request({ url: path, method, data: body, headers, responseType: blob ? 'blob' : 'json' });
+        return response.data === '' ? null : response.data;
+    } catch (e) {
+        if (!e.response) throw new Error('No se pudo conectar con el backend. Comprueba que esté ejecutándose.', { cause: e });
+        const { status, data } = e.response;
+        // Spring devuelve el motivo en "detail" (formato ProblemDetail)
+        const error = new Error(data?.detail || data?.message || data?.mensaje || ('No se pudo consultar el servidor (' + status + ').'), { cause: e });
+        error.status = status;
+        throw error;
+    }
 }
-export function publicProduct(p){return{id:p.idProducto,name:p.nombreProducto,category:p.categoriaProducto,price:p.precioProducto,stock:p.stockProducto??(p.disponible?null:0),available:p.disponible!==false};}
-export function publicService(s){return{id:s.idServicio??s.nombreServicio,name:s.nombreServicio,category:s.categoriaServicio,description:s.descripcionServicio};}
-export async function api(path,options={}){
- if(path.startsWith('/auth/'))throw pending('Autenticación y perfil');
- if(path.startsWith('/solicitudes'))throw pending('Solicitudes y cotizaciones');
- if(path.startsWith('/checkout'))throw pending('Confirmación de compras');
- if(path.startsWith('/panel'))throw pending('Gestión');
- try{
-  if(path==='/public/products')return(await request('/cliente/productos',options)).map(publicProduct);
-  if(path==='/public/services')return(await request('/cliente/servicios',options)).map(publicService);
-  if(path==='/reportes/productos/excel')return request('/gerente/reportes/productos/excel',options);
-  return await request(path,options);
- }catch(error){if(error instanceof TypeError)throw new Error('No se pudo conectar con el backend. Comprueba que esté ejecutándose.',{cause:error});throw error;}
+
+export function publicProduct(p) { return { id: p.idProducto, name: p.nombreProducto, category: p.categoriaProducto, price: p.precioProducto, stock: p.stockProducto ?? (p.disponible ? null : 0), available: p.disponible !== false }; }
+export function publicService(s) { return { id: s.idServicio ?? s.nombreServicio, name: s.nombreServicio, category: s.categoriaServicio, description: s.descripcionServicio, price: s.precioServicio, duration: s.duracionEstimadaServicio, personnel: s.cantidadPersonalServicio }; }
+
+export async function api(path, options = {}) {
+    if (path.startsWith('/checkout')) throw pending('Confirmación de compras');
+    if (path.startsWith('/panel')) throw pending('Gestión');
+    if (path === '/cliente/productos') return (await request(path, options)).map(publicProduct);
+    if (path === '/cliente/servicios') return (await request(path, options)).map(publicService);
+    return request(path, options);
 }

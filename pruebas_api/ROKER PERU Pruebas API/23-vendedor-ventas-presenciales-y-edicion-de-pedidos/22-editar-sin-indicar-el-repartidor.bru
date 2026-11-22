@@ -1,0 +1,29 @@
+meta {
+  name: Editar sin indicar el repartidor
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

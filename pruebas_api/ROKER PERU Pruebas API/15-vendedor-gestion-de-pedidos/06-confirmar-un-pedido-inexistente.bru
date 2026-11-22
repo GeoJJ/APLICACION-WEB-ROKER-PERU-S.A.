@@ -1,0 +1,31 @@
+meta {
+  name: Confirmar un pedido inexistente
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/999999/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor}}
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

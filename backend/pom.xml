@@ -28,6 +28,7 @@
     </scm>
     <properties>
         <java.version>24</java.version>
+        <jasperreports.version>7.0.8</jasperreports.version>
     </properties>
     <dependencies>
         <dependency>
@@ -107,6 +108,44 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- JasperReports: motor + exportador PDF -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-pdf</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <!-- Compilador Java para JasperReports 7.0.8 -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-jdt</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.5.0</version>
+        </dependency>
+        <!-- Dependencias CRÍTICAS para que JasperReports 7 funcione en Java 17+ -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-digester</groupId>
+            <artifactId>commons-digester</artifactId>
+            <version>2.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -123,7 +162,7 @@
                     </excludes>
                 </configuration>
             </plugin>
-            
+
             <!-- 2. Plugin del Compilador que ACTIVA Lombok al compilar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -1,0 +1,39 @@
+meta {
+  name: Lucia confirma la orden 6 (factura)
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden6}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor2}}
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compOrden6", res.body.serieComprobanteServicio + "-" + res.body.numeroComprobanteServicio); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CONFIRMADO", function() {
+    expect(res.body.estadoServicio).to.equal("CONFIRMADO");
+  });
+
+  test("Serie F002 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("F002");
+    expect(res.body.numeroComprobanteServicio).to.match(/^\d{8}$/);
+  });
+
+  test("Personal requerido y asignado: 2 de 2", function() {
+    expect(res.body.cantidadPersonalRequerida).to.equal(2);
+    expect(res.body.cantidadPersonalAsignada).to.equal(2);
+  });
+}

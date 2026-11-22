@@ -1,0 +1,25 @@
+meta {
+  name: Ver un producto
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/vendedor/productos/{{idProd3}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Precio 100", function() {
+    expect(res.body.precioProducto).to.equal(100);
+  });
+}

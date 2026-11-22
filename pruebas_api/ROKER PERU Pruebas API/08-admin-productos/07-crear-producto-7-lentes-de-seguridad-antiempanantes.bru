@@ -1,0 +1,50 @@
+meta {
+  name: Crear producto 7: Lentes de seguridad antiempanantes
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-{{run}}-7",
+    "nombreProducto": "Lentes de seguridad antiempanantes",
+    "categoriaProducto": "epp",
+    "precioProducto": 9.9,
+    "stockProducto": 120,
+    "stockMinimo": 20,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv3}}
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idProd7", res.body.idProducto); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Stock inicial", function() {
+    expect(res.body.stockProducto).to.equal(120);
+  });
+
+  test("Categoria en mayusculas", function() {
+    expect(res.body.categoriaProducto).to.equal("EPP");
+  });
+
+  test("Estado ACTIVO", function() {
+    expect(res.body.estadoProducto).to.equal("ACTIVO");
+  });
+}

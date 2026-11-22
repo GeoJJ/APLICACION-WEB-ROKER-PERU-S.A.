@@ -1,0 +1,37 @@
+meta {
+  name: Actualizar usuario sin cambiar la contrasena
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/admin/usuarios/{{idTemporal}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreUsuario": "Usuario Temporal Editado",
+    "correoUsuario": "temporal.{{run}}@rokerperu.test",
+    "tipoPersonaUsuario": "NATURAL",
+    "numeroDocumentoUsuario": "{{dniTemporal}}",
+    "telefonoUsuario": "912345678",
+    "direccionUsuario": "Calle Nueva 456",
+    "idRol": {{idRolCliente}}
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Nombre actualizado", function() {
+    expect(res.body.nombreUsuario).to.equal("Usuario Temporal Editado");
+  });
+}

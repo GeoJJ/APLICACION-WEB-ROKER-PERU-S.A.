@@ -1,0 +1,36 @@
+meta {
+  name: Editar un pedido pendiente lo confirma (pedido 5)
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido5}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor}}
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado EN_RUTA", function() {
+    expect(res.body.estadoPedido).to.equal("EN_RUTA");
+  });
+
+  test("Serie B001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("B001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+}

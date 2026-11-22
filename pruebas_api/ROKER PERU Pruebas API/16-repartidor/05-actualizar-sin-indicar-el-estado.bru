@@ -1,0 +1,29 @@
+meta {
+  name: Actualizar sin indicar el estado
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/{{idPedido1}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

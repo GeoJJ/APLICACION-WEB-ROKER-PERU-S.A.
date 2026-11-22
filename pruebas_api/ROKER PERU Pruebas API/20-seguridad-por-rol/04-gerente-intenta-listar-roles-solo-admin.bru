@@ -1,0 +1,25 @@
+meta {
+  name: Gerente intenta listar roles (solo admin)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/roles
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenGerente}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

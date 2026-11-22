@@ -1,0 +1,25 @@
+meta {
+  name: Ver un servicio inexistente
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/vendedor/servicios/999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

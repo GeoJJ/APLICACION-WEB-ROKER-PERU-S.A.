@@ -59,6 +59,7 @@ public final class ServicioDTO {
     // Vista Admin / Vendedor
     public record Response(
             Long idServicio,
+            String codigoServicio,
             String categoriaServicio,
             String nombreServicio,
             String tipoServicio,
@@ -70,6 +71,7 @@ public final class ServicioDTO {
         public static Response fromEntity(Servicio s) {
             return new Response(
                     s.getIdServicio(),
+                    s.getCodigoServicio(),
                     s.getCategoriaServicio(),
                     s.getNombreServicio(),
                     s.getTipoServicio(),
@@ -83,6 +85,7 @@ public final class ServicioDTO {
 
     // Vista Cliente
     public record ClienteResponse(
+            Long idServicio,
             String categoriaServicio,
             String nombreServicio,
             String tipoServicio,
@@ -93,6 +96,7 @@ public final class ServicioDTO {
     ) {
         public static ClienteResponse fromEntity(Servicio s) {
             return new ClienteResponse(
+                    s.getIdServicio(),
                     s.getCategoriaServicio(),
                     s.getNombreServicio(),
                     s.getTipoServicio(),

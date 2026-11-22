@@ -1,0 +1,36 @@
+meta {
+  name: Jorge cancela el pedido 4 con un motivo
+  type: http
+  seq: 24
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/{{idPedido4}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+body:json {
+  {
+    "nuevoEstado": "cancelado",
+    "incidentePedido": "El cliente rechazo la entrega"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado CANCELADO", function() {
+    expect(res.body.estadoPedido).to.equal("CANCELADO");
+  });
+
+  test("Motivo guardado", function() {
+    expect(res.body.incidentePedido).to.equal("El cliente rechazo la entrega");
+  });
+}

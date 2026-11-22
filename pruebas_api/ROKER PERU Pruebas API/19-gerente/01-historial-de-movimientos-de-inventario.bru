@@ -1,0 +1,29 @@
+meta {
+  name: Historial de movimientos de inventario
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/gerente/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenGerente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("Hay movimientos registrados", function() {
+    expect(res.body.length).to.be.greaterThan(0);
+  });
+}

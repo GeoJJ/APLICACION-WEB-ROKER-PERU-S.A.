@@ -1,0 +1,25 @@
+meta {
+  name: Confirmar la orden 1 SIN personal asignado
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden1}}/confirmar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+
+  test("Cuerpo de error con status 422", function() {
+    expect(res.body.status).to.equal(422);
+  });
+}

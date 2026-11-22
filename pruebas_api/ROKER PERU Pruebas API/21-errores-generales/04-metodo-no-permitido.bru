@@ -1,0 +1,25 @@
+meta {
+  name: Metodo no permitido
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/admin/productos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("Responde 405", function() {
+    expect(res.status).to.equal(405);
+  });
+}

@@ -1,0 +1,55 @@
+meta {
+  name: Venta presencial sin indicar cliente (queda a nombre de la vendedora)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor2}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      { "idProducto": {{idProd12}}, "cantidadProducto": 3 }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) { bru.setVar("idPedidoPresencial2", res.body.idPedido); }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Estado ENTREGADO", function() {
+    expect(res.body.estadoPedido).to.equal("ENTREGADO");
+  });
+
+  test("Serie B001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("B001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Monto total S/ 35.40", function() {
+    expect(res.body.montoTotalPedido).to.be.closeTo(35.4, 0.01);
+  });
+
+  test("El cliente es la misma vendedora", function() {
+    expect(res.body.idCliente).to.equal(Number(bru.getVar("idVendedor2")));
+  });
+
+  test("La vendedora es Lucia", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor2")));
+  });
+}

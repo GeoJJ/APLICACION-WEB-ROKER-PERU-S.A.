@@ -1,0 +1,25 @@
+meta {
+  name: Ricardo (gerente) ve los movimientos de los respiradores
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{baseUrl}}/gerente/inventario/movimientos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenGerente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Aparece el ingreso de respiradores", function() {
+    expect(res.body.some(m => m.nombreProducto.includes("Respirador"))).to.equal(true);
+  });
+}

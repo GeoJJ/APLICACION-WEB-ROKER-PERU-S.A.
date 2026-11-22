@@ -1,0 +1,25 @@
+meta {
+  name: La venta rechazada no descuenta stock
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd9}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Sigue en 24", function() {
+    expect(res.body).to.equal(24);
+  });
+}

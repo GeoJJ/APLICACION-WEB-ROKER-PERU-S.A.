@@ -1,0 +1,25 @@
+meta {
+  name: El stock de botas bajo a 24
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/vendedor/inventario/stock/{{idProd9}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("25 - 1 = 24", function() {
+    expect(res.body).to.equal(24);
+  });
+}

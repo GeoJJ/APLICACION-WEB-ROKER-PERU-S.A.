@@ -1,0 +1,37 @@
+meta {
+  name: Servicio con precio negativo
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/admin/servicios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "categoriaServicio": "limpieza",
+    "nombreServicio": "Malo",
+    "tipoServicio": "preventivo",
+    "descripcionServicio": "Servicio de prueba automatizada",
+    "precioServicio": -5.0,
+    "duracionEstimadaServicio": "4 horas",
+    "cantidadPersonalServicio": "1"
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

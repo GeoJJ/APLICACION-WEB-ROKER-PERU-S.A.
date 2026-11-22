@@ -1,0 +1,30 @@
+meta {
+  name: Ver servicios sin token
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/cliente/servicios
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idServicio1", function() {
+    const ids = res.body.map(x => Number(x.idServicio));
+    expect(ids).to.include(Number(bru.getVar("idServicio1")));
+  });
+
+  test("Cada servicio trae idServicio y precio", function() {
+    expect(res.body.every(s => s.idServicio && typeof s.precioServicio === "number")).to.equal(true);
+  });
+}

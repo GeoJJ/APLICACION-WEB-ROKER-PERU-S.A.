@@ -1,0 +1,51 @@
+meta {
+  name: Confirmar pedido 2 con fechas de salida y entrega
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido2}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor}},
+    "fechaSalidaPedido": "2030-01-01T08:00:00",
+    "fechaEntregaPedido": "2030-01-02T18:00:00"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("compPedido2", res.body.serieComprobantePedido + "-" + res.body.numeroComprobantePedido); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Respeta la fecha de salida enviada", function() {
+    expect(res.body.fechaSalidaPedido).to.contain("2030-01-01T08:00");
+  });
+
+  test("Serie B001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("B001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Fecha de emision presente", function() {
+    expect(res.body.fechaEmisionComprobante).to.exist;
+  });
+
+  test("El numero sigue al del pedido 1", function() {
+    const n1 = Number(bru.getVar("compPedido1").split("-")[1]);
+    expect(Number(res.body.numeroComprobantePedido)).to.be.greaterThan(n1);
+  });
+}

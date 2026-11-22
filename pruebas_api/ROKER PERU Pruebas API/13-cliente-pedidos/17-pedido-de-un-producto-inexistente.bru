@@ -1,0 +1,37 @@
+meta {
+  name: Pedido de un producto inexistente
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{baseUrl}}/cliente/pedidos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "EFECTIVO",
+    "detalles": [
+      {
+        "idProducto": 999999,
+        "cantidadProducto": 1
+      }
+    ]
+  }
+}
+
+tests {
+  test("Responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Cuerpo de error con status 404", function() {
+    expect(res.body.status).to.equal(404);
+  });
+}

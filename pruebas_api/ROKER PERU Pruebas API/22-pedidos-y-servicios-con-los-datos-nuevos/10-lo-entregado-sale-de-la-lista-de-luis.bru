@@ -1,0 +1,25 @@
+meta {
+  name: Lo entregado sale de la lista de Luis
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/repartidor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor3}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista NO incluye idPedido6", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.not.include(Number(bru.getVar("idPedido6")));
+  });
+}

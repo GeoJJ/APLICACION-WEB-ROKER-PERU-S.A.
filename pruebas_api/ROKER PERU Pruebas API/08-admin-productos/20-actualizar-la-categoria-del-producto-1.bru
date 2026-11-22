@@ -1,0 +1,42 @@
+meta {
+  name: Actualizar la categoria del producto 1
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{baseUrl}}/admin/productos/{{idProd1}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigoProducto": "PRD-{{run}}-1",
+    "nombreProducto": "Mascarilla KN95",
+    "categoriaProducto": "epp",
+    "precioProducto": 20.0,
+    "stockProducto": 50,
+    "stockMinimo": 10,
+    "estadoProducto": "activo",
+    "idProveedor": {{idProv1}}
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Categoria actualizada", function() {
+    expect(res.body.categoriaProducto).to.equal("EPP");
+  });
+
+  test("Stock intacto", function() {
+    expect(res.body.stockProducto).to.equal(50);
+  });
+}

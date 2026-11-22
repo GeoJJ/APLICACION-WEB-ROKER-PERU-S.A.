@@ -1,0 +1,33 @@
+meta {
+  name: Buscar productos por categoria LIMPIEZA
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/admin/productos/buscar?texto=limpieza
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idProd10", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd10")));
+  });
+
+  test("La lista incluye idProd11", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd11")));
+  });
+
+  test("La lista incluye idProd12", function() {
+    const ids = res.body.map(x => Number(x.idProducto)); expect(ids).to.include(Number(bru.getVar("idProd12")));
+  });
+}

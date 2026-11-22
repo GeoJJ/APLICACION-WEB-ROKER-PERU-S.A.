@@ -1,0 +1,38 @@
+meta {
+  name: Alberto ve su perfil
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/cliente/perfil
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenClienteC}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Nombre y rol", function() {
+    expect(res.body.nombreUsuario).to.equal("Alberto Jose Villanueva Zegarra");
+    expect(res.body.nombreRol).to.equal("CLIENTE");
+  });
+
+  test("Documento propio", function() {
+    expect(res.body.numeroDocumentoUsuario).to.equal(String(bru.getVar("dniClienteC")));
+  });
+
+  test("Correo propio", function() {
+    expect(res.body.correoUsuario).to.contain("alberto.villanueva");
+  });
+
+  test("No expone la contrasena", function() {
+    expect(res.body).to.not.have.property("passwordUsuario");
+  });
+}

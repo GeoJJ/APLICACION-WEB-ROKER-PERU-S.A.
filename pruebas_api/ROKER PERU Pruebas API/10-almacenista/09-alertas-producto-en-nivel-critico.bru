@@ -1,0 +1,27 @@
+meta {
+  name: Alertas: producto en nivel CRITICO
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/alertas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("El producto 2 aparece en alertas con nivel CR", function() {
+    const a = res.body.find(x => Number(x.productoId) === Number(bru.getVar("idProd2")));
+    expect(a, "el producto 2 debe estar en alertas").to.exist;
+    expect(a.nivelUrgencia.startsWith("CR")).to.equal(true);
+  });
+}

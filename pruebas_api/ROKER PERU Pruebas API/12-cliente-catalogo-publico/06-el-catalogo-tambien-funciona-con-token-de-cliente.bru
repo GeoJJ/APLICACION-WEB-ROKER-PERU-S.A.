@@ -1,0 +1,25 @@
+meta {
+  name: El catalogo tambien funciona con token de cliente
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenCliente}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+}

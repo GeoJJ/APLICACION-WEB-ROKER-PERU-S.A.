@@ -1,0 +1,21 @@
+meta {
+  name: Ver un producto sin token
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/cliente/productos/{{idProd1}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Disponible", function() {
+    expect(res.body.disponible).to.equal(true);
+  });
+}

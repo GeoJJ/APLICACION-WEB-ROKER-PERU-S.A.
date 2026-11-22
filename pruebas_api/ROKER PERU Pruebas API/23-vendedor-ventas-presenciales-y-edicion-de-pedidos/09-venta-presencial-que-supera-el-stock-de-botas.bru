@@ -1,0 +1,38 @@
+meta {
+  name: Venta presencial que supera el stock de botas
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/vendedor/pedidos/presencial
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+body:json {
+  {
+    "metodoPagoPedido": "efectivo",
+    "detalles": [
+      { "idProducto": {{idProd9}}, "cantidadProducto": 999 }
+    ]
+  }
+}
+
+tests {
+  test("Responde 409", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Cuerpo de error con status 409", function() {
+    expect(res.body.status).to.equal(409);
+  });
+
+  test("Informa el stock disponible", function() {
+    expect(res.body.stockDisponible).to.equal(24);
+  });
+}

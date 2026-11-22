@@ -1,0 +1,31 @@
+meta {
+  name: Ingreso sin producto
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/admin/inventario/ingreso
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "cantidad": 5
+  }
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Diego ahora ve el pedido 2
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/repartidor/pedidos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor2}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idPedido2", function() {
+    const ids = res.body.map(x => Number(x.idPedido)); expect(ids).to.include(Number(bru.getVar("idPedido2")));
+  });
+}

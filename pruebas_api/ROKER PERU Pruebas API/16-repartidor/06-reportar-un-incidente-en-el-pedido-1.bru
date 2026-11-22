@@ -1,0 +1,36 @@
+meta {
+  name: Reportar un incidente en el pedido 1
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/repartidor/pedidos/{{idPedido1}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenRepartidor}}
+}
+
+body:json {
+  {
+    "nuevoEstado": "pendiente_entrega",
+    "incidentePedido": "Cliente no estaba en casa"
+  }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado normalizado", function() {
+    expect(res.body.estadoPedido).to.equal("PENDIENTE_ENTREGA");
+  });
+
+  test("Incidente guardado", function() {
+    expect(res.body.incidentePedido).to.equal("Cliente no estaba en casa");
+  });
+}

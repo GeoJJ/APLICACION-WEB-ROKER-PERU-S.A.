@@ -1,0 +1,33 @@
+meta {
+  name: Andrea completa la orden 5: segunda confirmacion = servicio realizado
+  type: http
+  seq: 31
+}
+
+put {
+  url: {{baseUrl}}/vendedor/ordenes-servicio/{{idOrden5}}/confirmar?incidencia=Servicio%20realizado%20sin%20novedades
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor3}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Estado COMPLETADO", function() {
+    expect(res.body.estadoServicio).to.equal("COMPLETADO");
+  });
+
+  test("Conserva su comprobante", function() {
+    expect(res.body.serieComprobanteServicio).to.equal("B002");
+  });
+
+  test("Incidencia guardada", function() {
+    expect(res.body.incidenciaServicio).to.contain("sin novedades");
+  });
+}

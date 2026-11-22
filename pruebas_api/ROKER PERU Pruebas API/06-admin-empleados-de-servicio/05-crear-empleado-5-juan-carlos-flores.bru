@@ -1,0 +1,39 @@
+meta {
+  name: Crear empleado 5 (Juan Carlos Flores)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/admin/empleados-servicio
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombreEmpleadoServicio": "Juan Carlos",
+    "apellidoEmpleadoServicio": "Flores",
+    "telefonoEmpleadoServicio": "987000111"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 || res.status === 200) {
+    bru.setVar("idEmp5", res.body.idEmpleadoServicio);
+  }
+}
+
+tests {
+  test("Responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Nombre y apellido en mayusculas", function() {
+    expect(res.body.nombreEmpleadoServicio).to.equal(res.body.nombreEmpleadoServicio.toUpperCase());
+  });
+}

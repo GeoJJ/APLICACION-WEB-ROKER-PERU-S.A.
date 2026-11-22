@@ -1,0 +1,25 @@
+meta {
+  name: Un vendedor no puede ver el perfil de cliente
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/cliente/perfil
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+
+  test("Cuerpo de error con status 403", function() {
+    expect(res.body.status).to.equal(403);
+  });
+}

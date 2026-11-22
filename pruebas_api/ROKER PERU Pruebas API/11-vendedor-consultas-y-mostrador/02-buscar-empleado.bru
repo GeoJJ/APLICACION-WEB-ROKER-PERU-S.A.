@@ -1,0 +1,26 @@
+meta {
+  name: Buscar empleado
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/vendedor/empleados-servicio/buscar?texto=Mamani
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("La lista incluye idEmp2", function() {
+    const ids = res.body.map(x => Number(x.idEmpleadoServicio));
+    expect(ids).to.include(Number(bru.getVar("idEmp2")));
+  });
+}

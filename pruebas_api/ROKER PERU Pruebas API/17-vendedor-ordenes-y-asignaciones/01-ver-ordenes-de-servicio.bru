@@ -1,0 +1,39 @@
+meta {
+  name: Ver ordenes de servicio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/vendedor/ordenes-servicio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idOrden1", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden1")));
+  });
+
+  test("La lista incluye idOrden2", function() {
+    const ids = res.body.map(x => Number(x.idOrdenServicio));
+    expect(ids).to.include(Number(bru.getVar("idOrden2")));
+  });
+
+  test("Trae personal requerido y asignado", function() {
+    expect(res.body.every(o => typeof o.cantidadPersonalRequerida === "number" && typeof o.cantidadPersonalAsignada === "number")).to.equal(true);
+  });
+}

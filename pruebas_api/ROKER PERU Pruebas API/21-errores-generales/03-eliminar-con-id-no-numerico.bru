@@ -1,0 +1,25 @@
+meta {
+  name: Eliminar con id no numerico
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/admin/usuarios/abc
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("Responde 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("Cuerpo de error con status 400", function() {
+    expect(res.body.status).to.equal(400);
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Alertas: el producto ya no esta en riesgo
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/almacenista/inventario/alertas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("No aparece o esta sin urgencia", function() {
+    const a = res.body.find(x => Number(x.productoId) === Number(bru.getVar("idProd2")));
+    expect(!a || a.nivelUrgencia.startsWith("NINGUNA")).to.equal(true);
+  });
+}

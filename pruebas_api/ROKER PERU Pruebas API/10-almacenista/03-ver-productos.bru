@@ -1,0 +1,30 @@
+meta {
+  name: Ver productos
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/almacenista/productos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAlmacenista}}
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Devuelve una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("La lista incluye idProd2", function() {
+    const ids = res.body.map(x => Number(x.idProducto));
+    expect(ids).to.include(Number(bru.getVar("idProd2")));
+  });
+}

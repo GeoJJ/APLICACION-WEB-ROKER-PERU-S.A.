@@ -1,0 +1,40 @@
+meta {
+  name: Lucia confirma el pedido 7 del restaurante (factura)
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/vendedor/pedidos/{{idPedido7}}/confirmar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenVendedor2}}
+}
+
+body:json {
+  {
+    "idDelivery": {{idRepartidor2}}
+  }
+}
+
+script:post-response {
+  if (res.status === 200 || res.status === 201) { bru.setVar("compPedido7", res.body.serieComprobantePedido + "-" + res.body.numeroComprobantePedido); }
+}
+
+tests {
+  test("Responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Serie F001 y numero de 8 digitos", function() {
+    expect(res.body.serieComprobantePedido).to.equal("F001");
+    expect(res.body.numeroComprobantePedido).to.match(/^\d{8}$/);
+  });
+
+  test("Vendedora asignada", function() {
+    expect(res.body.idVendedor).to.equal(Number(bru.getVar("idVendedor2")));
+  });
+}

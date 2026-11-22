@@ -21,6 +21,10 @@ public class Servicio {
     @Column(name = "id_servicio")
     private Long idServicio;
 
+    // Código corto y legible (SRV-0001). Lo genera el backend al crear el servicio; el frontend nunca lo envía.
+    @Column(name = "codigo_servicio", length = 20, unique = true)
+    private String codigoServicio;
+
     @Column(name = "categoria_servicio", length = 100)
     private String categoriaServicio;
 
