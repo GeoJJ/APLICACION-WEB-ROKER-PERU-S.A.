@@ -10,6 +10,7 @@
     </parent>
     <groupId>RokerPeru</groupId>
     <artifactId>demo</artifactId>
+    <packaging>war</packaging>
     <version>0.0.1-SNAPSHOT</version>
     <name/>
     <description/>
@@ -29,8 +30,15 @@
     <properties>
         <java.version>24</java.version>
         <jasperreports.version>7.0.8</jasperreports.version>
+        <npm.executable>npm</npm.executable>
+        <frontend.skip>false</frontend.skip>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -146,7 +154,39 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>ROOT</finalName>
+        <resources>
+            <resource><directory>src/main/resources</directory></resource>
+            <resource>
+                <directory>../frontend/dist</directory>
+                <targetPath>static</targetPath>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <workingDirectory>${project.basedir}/../frontend</workingDirectory>
+                    <executable>${npm.executable}</executable>
+                    <skip>${frontend.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>instalar-frontend</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration><arguments><argument>ci</argument><argument>--no-audit</argument><argument>--no-fund</argument></arguments></configuration>
+                    </execution>
+                    <execution>
+                        <id>compilar-frontend</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration><arguments><argument>run</argument><argument>build</argument></arguments></configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- 1. Plugin de Spring Boot excluyendo Lombok del ejecutable final -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -176,5 +216,12 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>npm-windows</id>
+            <activation><os><family>Windows</family></os></activation>
+            <properties><npm.executable>npm.cmd</npm.executable></properties>
+        </profile>
+    </profiles>
 
 </project>
