@@ -7,7 +7,7 @@ import logo from "@/assets/logos/logo.png";
 import { NAV_LINKS } from "@/data/navigation";
 
 const linkClass = ({ isActive }) =>
-  `hover:text-brand ${isActive ? "font-medium text-brand" : ""}`;
+  `rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 ${isActive ? "bg-blue-50 font-semibold text-brand" : "text-gray-900 hover:bg-gray-50 hover:text-brand"}`;
 
 export default function PublicHeader() {
   const {count:cartCount,openCart}=useCart();
@@ -22,7 +22,7 @@ export default function PublicHeader() {
         </Link>
 
         {/* Menú escritorio */}
-        <nav className="hidden items-center gap-8 text-[17px] xl:flex xl:gap-6 2xl:gap-[52px]" aria-label="Principal">
+        <nav className="hidden items-center gap-2 text-[17px] xl:flex xl:gap-3 2xl:gap-5" aria-label="Principal">
           {NAV_LINKS.map((item) =>
             item.children?.length ? (
               <div key={item.label} className="group relative">
@@ -36,7 +36,7 @@ export default function PublicHeader() {
                 </div>
               </div>
             ) : item.to ? (
-              <NavLink key={item.label} to={item.to} end={item.to === "/"} className={linkClass}>
+              <NavLink key={item.label} to={item.to} end={item.to === "/"} className={state => `px-3 py-2 ${linkClass(state)}`}>
                 {item.label}
               </NavLink>
             ) : (
@@ -82,15 +82,15 @@ export default function PublicHeader() {
               <div key={item.label} className="border-b border-gray-100">
                 <p className="px-6 pt-4 text-gray-500">{item.label}</p>
                 {item.children.map((c) => (
-                  <Link key={c.to} to={c.to} onClick={close} className="block px-10 py-3 hover:bg-gray-50">
+                  <NavLink key={c.to} to={c.to} onClick={close} className={state => `mx-3 my-1 block px-7 py-3 ${linkClass(state)}`}>
                     {c.label}
-                  </Link>
+                  </NavLink>
                 ))}
               </div>
             ) : item.to ? (
-              <Link key={item.label} to={item.to} onClick={close} className="block border-b border-gray-100 px-6 py-4 hover:bg-gray-50">
+              <NavLink key={item.label} to={item.to} end={item.to === "/"} onClick={close} className={state => `mx-3 my-1 block px-4 py-3 ${linkClass(state)}`}>
                 {item.label}
-              </Link>
+              </NavLink>
             ) : (
               <a key={item.label} href={item.href} onClick={close} className="block border-b border-gray-100 px-6 py-4 hover:bg-gray-50">
                 {item.label}
