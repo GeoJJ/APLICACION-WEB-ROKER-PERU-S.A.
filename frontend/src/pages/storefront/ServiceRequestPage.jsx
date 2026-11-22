@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CalendarDays, CheckCircle2, ClipboardList, MapPin, Wallet } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardList, MapPin, Phone, Wallet } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCatalog } from '@/hooks/useCatalog';
 import { createClientServiceOrder, fetchClientServiceOrders } from '@/lib/clienteApi';
 import { money } from '@/lib/format';
 import { localDate } from '@/data/backofficeStore';
+import { CONTACT } from '@/data/contact';
 import { Field, Panel } from '@/components/shared/ManagementUI';
 import Breadcrumb from '@/components/shared/Breadcrumb';
 import Button from '@/components/ui/Button';
@@ -14,7 +15,6 @@ const EMPTY_FORM = {
     ambiente: 'Oficina',
     area: '',
     ambientes: '1',
-    frecuencia: 'Única',
     necesidades: '',
     direccion: '',
     distrito: '',
@@ -79,7 +79,6 @@ export default function ServiceRequestPage() {
             `Tipo de ambiente: ${form.ambiente}`,
             `Área aproximada: ${form.area} m²`,
             `Cantidad de ambientes: ${form.ambientes}`,
-            `Frecuencia: ${form.frecuencia}`,
             form.referencia.trim() && `Referencia: ${form.referencia.trim()}`,
             `Necesidades: ${form.necesidades.trim()}`,
         ].filter(Boolean).join('\n');
@@ -191,11 +190,6 @@ export default function ServiceRequestPage() {
                                 </Field>
                                 {field('area', 'Área aproximada (m²)', 'number', { min: 1, max: 1000000, step: '0.1' })}
                                 {field('ambientes', 'Cantidad de ambientes', 'number', { min: 1, max: 10000, step: 1 })}
-                                <Field label="Frecuencia">
-                                    <select className="bo-input" value={form.frecuencia} onChange={e => setForm({ ...form, frecuencia: e.target.value })}>
-                                        {['Única', 'Semanal', 'Mensual'].map(v => <option key={v}>{v}</option>)}
-                                    </select>
-                                </Field>
                             </div>
                             <div className="mt-5">
                                 <Field label="Necesidades y condiciones especiales">
@@ -267,6 +261,16 @@ export default function ServiceRequestPage() {
                                 <li>Asigna al personal y la confirma; ahí se emite tu comprobante.</li>
                                 <li>Realizamos el servicio en la fecha programada.</li>
                             </ol>
+                        </Panel>
+                        <Panel>
+                            <h3 className="font-semibold">¿Contrato grande o servicio recurrente?</h3>
+                            <p className="mt-3 text-sm leading-6 text-gray-500">
+                                Cada solicitud es para un servicio en una fecha. Si necesitas atención semanal, mensual o un contrato de mayor alcance, contáctanos directamente y lo coordinamos.
+                            </p>
+                            <div className="mt-4 grid gap-2 text-sm">
+                                <a href={`tel:${CONTACT.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 font-medium text-brand hover:underline"><Phone size={16} />{CONTACT.phone}</a>
+                                <Link to="/contacto" className="font-medium text-brand underline">Ver datos de contacto</Link>
+                            </div>
                         </Panel>
                     </aside>
                 </div>

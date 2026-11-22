@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { money } from "@/lib/format";
 
 export default function ServiceCard({ service }) {
     return (
@@ -26,7 +27,9 @@ export default function ServiceCard({ service }) {
                 </div>
 
                 <div className="mt-auto pt-2">
-<p className="text-xs text-gray-500">Cotización según tu ambiente</p>
+<p className="text-sm font-semibold text-brand">
+                        {service.price != null ? money(service.price) : 'Consultar tarifa'}
+                    </p>
                     <Button
                         as={Link} to={`/servicios/${encodeURIComponent(service.id)}/solicitar`}
                         variant="secondary"
@@ -40,4 +43,4 @@ export default function ServiceCard({ service }) {
             </div>
         </div>
     );
-}   
+}
