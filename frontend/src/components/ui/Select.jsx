@@ -9,6 +9,8 @@ export default function Select({
     required = false,
     disabled = false,
     className = "",
+    id,
+    "aria-labelledby": ariaLabelledBy,
     "aria-label": ariaLabel,
 }) {
     const [open, setOpen] = useState(false);
@@ -49,11 +51,14 @@ export default function Select({
 
             <div
                 role="combobox"
+                id={id}
+                aria-labelledby={ariaLabelledBy}
                 tabIndex={disabled ? -1 : 0}
                 aria-label={ariaLabel}
                 aria-expanded={open}
                 onClick={() => !disabled && setOpen((prev) => !prev)}
                 onKeyDown={(e) => {
+                    if (e.key === "Escape" || e.key === "Tab") setOpen(false);
                     if (!disabled && (e.key === "Enter" || e.key === " ")) {
                         e.preventDefault();
                         setOpen((prev) => !prev);
