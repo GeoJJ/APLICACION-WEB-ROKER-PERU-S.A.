@@ -1,0 +1,207 @@
+{
+  "fecha": "2026-11-22",
+  "baseAndrea": "1ec8eadfe02254a060f510a911ffdc0f3d490ea7",
+  "baseMarco": "9fdf3a5",
+  "jdk": "Amazon Corretto 22.0.2",
+  "springBoot": "4.1.1",
+  "baseDeDatos": "PostgreSQL 18, roker_bd_integracion_tests (separada de la aplicacion)",
+  "comando": "mvnw.cmd -Djava.version=22 test",
+  "resultado": {
+    "pruebas": 267,
+    "fallos": 0,
+    "errores": 0,
+    "omitidas": 0
+  },
+  "clases": [
+    {
+      "clase": "RokerPeru.demo.controller.AdminProductoControllerTest",
+      "pruebas": 27,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 8.919
+    },
+    {
+      "clase": "RokerPeru.demo.controller.AuthControllerTest",
+      "pruebas": 5,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 1.477
+    },
+    {
+      "clase": "RokerPeru.demo.controller.ClienteOrdenServicioControllerTest",
+      "pruebas": 21,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 2.186
+    },
+    {
+      "clase": "RokerPeru.demo.controller.ClientePedidoControllerTest",
+      "pruebas": 12,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.977
+    },
+    {
+      "clase": "RokerPeru.demo.controller.RepartidorPedidoControllerTest",
+      "pruebas": 15,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.794
+    },
+    {
+      "clase": "RokerPeru.demo.controller.VendedorOrdenServicioControllerTest",
+      "pruebas": 16,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 1.895
+    },
+    {
+      "clase": "RokerPeru.demo.controller.VendedorPedidoControllerTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.63
+    },
+    {
+      "clase": "RokerPeru.demo.DemoApplicationTests",
+      "pruebas": 1,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 10.728
+    },
+    {
+      "clase": "RokerPeru.demo.services.AsignacionServiceTest",
+      "pruebas": 10,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 1.959
+    },
+    {
+      "clase": "RokerPeru.demo.services.AuthServiceTest",
+      "pruebas": 3,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.357
+    },
+    {
+      "clase": "RokerPeru.demo.services.ComprobanteServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.535
+    },
+    {
+      "clase": "RokerPeru.demo.services.EmpleadoServicioServiceTest",
+      "pruebas": 9,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.129
+    },
+    {
+      "clase": "RokerPeru.demo.services.InventarioServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.473
+    },
+    {
+      "clase": "RokerPeru.demo.services.OrdenServicioServiceTest",
+      "pruebas": 20,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 1.013
+    },
+    {
+      "clase": "RokerPeru.demo.services.PedidoServiceTest",
+      "pruebas": 17,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.948
+    },
+    {
+      "clase": "RokerPeru.demo.services.ProductoServiceTest",
+      "pruebas": 19,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.69
+    },
+    {
+      "clase": "RokerPeru.demo.services.ProveedorServiceTest",
+      "pruebas": 11,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.215
+    },
+    {
+      "clase": "RokerPeru.demo.services.ReporteExcelServiceTest",
+      "pruebas": 6,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 2.388
+    },
+    {
+      "clase": "RokerPeru.demo.services.RolServiceTest",
+      "pruebas": 11,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.217
+    },
+    {
+      "clase": "RokerPeru.demo.services.ServicioServiceTest",
+      "pruebas": 12,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.121
+    },
+    {
+      "clase": "RokerPeru.demo.services.UsuarioServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0,
+      "segundos": 0.22
+    }
+  ],
+  "alcance": "Pruebas unitarias con Mockito, contratos MVC sin filtros y arranque Spring Boot. No incluye un nuevo escaneo ZAP ni una prueba de concurrencia PostgreSQL.",
+  "frontend": {
+    "comando": "npm.cmd run build",
+    "resultado": "correcto",
+    "observacion": "Vite informa un bundle mayor de 500 kB; la compilacion termina correctamente."
+  },
+  "verificacionLocal": {
+    "perfil": "local",
+    "arranque": "scripts/iniciar-local.ps1 -Componente Backend",
+    "http": {
+      "frontend": 200,
+      "productosPorProxy": 200,
+      "serviciosPorProxy": 200,
+      "openApiPorProxy": 200,
+      "swaggerUiPorProxy": 200,
+      "loginDesdeLocalhost": 200,
+      "loginDesde127001": 200,
+      "preflightCors": 200,
+      "origenNoAutorizado": 403
+    },
+    "nota": "Comprobaciones de arranque y comunicacion. No equivalen a recorrer todas las pantallas ni a un nuevo escaneo ZAP."
+  }
+}
