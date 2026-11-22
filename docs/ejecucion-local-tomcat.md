@@ -1,5 +1,7 @@
 # Ejecución local con Tomcat integrado
 
+Para generar el WAR y servir React desde Tomcat externo, consultar [la guía de despliegue](despliegue-war-tomcat.md). Esta página conserva el modo de desarrollo con Vite.
+
 Esta versión reúne los avances de Andrea y las pruebas y configuración de Marco disponibles al 22 de noviembre de 2026, e incorpora una forma reproducible de ejecutar la aplicación con el Tomcat integrado de Spring Boot desde VS Code.
 
 ## Requisitos

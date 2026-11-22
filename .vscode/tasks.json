@@ -5,23 +5,108 @@
       "label": "Roker: iniciar backend con Tomcat",
       "type": "process",
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/iniciar-local.ps1", "-Componente", "Backend"],
-      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/iniciar-local.ps1",
+        "-Componente",
+        "Backend"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
       "problemMatcher": []
     },
     {
       "label": "Roker: iniciar frontend",
       "type": "process",
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/iniciar-local.ps1", "-Componente", "Frontend"],
-      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/iniciar-local.ps1",
+        "-Componente",
+        "Frontend"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
       "problemMatcher": []
     },
     {
       "label": "Roker: iniciar aplicación local",
-      "dependsOn": ["Roker: iniciar backend con Tomcat", "Roker: iniciar frontend"],
+      "dependsOn": [
+        "Roker: iniciar backend con Tomcat",
+        "Roker: iniciar frontend"
+      ],
       "dependsOrder": "parallel",
       "problemMatcher": []
+    },
+    {
+      "label": "Roker: generar WAR con pruebas",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/generar-war.ps1"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Roker: desplegar WAR en Tomcat 11",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/desplegar-tomcat.ps1",
+        "-TomcatHome",
+        "${input:tomcatHome}"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Roker: cargar datos de Andrea",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/cargar-datos-andrea.ps1"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "tomcatHome",
+      "type": "promptString",
+      "description": "Carpeta de Apache Tomcat 11 (la que contiene bin y conf)"
     }
   ]
 }

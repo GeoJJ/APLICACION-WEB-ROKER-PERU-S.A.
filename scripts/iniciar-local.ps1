@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateSet('Backend', 'Frontend')]
     [string]$Componente = 'Backend'
 )
@@ -17,33 +17,7 @@ if ($Componente -eq 'Frontend') {
     } finally { Pop-Location }
 }
 
-# Usa JAVA_HOME o el JDK de mayor versión instalado en las carpetas habituales.
-$jdkRoker = $env:JAVA_HOME
-if (-not $jdkRoker) {
-    $candidatosRoker = @()
-    foreach ($carpetaRoker in @((Join-Path $env:USERPROFILE '.jdks'), (Join-Path $env:ProgramFiles 'Java'))) {
-        if (Test-Path $carpetaRoker) {
-            $candidatosRoker += Get-ChildItem $carpetaRoker -Directory | ForEach-Object {
-                $releaseRoker = Join-Path $_.FullName 'release'
-                if ((Test-Path $releaseRoker) -and (Test-Path (Join-Path $_.FullName 'bin/javac.exe'))) {
-                    $versionRoker = Select-String -Path $releaseRoker -Pattern '^JAVA_VERSION="(\d+)'
-                    if ($versionRoker) {
-                        [pscustomobject]@{ Ruta = $_.FullName; Mayor = [int]$versionRoker.Matches[0].Groups[1].Value }
-                    }
-                }
-            }
-        }
-    }
-    $jdkRoker = ($candidatosRoker | Where-Object Mayor -ge 17 | Sort-Object Mayor -Descending | Select-Object -First 1).Ruta
-}
-if (-not $jdkRoker -or -not (Test-Path (Join-Path $jdkRoker 'bin/javac.exe'))) {
-    throw 'Configura JAVA_HOME con la carpeta de un JDK 17 o superior.'
-}
-$releaseRoker = Select-String -Path (Join-Path $jdkRoker 'release') -Pattern '^JAVA_VERSION="(\d+)'
-$javaMayorRoker = [int]$releaseRoker.Matches[0].Groups[1].Value
-if ($javaMayorRoker -lt 17) { throw 'Spring Boot requiere Java 17 o superior.' }
-$env:JAVA_HOME = $jdkRoker
-$env:Path = "$(Join-Path $jdkRoker 'bin');$env:Path"
+$javaMayorRoker = & (Join-Path $PSScriptRoot 'seleccionar-jdk.ps1')
 if (-not $env:SPRING_DATASOURCE_PASSWORD) {
     $claveRoker = Read-Host 'Contraseña de PostgreSQL para esta ejecución' -AsSecureString
     $env:SPRING_DATASOURCE_PASSWORD = [System.Net.NetworkCredential]::new('', $claveRoker).Password
@@ -53,6 +27,6 @@ Write-Host "Iniciando Tomcat integrado con Java $javaMayorRoker. Puerto: $puerto
 Push-Location (Join-Path $proyectoRoker 'backend')
 try {
     # Evita mezclar clases compiladas con distintas versiones de Java.
-    & .\mvnw.cmd "-Djava.version=$javaMayorRoker" '-Dspring-boot.run.profiles=local' clean spring-boot:run
+    & .\mvnw.cmd "-Djava.version=$javaMayorRoker" '-Dspring-boot.run.profiles=local' '-Dfrontend.skip=true' clean spring-boot:run
     exit $LASTEXITCODE
 } finally { Pop-Location }
