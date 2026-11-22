@@ -6,5 +6,5 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-    server: { port: 5173, strictPort: true, proxy: { '/api': { target: process.env.API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true, rewrite: path => path.replace(/^\/api(?=\/|$)/, '') } } },
+    server: { port: 5173, strictPort: true, proxy: { '/api': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8080', changeOrigin: true, rewrite: path => path.replace(/^\/api(?=\/|$)/, '') } } },
 });
