@@ -1,13 +1,13 @@
 # Pruebas de Marco integradas con la versión de Andrea
 
-Se recuperan las 20 clases originales de `development-marco` (`9fdf3a5`) desde su adaptación previa a Jasper (`c3636c6`) y se actualizan al contrato de `1ec8ead`, del 22 de noviembre de 2026. Se conserva además `DemoApplicationTests`, que ya estaba en la base de Andrea.
+Se recuperan las 20 clases originales de `development-marco` (`9fdf3a5`) desde su adaptación previa a Jasper (`c3636c6`) y se actualizan al contrato de `1ec8ead`, del 22 de noviembre de 2026. Se conserva además `DemoApplicationTests`, que ya estaba en la base de Andrea, y se incorpora `WarDeploymentTest` para el despliegue.
 
 ## Ejecución sin base de datos
 
 Desde `backend`, con `JAVA_HOME` configurado para el JDK instalado:
 
 ```powershell
-.\mvnw.cmd '-Djava.version=22' '-Dtest=!*DemoApplicationTests' test
+.\mvnw.cmd '-Djava.version=22' '-Dtest=!*DemoApplicationTests,!*WarDeploymentTest,!*PedidosSchemaCompatibilityTest' test
 ```
 
 Se validaron **266 pruebas**, sin fallos, errores ni omisiones. Son pruebas unitarias con Mockito y pruebas MVC con colaboradores simulados. Las pruebas MVC desactivan los filtros: verifican el contrato y la identidad que recibe el controlador; no certifican la validación criptográfica del JWT ni toda la autorización de Spring Security.
@@ -29,9 +29,9 @@ Remove-Item Env:SPRING_DATASOURCE_URL
 Remove-Item Env:SPRING_DATASOURCE_USERNAME
 ```
 
-Se validaron **267 pruebas**, incluidas las anteriores y el arranque completo del contexto Spring Boot, sin fallos, errores ni omisiones. `DemoApplicationTests` ejecuta la inicialización de Hibernate y SQL: usar una base separada, nunca la base con información de trabajo.
+Se validaron **280 pruebas**, incluidas las anteriores, el arranque completo del contexto Spring Boot 12 casos del despliegue WAR y la compatibilidad de ventas presenciales con bases antiguas, sin fallos, errores ni omisiones. `DemoApplicationTests` y `WarDeploymentTest` ejecutan la inicialización de Hibernate y SQL: usar una base separada, nunca la base con información de trabajo.
 
-Los resultados por clase se guardan en `pruebas_api/resultados-integracion-2026-11-22.json`.
+Los resultados iniciales de integración (267 pruebas) se guardan en `pruebas_api/resultados-integracion-2026-11-22.json`. La verificación posterior del WAR (280 pruebas) está en `pruebas_api/resultados-war-2026-11-22.json`. Para incluir el frontend, ejecutar `mvnw.cmd -Djava.version=22 clean package`, que también compila React.
 
 ## Cambios respecto de la adaptación anterior
 

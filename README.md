@@ -9,3 +9,11 @@ Esta rama consolida los avances de Andrea y Marco disponibles al 22 de noviembre
 - [Ejecutar y consultar las pruebas](backend/src/test/README.md).
 
 En VS Code: **Terminal > Ejecutar tarea > Roker: iniciar aplicación local**. PostgreSQL debe estar disponible; la contraseña se solicita en la terminal del backend.
+
+## Despliegue completo en Tomcat externo
+
+La configuración permite generar `backend/target/ROOT.war` con React incluido y publicarlo desde una sola dirección, sin Vite. Consultar [la guía de despliegue WAR en Tomcat 11](docs/despliegue-war-tomcat.md).
+
+## Datos de productos, servicios y operaciones
+
+Se incorporan los datos publicados por Andrea y un cargador para la API de Tomcat que conserva registros y permite reanudar sin repetir operaciones. Consultar [la guía de carga de datos](prueba_datos/README.md).

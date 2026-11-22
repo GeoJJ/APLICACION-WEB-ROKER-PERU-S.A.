@@ -1,0 +1,34 @@
+{
+  "fecha": "2026-11-22",
+  "fuenteAndrea": "c9c7797c2376fff3c474ca92411c98f117c2349c",
+  "destino": "API local bajo /api en Tomcat 11",
+  "registrosFinales": {
+    "productos": 19,
+    "servicios": 10,
+    "usuarios": 21,
+    "proveedores": 8,
+    "empleados de servicio": 9,
+    "movimientos": 8,
+    "pedidos": 8,
+    "ordenes": 5,
+    "asignaciones": 6
+  },
+  "verificacionRepeticion": {
+    "resultado": "conteos sin cambios",
+    "maestrosReutilizados": 57,
+    "operacionesNoRepetidas": 37,
+    "expectativasDeLaColeccion": 100
+  },
+  "compatibilidad": "Se retira solo NOT NULL de pedidos.id_cliente para permitir las ventas presenciales del modelo actual. No se eliminan filas ni tablas.",
+  "privacidad": "El respaldo, las credenciales y el archivo de reanudacion permanecen locales; no se publican.",
+  "reportesVerificados": {
+    "inventarioExcel": {
+      "http": 200,
+      "bytes": 6097
+    },
+    "ventasPdf": {
+      "http": 200,
+      "bytes": 59700
+    }
+  }
+}

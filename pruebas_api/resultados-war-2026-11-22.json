@@ -1,0 +1,197 @@
+{
+  "fecha": "2026-11-22",
+  "baseIntegracion": "9fbd677434ff80c1a979f2fcb71bc5a44889dd26",
+  "comando": "mvnw.cmd -Djava.version=22 clean package",
+  "entorno": {
+    "java": "Amazon Corretto 22.0.2",
+    "tomcatExterno": "11.0.29",
+    "baseDePruebas": "roker_bd_integracion_tests (PostgreSQL 18)"
+  },
+  "resultado": {
+    "pruebas": 280,
+    "fallos": 0,
+    "errores": 0,
+    "omitidas": 0
+  },
+  "clases": [
+    {
+      "clase": "RokerPeru.demo.config.PedidosSchemaCompatibilityTest",
+      "pruebas": 1,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.config.WarDeploymentTest",
+      "pruebas": 12,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.AdminProductoControllerTest",
+      "pruebas": 27,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.AuthControllerTest",
+      "pruebas": 5,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.ClienteOrdenServicioControllerTest",
+      "pruebas": 21,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.ClientePedidoControllerTest",
+      "pruebas": 12,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.RepartidorPedidoControllerTest",
+      "pruebas": 15,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.VendedorOrdenServicioControllerTest",
+      "pruebas": 16,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.controller.VendedorPedidoControllerTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.DemoApplicationTests",
+      "pruebas": 1,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.AsignacionServiceTest",
+      "pruebas": 10,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.AuthServiceTest",
+      "pruebas": 3,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.ComprobanteServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.EmpleadoServicioServiceTest",
+      "pruebas": 9,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.InventarioServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.OrdenServicioServiceTest",
+      "pruebas": 20,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.PedidoServiceTest",
+      "pruebas": 17,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.ProductoServiceTest",
+      "pruebas": 19,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.ProveedorServiceTest",
+      "pruebas": 11,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.ReporteExcelServiceTest",
+      "pruebas": 6,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.RolServiceTest",
+      "pruebas": 11,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.ServicioServiceTest",
+      "pruebas": 12,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    },
+    {
+      "clase": "RokerPeru.demo.services.UsuarioServiceTest",
+      "pruebas": 13,
+      "fallos": 0,
+      "errores": 0,
+      "omitidas": 0
+    }
+  ],
+  "artefacto": {
+    "nombre": "ROOT.war",
+    "bytes": 101087913,
+    "sha256": "b875846ba88c43af95dd9ad44b558ea50672f3d4be5f571f9ad10daf7ad7c50e"
+  },
+  "verificacionesHttp": {
+    "portal": 200,
+    "pantallaLogin": 200,
+    "recargaAdminProductos": 200,
+    "recargaSolicitarServicio": 200,
+    "productosPublicos": 200,
+    "serviciosPublicos": 200,
+    "loginAdministradorYApiPrivada": 200,
+    "apiAdminSinToken": 403,
+    "javascriptCompilado": 200,
+    "clienteEnApiAdmin": 403
+  },
+  "alcance": "Verificacion de empaquetado y despliegue WAR. No certifica por si sola el 80% de requisitos funcionales ni un nuevo analisis ZAP."
+}
