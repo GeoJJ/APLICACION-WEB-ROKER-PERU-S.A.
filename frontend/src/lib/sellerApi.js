@@ -148,13 +148,13 @@ export function updateSellerOrder(orderId, { idDelivery, fechaSalidaPedido, fech
     });
 }
 
-export function createInStoreOrder({ metodoPagoPedido, direccionCliente = 'Venta presencial en tienda', detalles, idCliente = null }) {
-    const query = idCliente ? `?${new URLSearchParams({ idCliente: String(idCliente) }).toString()}` : '';
-    return request(`/vendedor/pedidos/presencial${query}`, {
+// Venta presencial: el cliente de mostrador solo se identifica con su DNI (sin nombre ni dirección)
+export function createInStoreOrder({ dniCliente, metodoPagoPedido, detalles }) {
+    return request('/vendedor/pedidos/presencial', {
         method: 'POST',
         body: JSON.stringify({
+            dniCliente,
             metodoPagoPedido,
-            direccionCliente,
             detalles,
         }),
     });

@@ -4,6 +4,7 @@ import { useBackOffice } from '@/components/layout/backoffice/BackOfficeProvider
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/auth';
 import { money, stockState } from '@/data/backofficeStore';
+import { PRODUCT_CATEGORIES, SERVICE_CATEGORIES, categoryLabel, categoryValue } from '@/data/catalogCategories';
 import { SectionHeader, Panel, Field, Modal, FormActions, SearchBox } from '@/components/shared/ManagementUI';
 import DataTable from '@/components/shared/DataTable';
 import Button from '@/components/ui/Button';
@@ -27,9 +28,8 @@ const configs = {
         title: 'Gestión de Productos', singular: 'producto', icon: Package, canDelete: true,
         columns: ['codigo', 'producto', 'categoria', 'precio', 'umbral', 'estado'],
         fields: [
-            { key: 'codigo', label: 'Código' },
             { key: 'producto', label: 'Producto' },
-            { key: 'categoria', label: 'Categoría' },
+            { key: 'categoria', label: 'Categoría', type: 'category' },
             { key: 'precio', label: 'Precio (S/)', type: 'number' },
             { key: 'umbral', label: 'Umbral de stock', type: 'number' },
             { key: 'stock', label: 'Stock inicial', type: 'number', onlyNew: true },
@@ -39,9 +39,9 @@ const configs = {
     },
     services: {
         title: 'Gestión de Servicios', singular: 'servicio', icon: ShoppingCart, canDelete: true,
-        columns: ['categoria', 'nombre', 'precio', 'personal'],
+        columns: ['codigo', 'categoria', 'nombre', 'precio', 'personal'],
         fields: [
-            { key: 'categoria', label: 'Categoría' },
+            { key: 'categoria', label: 'Categoría', type: 'category' },
             { key: 'nombre', label: 'Servicio' },
             { key: 'tipo', label: 'Tipo de servicio', optional: true },
             { key: 'descripcion', label: 'Descripción', optional: true },
@@ -104,7 +104,15 @@ export default function ManagementPage({ kind, readonly = false }) {
 
     const visibleFields = draft ? config.fields.filter(f => !f.onlyNew || !draft.id) : [];
 
+    const categoryList = kind === 'products' ? PRODUCT_CATEGORIES : SERVICE_CATEGORIES;
+
     const getSelectOptions = type => {
+        if (type === 'category') {
+            // Si el registro trae una categoría antigua que no está en la lista, se conserva como opción para no perderla
+            const current = draft?.categoria;
+            const known = !current || categoryList.some(c => c.value === current);
+            return known ? categoryList : [...categoryList, { value: current, label: `${current} (actual)` }];
+        }
         if (type === 'provider') {
             return data.providers.map(p => ({ value: p.id, label: p.nombre }));
         }
@@ -123,6 +131,8 @@ export default function ManagementPage({ kind, readonly = false }) {
     }[kind];
 
     const cell = (key, r) => key === 'idRol' ? roleLabel(r.nombreRol)
+        : key === 'codigo' ? <span className="font-normal text-gray-700">{r.codigo || '-'}</span>
+            : key === 'categoria' ? categoryLabel(categoryList, r.categoria)
         : key === 'estado' ? <Badge variant={r.estado === 'Activo' ? 'success' : 'warning'}>{r.estado}</Badge>
             : key === 'panel' ? (ROLES.some(x => x.code === r.nombre) ? <Badge variant="success">Reconocido</Badge> : <Badge variant="warning">Sin panel</Badge>)
                 : key === 'precio' ? money(r.precio)
@@ -135,6 +145,7 @@ export default function ManagementPage({ kind, readonly = false }) {
             <Button size="sm" variant="outline" onClick={() => setDraft({
                 ...r,
                 ...(kind === 'services' ? { duracion: extractHours(r.duracion) } : {}),
+                ...(kind === 'products' || kind === 'services' ? { categoria: categoryValue(categoryList, r.categoria) } : {}),
             })}><Pencil size={15} className="mr-2" />Editar</Button>
             {config.canDelete && r.email !== user?.email && <button type="button" onClick={() => setToDelete(r)} aria-label={`Eliminar ${itemName(r)}`}
                 className="inline-flex cursor-pointer items-center rounded-xl border-2 border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"><Trash2 size={15} /></button>}
@@ -179,7 +190,7 @@ export default function ManagementPage({ kind, readonly = false }) {
         <Panel>
             {config.note && !readonly && <p className="mb-5 rounded-lg bg-amber-50 p-4 text-sm leading-6 text-amber-800">{config.note}</p>}
             <div className="mb-6 flex flex-wrap gap-3">
-                <SearchBox value={search} onChange={setSearch} placeholder={`Buscar ${config.singular}...`} />
+                <SearchBox value={search} onChange={setSearch} placeholder={kind === 'products' || kind === 'services' ? `Buscar ${config.singular} por código, nombre o categoría...` : `Buscar ${config.singular}...`} />
                 {filters && (
                     <Select
                         aria-label="Filtrar"
@@ -196,10 +207,15 @@ export default function ManagementPage({ kind, readonly = false }) {
 
         {draft && <Modal title={`${draft.id ? 'Editar' : 'Nuevo'} ${config.singular}`} onClose={() => setDraft(null)}>
             <form onSubmit={submit}>
+                {(kind === 'products' || kind === 'services') && <p className="mb-4 rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-gray-600">
+                    Código: {draft.codigo
+                        ? <strong className="font-normal text-gray-900">{draft.codigo}</strong>
+                        : <span className="text-gray-500">se genera automáticamente al guardar</span>}
+                </p>}
                 <div className={`grid gap-4 ${visibleFields.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
                     {visibleFields.map(f => (
                         <Field key={f.key} label={f.label}>
-                            {['role', 'status', 'provider'].includes(f.type)
+                            {['role', 'status', 'provider', 'category'].includes(f.type)
                                 ? <Select
                                     aria-label={f.label}
                                     required

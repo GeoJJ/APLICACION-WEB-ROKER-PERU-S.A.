@@ -3,10 +3,6 @@ import { request } from './api';
 const text = value => String(value ?? '').trim();
 const optional = value => text(value) || null;
 
-// Un recurso por cada controller /admin/*. Para cada uno:
-//   path → ruta del controller
-//   body → convierte el registro de la interfaz (nombres cortos: nombre, email, precio…)
-//          en el JSON exacto que espera su Request DTO del backend.
 export const ADMIN_RESOURCES = {
     workers: {
         path: '/admin/usuarios',
@@ -26,7 +22,7 @@ export const ADMIN_RESOURCES = {
     products: {
         path: '/admin/productos',
         body: r => ({
-            codigoProducto: text(r.codigo),
+            // El código (PRD-0001) lo genera el backend: no se envía
             nombreProducto: text(r.producto),
             categoriaProducto: optional(r.categoria),
             precioProducto: Number(r.precio),

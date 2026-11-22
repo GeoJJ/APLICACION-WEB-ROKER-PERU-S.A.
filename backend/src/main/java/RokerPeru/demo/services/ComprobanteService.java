@@ -1,9 +1,11 @@
 package RokerPeru.demo.services;
 
-import RokerPeru.demo.entities.SecuenciaComprobante;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
-import RokerPeru.demo.repository.SecuenciaComprobanteRepository;
+import RokerPeru.demo.repository.OrdenesServicioRepository;
+import RokerPeru.demo.repository.PedidosRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ComprobanteService {
 
-    private final SecuenciaComprobanteRepository secuenciaRepository;
+    private final PedidosRepository pedidosRepository;
+    private final OrdenesServicioRepository ordenesRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // Guarda serie y número por separado: "B001" y "00000001"
     public record NumeroComprobante(String serie, String numero) {
@@ -30,16 +36,30 @@ public class ComprobanteService {
         return esEmpresa ? TipoComprobanteEnum.FACTURA_PRODUCTO : TipoComprobanteEnum.BOLETA_PRODUCTO;
     }
 
+    /**
+     * Siguiente número de la serie, SIN tabla de secuencias: se toma el mayor número ya emitido en pedidos
+     * (B001/F001) o en órdenes de servicio (B002/F002) y se le suma 1.
+     *
+     * Para que dos ventas simultáneas no tomen el mismo número se usa un bloqueo de PostgreSQL que dura hasta
+     * que termina la transacción (commit o rollback): mientras alguien toma el número de una serie, los demás
+     * esperan su turno. Si la transacción falla, se libera sin dejar huecos. Además, las tablas pedidos y
+     * ordenes_servicio tienen una restricción UNIQUE (serie, número) como segunda barrera.
+     *
+     * Debe llamarse dentro de la transacción que guarda el comprobante (así lo hacen PedidoService y OrdenServicioService).
+     */
     @Transactional
     public NumeroComprobante emitir(TipoComprobanteEnum tipo) {
         String serie = tipo.getSerie();
 
-        SecuenciaComprobante secuencia = secuenciaRepository.findBySerieParaActualizar(serie)
-                .orElseGet(() -> secuenciaRepository.save(new SecuenciaComprobante(serie, 0)));
+        entityManager.createNativeQuery("select cast(pg_advisory_xact_lock(:clave) as text)")
+                .setParameter("clave", (long) ("comprobante:" + serie).hashCode())
+                .getSingleResult();
 
-        int siguiente = secuencia.getUltimoNumero() + 1;
-        secuencia.setUltimoNumero(siguiente);
+        String ultimo = tipo.esServicio()
+                ? ordenesRepository.ultimoNumeroComprobante(serie)
+                : pedidosRepository.ultimoNumeroComprobante(serie);
 
+        int siguiente = (ultimo == null ? 0 : Integer.parseInt(ultimo)) + 1;
         return new NumeroComprobante(serie, String.format("%08d", siguiente));
     }
 }

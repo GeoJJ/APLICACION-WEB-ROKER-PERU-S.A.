@@ -46,6 +46,11 @@ public class Usuario implements UserDetails{
     @Column(name = "password_usuario", nullable = false, length = 100)
     private String passwordUsuario;
 
+    // Versión de la sesión. El token lleva este número; al cerrar sesión sube en 1 y los tokens anteriores dejan de valer.
+    // (reemplaza a la tabla de tokens invalidados: no hay que guardar ni limpiar tokens)
+    @Column(name = "version_sesion", nullable = false, columnDefinition = "integer default 0")
+    private int versionSesion = 0;
+
     @ManyToOne(fetch = FetchType.EAGER) // <-- Cambiar a EAGER es vital para que Spring lea el rol al iniciar sesión
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;

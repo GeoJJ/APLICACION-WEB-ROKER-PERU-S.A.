@@ -68,10 +68,9 @@ public class VendedorPedidoController {
     // POST /vendedor/pedidos/presencial
     @PostMapping("/presencial")
     public ResponseEntity<PedidoDTO.ResponseVendedor> registrarVentaPresencial(
-            @Valid @RequestBody PedidoDTO.RequestCliente dto,
-            @RequestParam(required = false) Long idCliente,
+            @Valid @RequestBody PedidoDTO.RequestPresencial dto,
             @AuthenticationPrincipal(expression = "idUsuario") Long idVendedor) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(pedidoService.registrarVentaPresencial(dto, idCliente, idVendedor));
+                .body(pedidoService.registrarVentaPresencial(dto, idVendedor));
     }
 }

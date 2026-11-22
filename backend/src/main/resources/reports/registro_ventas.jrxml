@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Registro de ventas (gerente general). A4 horizontal: 842 x 595, márgenes 28 -> ancho útil 786.
+     Columnas (x / ancho):
+       N° 0/28 | Fecha 28/66 | Comprobante 94/86 | Tipo 180/54 | Cliente 234/150 | Documento 384/72
+       Vendedor 456/104 | Pago 560/52 | Subtotal 612/58 | IGV 670/52 | Total 722/64 -->
+<jasperReport name="registro_ventas"
+              language="java"
+              pageWidth="842"
+              pageHeight="595"
+              columnWidth="786"
+              leftMargin="28"
+              rightMargin="28"
+              topMargin="28"
+              bottomMargin="28"
+              whenNoDataType="AllSectionsNoDetail">
+
+    <!-- EMPRESA -->
+    <parameter name="razonSocial" class="java.lang.String"/>
+    <parameter name="rucEmpresa" class="java.lang.String"/>
+    <parameter name="direccionEmpresa" class="java.lang.String"/>
+    <parameter name="logo" class="java.io.InputStream"/>
+
+    <!-- REPORTE -->
+    <parameter name="periodo" class="java.lang.String"/>
+    <parameter name="alcance" class="java.lang.String"/>
+    <parameter name="fechaGeneracion" class="java.lang.String"/>
+    <parameter name="generadoPor" class="java.lang.String"/>
+
+    <!-- TOTALES (calculados en el backend) -->
+    <parameter name="cantidadComprobantes" class="java.lang.Integer"/>
+    <parameter name="cantidadProductos" class="java.lang.Integer"/>
+    <parameter name="cantidadServicios" class="java.lang.Integer"/>
+    <parameter name="totalSubtotal" class="java.math.BigDecimal"/>
+    <parameter name="totalIgv" class="java.math.BigDecimal"/>
+    <parameter name="totalProductos" class="java.math.BigDecimal"/>
+    <parameter name="totalServicios" class="java.math.BigDecimal"/>
+    <parameter name="totalGeneral" class="java.math.BigDecimal"/>
+
+    <!-- DETALLE (VentaReporteDTO) -->
+    <field name="fecha" class="java.lang.String"/>
+    <field name="comprobante" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="documento" class="java.lang.String"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="metodoPago" class="java.lang.String"/>
+    <field name="subtotal" class="java.math.BigDecimal"/>
+    <field name="igv" class="java.math.BigDecimal"/>
+    <field name="total" class="java.math.BigDecimal"/>
+
+    <!-- ENCABEZADO (solo primera página) -->
+    <title height="104">
+        <element kind="image" x="0" y="0" width="150" height="56"
+                 scaleImage="RetainShape" hImageAlign="Left" vImageAlign="Middle" onErrorType="Blank">
+            <expression><![CDATA[$P{logo}]]></expression>
+        </element>
+        <element kind="textField" x="160" y="0" width="360" height="22"
+                 fontName="SansSerif" fontSize="15" bold="true" forecolor="#00428A">
+            <expression><![CDATA[$P{razonSocial}]]></expression>
+        </element>
+        <element kind="textField" x="160" y="24" width="360" height="14" fontSize="9">
+            <expression><![CDATA["RUC: " + $P{rucEmpresa}]]></expression>
+        </element>
+        <element kind="textField" x="160" y="38" width="360" height="14" fontSize="8">
+            <expression><![CDATA[$P{direccionEmpresa}]]></expression>
+        </element>
+
+        <!-- Caja del reporte (derecha) -->
+        <element kind="staticText" x="536" y="0" width="250" height="24" mode="Opaque"
+                 fontName="SansSerif" fontSize="13" bold="true" forecolor="#FFFFFF" backcolor="#00428A"
+                 hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[REGISTRO DE VENTAS]]></text>
+        </element>
+        <element kind="textField" x="536" y="26" width="250" height="16"
+                 fontSize="11" bold="true" forecolor="#00428A" hTextAlign="Center">
+            <expression><![CDATA["Período: " + $P{periodo}]]></expression>
+        </element>
+        <element kind="textField" x="536" y="43" width="250" height="13" fontSize="8" hTextAlign="Center">
+            <expression><![CDATA[$P{alcance}]]></expression>
+        </element>
+
+        <element kind="textField" x="0" y="62" width="786" height="2" mode="Opaque" backcolor="#00428A">
+            <expression><![CDATA[""]]></expression>
+        </element>
+        <element kind="textField" x="0" y="76" width="500" height="13" fontSize="8">
+            <expression><![CDATA["Generado el " + $P{fechaGeneracion} + "  por  " + $P{generadoPor}]]></expression>
+        </element>
+        <element kind="textField" x="500" y="76" width="286" height="13" fontSize="8" hTextAlign="Right">
+            <expression><![CDATA["Comprobantes emitidos: " + $P{cantidadComprobantes}]]></expression>
+        </element>
+    </title>
+
+    <!-- CABECERA DE LA TABLA (se repite en cada página) -->
+    <columnHeader height="20">
+        <element kind="staticText" x="0" y="0" width="28" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[N°]]></text>
+        </element>
+        <element kind="staticText" x="28" y="0" width="66" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[Fecha]]></text>
+        </element>
+        <element kind="staticText" x="94" y="0" width="86" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[Comprobante]]></text>
+        </element>
+        <element kind="staticText" x="180" y="0" width="54" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[Tipo]]></text>
+        </element>
+        <element kind="staticText" x="234" y="0" width="150" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle">
+            <text><![CDATA[ Cliente]]></text>
+        </element>
+        <element kind="staticText" x="384" y="0" width="72" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle">
+            <text><![CDATA[ Documento]]></text>
+        </element>
+        <element kind="staticText" x="456" y="0" width="104" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle">
+            <text><![CDATA[ Vendedor]]></text>
+        </element>
+        <element kind="staticText" x="560" y="0" width="52" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[Pago]]></text>
+        </element>
+        <element kind="staticText" x="612" y="0" width="58" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Right" vTextAlign="Middle">
+            <text><![CDATA[Subtotal ]]></text>
+        </element>
+        <element kind="staticText" x="670" y="0" width="52" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Right" vTextAlign="Middle">
+            <text><![CDATA[IGV ]]></text>
+        </element>
+        <element kind="staticText" x="722" y="0" width="64" height="20" mode="Opaque" backcolor="#00428A"
+                 fontSize="8" bold="true" forecolor="#FFFFFF" hTextAlign="Right" vTextAlign="Middle">
+            <text><![CDATA[Total ]]></text>
+        </element>
+    </columnHeader>
+
+    <!-- DETALLE: una fila por comprobante. El fondo alterno es un campo vacío opaco que solo se
+         imprime en las filas pares (si Jasper lo rechazara, se puede borrar ese bloque sin afectar nada más) -->
+    <detail>
+        <band height="16">
+            <element kind="textField" x="0" y="0" width="786" height="16" mode="Opaque" backcolor="#EEF3FA">
+                <expression><![CDATA[""]]></expression>
+                <printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+            </element>
+            <element kind="textField" x="0" y="0" width="28" height="16" fontSize="7" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[String.valueOf($V{REPORT_COUNT})]]></expression>
+            </element>
+            <element kind="textField" x="28" y="0" width="66" height="16" fontSize="7" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[$F{fecha}]]></expression>
+            </element>
+            <element kind="textField" x="94" y="0" width="86" height="16" fontSize="7" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[$F{comprobante}]]></expression>
+            </element>
+            <element kind="textField" x="180" y="0" width="54" height="16" fontSize="7" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[$F{tipo}]]></expression>
+            </element>
+            <element kind="textField" x="234" y="0" width="150" height="16" fontSize="7" vTextAlign="Middle">
+                <expression><![CDATA[" " + $F{cliente}]]></expression>
+            </element>
+            <element kind="textField" x="384" y="0" width="72" height="16" fontSize="7" vTextAlign="Middle">
+                <expression><![CDATA[" " + $F{documento}]]></expression>
+            </element>
+            <element kind="textField" x="456" y="0" width="104" height="16" fontSize="7" vTextAlign="Middle">
+                <expression><![CDATA[" " + $F{vendedor}]]></expression>
+            </element>
+            <element kind="textField" x="560" y="0" width="52" height="16" fontSize="7" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[$F{metodoPago}]]></expression>
+            </element>
+            <element kind="textField" x="612" y="0" width="58" height="16" fontSize="7" hTextAlign="Right" vTextAlign="Middle">
+                <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{subtotal}) + " "]]></expression>
+            </element>
+            <element kind="textField" x="670" y="0" width="52" height="16" fontSize="7" hTextAlign="Right" vTextAlign="Middle">
+                <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{igv}) + " "]]></expression>
+            </element>
+            <element kind="textField" x="722" y="0" width="64" height="16" fontSize="7" bold="true" hTextAlign="Right" vTextAlign="Middle">
+                <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{total}) + " "]]></expression>
+            </element>
+        </band>
+    </detail>
+
+    <!-- PIE DE PÁGINA -->
+    <pageFooter height="20">
+        <element kind="textField" x="0" y="4" width="500" height="12" fontSize="7" forecolor="#666666">
+            <expression><![CDATA[$P{razonSocial} + "  -  Registro de ventas  -  " + $P{periodo}]]></expression>
+        </element>
+        <element kind="textField" x="636" y="4" width="100" height="12" fontSize="7" forecolor="#666666" hTextAlign="Right">
+            <expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></expression>
+        </element>
+        <element kind="textField" x="736" y="4" width="50" height="12" fontSize="7" forecolor="#666666"
+                 hTextAlign="Left" evaluationTime="Report">
+            <expression><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></expression>
+        </element>
+    </pageFooter>
+
+    <!-- RESUMEN FINAL -->
+    <summary height="152">
+        <element kind="textField" x="0" y="130" width="786" height="18" fontSize="10" bold="true"
+                 forecolor="#666666" hTextAlign="Center" vTextAlign="Middle">
+            <expression><![CDATA["No se registraron ventas en este período."]]></expression>
+            <printWhenExpression><![CDATA[$P{cantidadComprobantes}.intValue() == 0]]></printWhenExpression>
+        </element>
+
+        <!-- Fila de totales alineada con las columnas de importes -->
+        <element kind="staticText" x="0" y="6" width="612" height="18" mode="Opaque" backcolor="#DDEBF7"
+                 fontSize="9" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <text><![CDATA[TOTALES DEL PERÍODO  ]]></text>
+        </element>
+        <element kind="textField" x="612" y="6" width="58" height="18" mode="Opaque" backcolor="#DDEBF7"
+                 fontSize="8" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($P{totalSubtotal}) + " "]]></expression>
+        </element>
+        <element kind="textField" x="670" y="6" width="52" height="18" mode="Opaque" backcolor="#DDEBF7"
+                 fontSize="8" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($P{totalIgv}) + " "]]></expression>
+        </element>
+        <element kind="textField" x="722" y="6" width="64" height="18" mode="Opaque" backcolor="#DDEBF7"
+                 fontSize="8" bold="true" forecolor="#00428A" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($P{totalGeneral}) + " "]]></expression>
+        </element>
+
+        <!-- Desglose por tipo -->
+        <element kind="staticText" x="456" y="36" width="156" height="14" fontSize="8" bold="true">
+            <text><![CDATA[RESUMEN POR TIPO]]></text>
+        </element>
+        <element kind="textField" x="456" y="52" width="156" height="14" fontSize="8">
+            <expression><![CDATA["Productos (" + $P{cantidadProductos} + " comprobantes):"]]></expression>
+        </element>
+        <element kind="textField" x="612" y="52" width="174" height="14" fontSize="8" hTextAlign="Right">
+            <expression><![CDATA["S/ " + new java.text.DecimalFormat("#,##0.00").format($P{totalProductos})]]></expression>
+        </element>
+        <element kind="textField" x="456" y="68" width="156" height="14" fontSize="8">
+            <expression><![CDATA["Servicios (" + $P{cantidadServicios} + " comprobantes):"]]></expression>
+        </element>
+        <element kind="textField" x="612" y="68" width="174" height="14" fontSize="8" hTextAlign="Right">
+            <expression><![CDATA["S/ " + new java.text.DecimalFormat("#,##0.00").format($P{totalServicios})]]></expression>
+        </element>
+        <element kind="staticText" x="456" y="86" width="156" height="18" fontSize="11" bold="true" forecolor="#00428A">
+            <text><![CDATA[TOTAL VENTAS:]]></text>
+        </element>
+        <element kind="textField" x="612" y="86" width="174" height="18" fontSize="11" bold="true"
+                 forecolor="#00428A" hTextAlign="Right">
+            <expression><![CDATA["S/ " + new java.text.DecimalFormat("#,##0.00").format($P{totalGeneral})]]></expression>
+        </element>
+        <element kind="staticText" x="0" y="112" width="786" height="12" fontSize="7" forecolor="#666666">
+            <text><![CDATA[Importes en soles (S/). Los precios incluyen IGV (18%). No incluye comprobantes de pedidos u órdenes cancelados.]]></text>
+        </element>
+    </summary>
+</jasperReport>

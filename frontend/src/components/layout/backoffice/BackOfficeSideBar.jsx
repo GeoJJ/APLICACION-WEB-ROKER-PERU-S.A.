@@ -18,7 +18,7 @@ const menuConfig = {
     manager: [
         { to: "/manager", icon: BarChart3, label: "Resumen gerencial" },
         { to: "/manager/inventario", icon: Package, label: "Inventario" },
-        //{to:'/manager/reportes',icon:FileText,label:'Reportes'},
+        { to: "/manager/reportes", icon: FileText, label: "Reportes" },
     ],
     admin: [
         { to: "/admin", icon: BarChart3, label: "Resumen administrativo" },

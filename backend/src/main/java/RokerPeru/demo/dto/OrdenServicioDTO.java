@@ -82,6 +82,7 @@ public final class OrdenServicioDTO {
 
     public record ResponseCliente(
             Long idOrdenServicio,
+            String codigoOrdenServicio,
             LocalDateTime fechaOrdenServicio,
             LocalDateTime fechaProgramadaServicio,
             String serieComprobanteServicio,
@@ -100,6 +101,7 @@ public final class OrdenServicioDTO {
         public static ResponseCliente fromEntity(OrdenesServicio o) {
             return new ResponseCliente(
                     o.getIdOrdenServicio(),
+                    o.getCodigoOrdenServicio(),
                     o.getFechaOrdenServicio(),
                     o.getFechaProgramadaServicio(),
                     o.getSerieComprobanteServicio(),
@@ -120,6 +122,7 @@ public final class OrdenServicioDTO {
 
     public record ResponseVendedor(
             Long idOrdenServicio,
+            String codigoOrdenServicio,
             LocalDateTime fechaOrdenServicio,
             LocalDateTime fechaProgramadaServicio,
             String serieComprobanteServicio,
@@ -153,6 +156,7 @@ public final class OrdenServicioDTO {
 
             return new ResponseVendedor(
                     o.getIdOrdenServicio(),
+                    o.getCodigoOrdenServicio(),
                     o.getFechaOrdenServicio(),
                     o.getFechaProgramadaServicio(),
                     o.getSerieComprobanteServicio(),

@@ -8,11 +8,8 @@ public final class ProductoDTO {
     private ProductoDTO() {
     }
 
+    // El código del producto (PRD-0001) NO se recibe aquí: lo genera el backend (CodigoService)
     public record Request(
-            @NotBlank(message = "El código es obligatorio")
-            @Size(max = 50, message = "El código no puede superar los 50 caracteres")
-            String codigoProducto,
-
             @NotBlank(message = "El nombre del producto es obligatorio")
             @Size(max = 150, message = "El nombre no puede superar los 150 caracteres")
             String nombreProducto,
@@ -40,7 +37,6 @@ public final class ProductoDTO {
             Long idProveedor
     ) {
         public Request {
-            codigoProducto = codigoProducto != null ? codigoProducto.trim().toUpperCase() : null;
             nombreProducto = nombreProducto != null ? nombreProducto.trim() : null;
             categoriaProducto = categoriaProducto != null ? categoriaProducto.trim().toUpperCase() : null;
             estadoProducto = estadoProducto != null ? estadoProducto.trim().toUpperCase() : null;
@@ -54,7 +50,6 @@ public final class ProductoDTO {
         }
 
         public void applyTo(Producto producto, Proveedores proveedor) {
-            producto.setCodigoProducto(this.codigoProducto);
             producto.setNombreProducto(this.nombreProducto);
             producto.setCategoriaProducto(this.categoriaProducto);
             producto.setPrecioProducto(this.precioProducto);

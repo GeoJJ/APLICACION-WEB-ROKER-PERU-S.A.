@@ -2,15 +2,14 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.AuthDTO;
 import RokerPeru.demo.entities.Rol;
-import RokerPeru.demo.entities.TokenInvalido;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.exception.ConflictoException;
 import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.exception.SolicitudInvalidaException;
 import RokerPeru.demo.repository.RolRepository;
-import RokerPeru.demo.repository.TokenInvalidoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
 import RokerPeru.demo.security.JwtService;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -30,7 +28,6 @@ public class AuthService {
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final TokenInvalidoRepository tokenInvalidoRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -51,7 +48,8 @@ public class AuthService {
         String token = jwtService.generateToken(
                 Map.of("rol", usuario.getRol().getNombreRol(),
                         "nombre", usuario.getNombreUsuario(),
-                        "idUsuario", usuario.getIdUsuario()),
+                        "idUsuario", usuario.getIdUsuario(),
+                        "ver", usuario.getVersionSesion()),
                 usuario);
         log.info("Inicio de sesión exitoso para el usuario: {} con rol: {}", usuario.getCorreoUsuario(), usuario.getRol().getNombreRol());
         // 4. Devolvemos el token envuelto en el DTO
@@ -96,26 +94,29 @@ public class AuthService {
         log.info("Cliente registrado correctamente: {}", usuario.getCorreoUsuario());
     }
 
+    // Cierra la sesión: sube la versión de sesión del usuario y todos sus tokens anteriores dejan de valer.
+    // No se guarda ningún token. Importante: solo se acepta un token que SIGA vigente; así un token viejo
+    // reenviado no puede cerrar la sesión nueva del mismo usuario.
+    @Transactional
     public void logout(String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            // Validamos que no esté ya registrado para evitar duplicados
-            if (tokenInvalidoRepository.findByToken(token).isEmpty()) {
-                TokenInvalido tokenInvalido = new TokenInvalido(token, LocalDateTime.now());
-                tokenInvalidoRepository.save(tokenInvalido);
-                log.info("Sesión cerrada correctamente. Token enviado a la lista negra.");
-            } else {
-                log.warn("Intento de logout fallido: Cabecera 'Authorization' malformada o vacía.");
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Intento de logout con cabecera 'Authorization' malformada o vacía.");
+            return;
         }
-    }
+        String token = authHeader.substring(7);
 
-    // Verifica si un token ya es invalido
-    public boolean isTokenInvalidado(String token) {
-        boolean invalidado = tokenInvalidoRepository.findByToken(token).isPresent();
-        if (invalidado) {
-            log.warn("Se bloqueó una petición: El token presentado está en la lista negra.");
+        try {
+            String correo = jwtService.extractUsername(token); // falla si el token es inválido o ya venció
+            Usuario usuario = usuarioRepository.findByCorreoUsuario(correo).orElse(null);
+
+            if (usuario != null && jwtService.isTokenValid(token, usuario)) {
+                usuario.setVersionSesion(usuario.getVersionSesion() + 1);
+                usuarioRepository.save(usuario);
+                log.info("Sesión cerrada correctamente para el usuario: {}", correo);
+            }
+        } catch (JwtException | IllegalArgumentException e) {
+            // Un token vencido o inválido ya no da acceso: no hay nada que cerrar
+            log.info("Logout ignorado: el token ya no es válido ({})", e.getMessage());
         }
-        return invalidado;
     }
 }

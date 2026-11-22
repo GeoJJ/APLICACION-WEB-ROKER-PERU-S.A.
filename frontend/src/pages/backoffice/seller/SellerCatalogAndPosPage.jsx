@@ -16,6 +16,7 @@ const TABS = [
     ['services', 'Catálogo de servicios', Wrench],
 ];
 const PAY_METHODS = ['EFECTIVO', 'YAPE', 'PLIN', 'TARJETA', 'TRANSFERENCIA'];
+const isDni = v => /^\d{8}$/.test(v);
 const stockText = (s, m) => (s === 0 ? 'Agotado' : s <= m ? 'Stock bajo' : 'Stock normal');
 
 export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
@@ -32,7 +33,7 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
     const [selectedId, setSelectedId] = useState('');
     const [qty, setQty] = useState(1);
     const [cart, setCart] = useState([]);
-    const [sale, setSale] = useState({ method: 'EFECTIVO', busy: false, last: null, receipt: null });
+    const [sale, setSale] = useState({ method: 'EFECTIVO', dni: '', busy: false, last: null, receipt: null });
 
     async function loadCatalog() {
         setLoading(true);
@@ -89,16 +90,19 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
 
     async function confirmSale() {
         if (!cart.length) return;
+        if (!isDni(sale.dni)) {
+            return setMsg({ error: 'Ingresa un DNI válido de 8 dígitos para emitir la boleta.', ok: '' });
+        }
         setSale(s => ({ ...s, busy: true, last: null }));
         setMsg({ error: '', ok: '' });
         try {
             const created = await createInStoreOrder({
+                dniCliente: sale.dni,
                 metodoPagoPedido: sale.method,
-                direccionCliente: 'Venta presencial en tienda',
                 detalles: cart.map(i => ({ idProducto: i.idProducto, cantidadProducto: i.cantidadProducto })),
             });
             const comp = created?.numeroComprobantePedido ? `${created.serieComprobantePedido}-${created.numeroComprobantePedido}` : '';
-            setSale(s => ({ ...s, busy: false, last: { id: created?.idPedido, comprobante: comp } }));
+            setSale(s => ({ ...s, busy: false, dni: '', last: { id: created?.idPedido, comprobante: comp } }));
             setCart([]);
             setMsg({ error: '', ok: `Venta presencial registrada en estado COMPLETADO.${comp ? ` Comprobante: ${comp}.` : ''}` });
             await loadCatalog();
@@ -110,7 +114,7 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
 
     const filteredServices = useMemo(() => {
         const q = search.services.toLowerCase().trim();
-        return q ? services.filter(s => `${s.nombreServicio ?? ''} ${s.categoriaServicio ?? ''}`.toLowerCase().includes(q)) : services;
+        return q ? services.filter(s => `${s.codigoServicio ?? ''} ${s.nombreServicio ?? ''} ${s.categoriaServicio ?? ''}`.toLowerCase().includes(q)) : services;
     }, [services, search.services]);
 
     const availableCount = useMemo(
@@ -119,7 +123,7 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
     );
 
     const productCols = [
-        { key: 'codigoProducto', label: 'Código', render: p => p.codigoProducto || '-' },
+        { key: 'codigoProducto', label: 'Código', render: p => <span className="font-normal text-gray-700">{p.codigoProducto || '-'}</span> },
         { key: 'nombreProducto', label: 'Producto' },
         { key: 'categoriaProducto', label: 'Categoría', render: p => p.categoriaProducto || '-' },
         { key: 'precioProducto', label: 'Precio', render: p => money(p.precioProducto) },
@@ -128,6 +132,7 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
     ];
 
     const serviceCols = [
+        { key: 'codigoServicio', label: 'Código', render: s => <span className="font-normal text-gray-700">{s.codigoServicio || '-'}</span> },
         { key: 'categoriaServicio', label: 'Categoría', render: s => s.categoriaServicio || '-' },
         { key: 'nombreServicio', label: 'Servicio' },
         { key: 'precioServicio', label: 'Tarifa', render: s => money(s.precioServicio) },
@@ -191,7 +196,11 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
                             </li>
                         ))}
                     </ul>
-                    <div className="grid gap-4 sm:grid-cols-2 sm:items-end">
+                    <div className="grid gap-4 sm:grid-cols-3 sm:items-end">
+                        <Field label="DNI del cliente">
+                            <input type="text" inputMode="numeric" maxLength={8} required placeholder="8 dígitos" className="bo-input w-full"
+                                value={sale.dni} onChange={e => setSale(s => ({ ...s, dni: e.target.value.replace(/\D/g, '').slice(0, 8) }))} />
+                        </Field>
                         <Field label="Método de pago">
                             <select className="bo-input" value={sale.method} onChange={e => setSale(s => ({ ...s, method: e.target.value }))}>
                                 {PAY_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
@@ -203,7 +212,7 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <Button type="button" disabled={sale.busy} onClick={confirmSale}>
+                        <Button type="button" disabled={sale.busy || !isDni(sale.dni)} onClick={confirmSale}>
                             <CheckCircle2 size={16} className="mr-2" />{sale.busy ? 'Registrando venta...' : 'Confirmar venta presencial'}
                         </Button>
                     </div>

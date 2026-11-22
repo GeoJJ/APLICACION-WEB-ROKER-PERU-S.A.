@@ -11,9 +11,13 @@ public interface ServicioRepository extends JpaRepository<Servicio, Long> {
     @Query("""
        SELECT s FROM Servicio s
        WHERE LOWER(s.nombreServicio) LIKE LOWER(CONCAT('%', :texto, '%'))
+          OR LOWER(s.codigoServicio) LIKE LOWER(CONCAT('%', :texto, '%'))
           OR LOWER(s.categoriaServicio) LIKE LOWER(CONCAT('%', :texto, '%'))
           OR LOWER(s.tipoServicio) LIKE LOWER(CONCAT('%', :texto, '%'))
        ORDER BY s.nombreServicio
        """)
     List<Servicio> buscarServicio(@Param("texto") String texto);
+
+    // Servicios que todavía no tienen código (solo se usa al arrancar, ver CodigosInicialesRunner)
+    List<Servicio> findByCodigoServicioIsNullOrderByIdServicioAsc();
 }

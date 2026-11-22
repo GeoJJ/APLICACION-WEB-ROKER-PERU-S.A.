@@ -19,6 +19,7 @@ public class Producto {
     @Column(name = "id_producto")
     private Long idProducto;
 
+    // Código corto y legible (PRD-0001). Lo genera el backend al crear el producto; el frontend nunca lo envía.
     @Column(name = "codigo_producto", unique = true, length = 50)
     private String codigoProducto;
 
@@ -48,13 +49,6 @@ public class Producto {
     @OneToMany(mappedBy = "producto")
     private List<DetallePedido> detallePedidos = new ArrayList<>();
 
-    //EN DUDA AUN
-    //Es necesario que el movimiento de un producto se borre si se borra el producto?
-    //pero este podria mantenerse como para el historial tambien
-
-    //No, los movimientos nunca deben borrarse. En sistemas de ventas e inventario (como ROKER), 
-    // el historial financiero y de auditoría es sagrado. En lugar de borrar un producto 
-    // (lo cual daría error si está en facturas antiguas), deberías cambiar su estadoProducto a "INACTIVO"
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
     private List<MovimientosProducto> movimientos = new ArrayList<>();
 }

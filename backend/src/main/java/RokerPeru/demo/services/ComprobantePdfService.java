@@ -1,6 +1,7 @@
 package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.ComprobanteDTO;
+import RokerPeru.demo.entities.ClientePresencial;
 import RokerPeru.demo.entities.DetallePedido;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Pedidos;
@@ -78,7 +79,12 @@ public class ComprobantePdfService {
         String serie = pedido.getSerieComprobantePedido();
         String numero = serie + "-" + pedido.getNumeroComprobantePedido();
 
-        Map<String, Object> p = parametrosBase(cliente, serie, numero,
+        // Venta presencial: no hay usuario, la boleta solo lleva el DNI. Venta en línea: datos completos del usuario.
+        Map<String, Object> p = (cliente != null)
+                ? parametrosBase(cliente, serie, numero,
+                pedido.getFechaEmisionComprobante(),
+                BigDecimal.valueOf(pedido.getMontoTotalPedido()))
+                : parametrosPresencial(pedido.getClientePresencial(), serie, numero,
                 pedido.getFechaEmisionComprobante(),
                 BigDecimal.valueOf(pedido.getMontoTotalPedido()));
         p.put("tipoOperacion", "Venta de productos");
@@ -120,18 +126,46 @@ public class ComprobantePdfService {
 
         return new ComprobantePdf(nombreArchivo(numero), reporteService.generarPdf("comprobante", p, filas));
     }
-    // ---------------------------------------------------------------- parámetros del reporte
+    // Parámetros del reporte
 
     private Map<String, Object> parametrosBase(Usuario cliente, String serie, String numeroCompleto,
                                                LocalDateTime fechaEmision, BigDecimal montoTotal) {
+        Map<String, Object> p = parametrosComunes(serie, numeroCompleto, fechaEmision, montoTotal);
+
+        boolean esEmpresa = "JURIDICA".equalsIgnoreCase(cliente.getTipoPersonaUsuario());
+        String doc = cliente.getNumeroDocumentoUsuario();
+        String tipoDoc = esEmpresa ? "RUC" : (doc != null && doc.length() == 8 ? "DNI" : "DOC");
+
+        // Cliente registrado: nombre, documento y dirección
+        p.put("clienteCompleto", Boolean.TRUE);
+        p.put("clienteNombre", textoODash(cliente.getNombreUsuario()));
+        p.put("clienteDocumentoTipo", tipoDoc);
+        p.put("clienteDocumentoNumero", textoODash(doc));
+        p.put("clienteDireccion", textoODash(cliente.getDireccionUsuario()));
+        return p;
+    }
+
+    // Cliente de mostrador: la boleta solo muestra el DNI (el reporte oculta nombre y dirección)
+    private Map<String, Object> parametrosPresencial(ClientePresencial cliente, String serie, String numeroCompleto,
+                                                     LocalDateTime fechaEmision, BigDecimal montoTotal) {
+        Map<String, Object> p = parametrosComunes(serie, numeroCompleto, fechaEmision, montoTotal);
+
+        p.put("clienteCompleto", Boolean.FALSE);
+        p.put("clienteNombre", "-");
+        p.put("clienteDocumentoTipo", "DNI");
+        p.put("clienteDocumentoNumero", cliente != null ? textoODash(cliente.getDniClientePresencial()) : "-");
+        p.put("clienteDireccion", "-");
+        return p;
+    }
+
+    // Empresa, comprobante y totales (iguales para cualquier tipo de cliente)
+    private Map<String, Object> parametrosComunes(String serie, String numeroCompleto,
+                                                  LocalDateTime fechaEmision, BigDecimal montoTotal) {
         BigDecimal total = montoTotal.setScale(2, RoundingMode.HALF_UP);
         BigDecimal subtotal = total.divide(FACTOR_IGV, 2, RoundingMode.HALF_UP);
         BigDecimal igv = total.subtract(subtotal);
 
         boolean factura = serie != null && serie.toUpperCase().startsWith("F");
-        boolean esEmpresa = "JURIDICA".equalsIgnoreCase(cliente.getTipoPersonaUsuario());
-        String doc = cliente.getNumeroDocumentoUsuario();
-        String tipoDoc = esEmpresa ? "RUC" : (doc != null && doc.length() == 8 ? "DNI" : "DOC");
 
         Map<String, Object> p = new HashMap<>();
         // Empresa
@@ -144,11 +178,6 @@ public class ComprobantePdfService {
         p.put("numeroComprobante", numeroCompleto);
         p.put("fechaEmision", fechaEmision != null
                 ? Date.from(fechaEmision.atZone(ZoneId.systemDefault()).toInstant()) : new Date());
-        // Cliente
-        p.put("clienteNombre", textoODash(cliente.getNombreUsuario()));
-        p.put("clienteDocumentoTipo", tipoDoc);
-        p.put("clienteDocumentoNumero", textoODash(doc));
-        p.put("clienteDireccion", textoODash(cliente.getDireccionUsuario()));
         // Totales
         p.put("subtotal", subtotal);
         p.put("impuestoMonto", igv);
@@ -165,7 +194,7 @@ public class ComprobantePdfService {
                 BigDecimal.valueOf(d.getSubtotal()).setScale(2, RoundingMode.HALF_UP));
     }
 
-    // ---------------------------------------------------------------- utilidades
+    // Utilidades
 
     private synchronized InputStream abrirLogo() {
         if (logoBytes == null) {

@@ -4,6 +4,7 @@ import RokerPeru.demo.dto.OrdenServicioDTO;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.entities.Usuario;
+import RokerPeru.demo.enums.TipoCodigoEnum;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.exception.OperacionNoPermitidaException;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
@@ -28,6 +29,7 @@ public class OrdenServicioService {
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
     private final ComprobanteService comprobanteService;
+    private final CodigoService codigoService;
 
     // Flujo del cliente para crear orden de servicio
     @Transactional
@@ -40,10 +42,12 @@ public class OrdenServicioService {
         orden.setFechaOrdenServicio(LocalDateTime.now());
         orden.setEstadoServicio("PENDIENTE");
         orden.setMontoTotalServicio(servicio.getPrecioServicio());
+        // El código (ORD-0001) lo asigna el backend; no viene del formulario
+        orden.setCodigoOrdenServicio(codigoService.generar(TipoCodigoEnum.ORDEN_SERVICIO));
 
         OrdenesServicio guardado = ordenesRepository.save(orden);
-        log.info("Cliente {} creó orden de servicio #{} (pendiente de confirmación) para {}",
-                cliente.getNombreUsuario(), guardado.getIdOrdenServicio(), servicio.getNombreServicio());
+        log.info("Cliente {} creó la orden de servicio {} (pendiente de confirmación) para {}",
+                cliente.getNombreUsuario(), guardado.getCodigoOrdenServicio(), servicio.getNombreServicio());
 
         return OrdenServicioDTO.ResponseCliente.fromEntity(guardado);
     }

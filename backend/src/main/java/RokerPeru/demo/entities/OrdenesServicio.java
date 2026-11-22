@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "ordenes_servicio")
+@Table(name = "ordenes_servicio", uniqueConstraints = @UniqueConstraint(
+        name = "uk_ordenes_servicio_comprobante",
+        columnNames = {"serie_comprobante_servicio", "numero_comprobante_servicio"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,6 +21,10 @@ public class OrdenesServicio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_orden_servicio")
     private Long idOrdenServicio;
+
+    // Código corto y legible (ORD-0001). Lo genera el backend al crear la orden; el frontend nunca lo envía.
+    @Column(name = "codigo_orden_servicio", length = 20, unique = true)
+    private String codigoOrdenServicio;
 
     @Column(name = "fecha_orden_servicio", nullable = false)
     private LocalDateTime fechaOrdenServicio;

@@ -1,13 +1,11 @@
 package RokerPeru.demo.security;
 
-import RokerPeru.demo.services.AuthService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,15 +25,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    private final AuthService authService;
 
-    // @Lazy rompe el bucle de dependencias con AuthService
-    public JwtAuthenticationFilter(JwtService jwtService,
-                                   UserDetailsService userDetailsService,
-                                   @Lazy AuthService authService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
-        this.authService = authService;
     }
 
     @Override
@@ -58,11 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 3. Extraemos el token puro (cortamos los primeros 7 caracteres de "Bearer ")
         jwt = authHeader.substring(7);
 
-        // Si el token está en la lista negra, no lo procesamos y denegamos acceso ---
-        if (authService.isTokenInvalidado(jwt)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         // 4. Si el token no tiene exactamente 2 puntos, no es un JWT: lo ignoramos
         if (jwt.chars().filter(c -> c == '.').count() != 2) {
             logger.warn("Token ignorado: formato JWT inválido");
@@ -70,7 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 5. Validamos y autenticamos; si algo falla, la petición sigue sin autenticar
+        // 5. Validamos y autenticamos (isTokenValid también comprueba que la sesión no se haya cerrado);
+        //    si algo falla, la petición sigue sin autenticar
         try {
             final String userEmail = jwtService.extractUsername(jwt);
 

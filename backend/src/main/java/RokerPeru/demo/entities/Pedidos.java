@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pedidos")
+@Table(name = "pedidos", uniqueConstraints = @UniqueConstraint(
+        name = "uk_pedidos_comprobante",
+        columnNames = {"serie_comprobante_pedido", "numero_comprobante_pedido"}))
 @NoArgsConstructor
 @Getter
 @Setter
@@ -20,6 +22,10 @@ public class Pedidos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pedido")
     private Long idPedido;
+
+    // Código corto y legible (PED-0001). Lo genera el backend al crear el pedido; el frontend nunca lo envía.
+    @Column(name = "codigo_pedido", length = 20, unique = true)
+    private String codigoPedido;
 
     @Column(name = "fecha_pedido", nullable = false)
     private LocalDateTime fechaPedido;
@@ -51,9 +57,15 @@ public class Pedidos {
     @Column(name = "metodo_pago_pedido", length = 30)
     private String metodoPagoPedido;
 
+    // Cliente registrado (venta en línea). Es NULL en las ventas presenciales.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @JoinColumn(name = "id_cliente")
     private Usuario cliente;
+
+    // Cliente de mostrador (solo DNI). Solo se llena en las ventas presenciales; en las de línea es NULL.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_cliente_presencial")
+    private ClientePresencial clientePresencial;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vendedor")
@@ -68,7 +80,7 @@ public class Pedidos {
     private Usuario auxiliar;
 
     // 1 pedido -> N detalles. El dueño de la FK es Detalle_Pedido.pedido.
-    // cascade + orphanRemoval: el detalle no existe sin su pedido.    
+    // cascade + orphanRemoval: el detalle no existe sin su pedido.
     // Dependencia fuerte: si se borra un pedido, sus detalles tambien se borran
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallePedidos = new ArrayList<>();

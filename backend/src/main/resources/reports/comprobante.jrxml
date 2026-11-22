@@ -29,6 +29,8 @@
     <parameter name="clienteDocumentoTipo" class="java.lang.String"/>
     <parameter name="clienteDocumentoNumero" class="java.lang.String"/>
     <parameter name="clienteDireccion" class="java.lang.String"/>
+    <!-- false = venta presencial: la boleta solo muestra el DNI (sin nombre ni dirección) -->
+    <parameter name="clienteCompleto" class="java.lang.Boolean"/>
 
     <!-- TOTALES -->
     <parameter name="subtotal" class="java.math.BigDecimal"/>
@@ -81,13 +83,13 @@
             <text><![CDATA[DATOS DEL CLIENTE]]></text>
         </element>
         <element kind="textField" x="5" y="228" width="200" height="13" fontSize="8">
-            <expression><![CDATA["Cliente: " + $P{clienteNombre}]]></expression>
+            <expression><![CDATA[Boolean.FALSE.equals($P{clienteCompleto}) ? "" : "Cliente: " + $P{clienteNombre}]]></expression>
         </element>
         <element kind="textField" x="5" y="242" width="200" height="13" fontSize="8">
             <expression><![CDATA[$P{clienteDocumentoTipo} + ": " + $P{clienteDocumentoNumero}]]></expression>
         </element>
         <element kind="textField" x="5" y="256" width="200" height="22" fontSize="8">
-            <expression><![CDATA["Dirección: " + $P{clienteDireccion}]]></expression>
+            <expression><![CDATA[Boolean.FALSE.equals($P{clienteCompleto}) ? "" : "Dirección: " + $P{clienteDireccion}]]></expression>
         </element>
         <element kind="textField" x="5" y="280" width="200" height="13" fontSize="8">
             <expression><![CDATA["Atendido por: " + $P{atendidoPor}]]></expression>

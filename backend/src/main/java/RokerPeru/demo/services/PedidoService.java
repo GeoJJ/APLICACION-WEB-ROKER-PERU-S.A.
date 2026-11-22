@@ -2,15 +2,18 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.DetallePedidoDTO;
 import RokerPeru.demo.dto.PedidoDTO;
+import RokerPeru.demo.entities.ClientePresencial;
 import RokerPeru.demo.entities.DetallePedido;
 import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Usuario;
+import RokerPeru.demo.enums.TipoCodigoEnum;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.exception.OperacionNoPermitidaException;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.exception.StockInsuficienteException;
+import RokerPeru.demo.repository.ClientePresencialRepository;
 import RokerPeru.demo.repository.PedidosRepository;
 import RokerPeru.demo.repository.ProductoRepository;
 import RokerPeru.demo.repository.UsuarioRepository;
@@ -31,6 +34,8 @@ public class PedidoService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final ComprobanteService comprobanteService;
+    private final CodigoService codigoService;
+    private final ClientePresencialRepository clientePresencialRepository;
 
     // Crear un nuevo pedido del cliente
     @Transactional
@@ -65,11 +70,13 @@ public class PedidoService {
         }
 
         pedido.setMontoTotalPedido(montoTotal);
+        // El código (PED-0001) lo asigna el backend, justo antes de guardar para tener el bloqueo el menor tiempo posible
+        pedido.setCodigoPedido(codigoService.generar(TipoCodigoEnum.PEDIDO));
 
         // Guardar y retornar
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Cliente {} creó el pedido #{} (pendiente de confirmación). Total: S/ {}",
-                cliente.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
+        log.info("Cliente {} creó el pedido {} (pendiente de confirmación). Total: S/ {}",
+                cliente.getNombreUsuario(), pedidoGuardado.getCodigoPedido(), montoTotal);
 
         return PedidoDTO.ResponseCliente.fromEntity(pedidoGuardado);
     }
@@ -239,21 +246,28 @@ public class PedidoService {
         return PedidoDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
-    // Registrar venta presencial en mostrador (sin repartidor, pasa directo a ENTREGADO con comprobante)
+    // Registrar venta presencial en mostrador (sin repartidor, pasa directo a ENTREGADO con boleta).
+    // El cliente NO es un usuario: solo se guarda su DNI en clientes_presenciales.
     @Transactional
     public PedidoDTO.ResponseVendedor registrarVentaPresencial(
-            PedidoDTO.RequestCliente dto,
-            Long idClienteOpcional,
+            PedidoDTO.RequestPresencial dto,
             Long idVendedorLogueado) {
 
         Usuario vendedor = obtenerUsuario(idVendedorLogueado);
 
-        // Si no se indica un cliente específico, se asocia al mismo vendedor o a un cliente genérico de mostrador
-        Usuario cliente = (idClienteOpcional != null)
-                ? obtenerUsuario(idClienteOpcional)
-                : vendedor;
+        // Si ese DNI ya compró antes se reutiliza el registro; si no, se crea
+        ClientePresencial clientePresencial = clientePresencialRepository
+                .findByDniClientePresencial(dto.dniCliente())
+                .orElseGet(() -> {
+                    ClientePresencial nuevo = new ClientePresencial();
+                    nuevo.setDniClientePresencial(dto.dniCliente());
+                    return clientePresencialRepository.save(nuevo);
+                });
 
-        Pedidos pedido = dto.toEntity(cliente);
+        Pedidos pedido = new Pedidos();
+        pedido.setCliente(null);
+        pedido.setClientePresencial(clientePresencial);
+        pedido.setMetodoPagoPedido(dto.metodoPagoPedido());
         pedido.setFechaPedido(LocalDateTime.now());
         pedido.setFechaSalidaPedido(LocalDateTime.now());
         pedido.setFechaEntregaPedido(LocalDateTime.now());
@@ -283,11 +297,12 @@ public class PedidoService {
         }
 
         pedido.setMontoTotalPedido(montoTotal);
+        pedido.setCodigoPedido(codigoService.generar(TipoCodigoEnum.PEDIDO));
         emitirComprobante(pedido);
 
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Vendedor {} registró venta presencial #{} (ENTREGADO). Total: S/ {}",
-                vendedor.getNombreUsuario(), pedidoGuardado.getIdPedido(), montoTotal);
+        log.info("Vendedor {} registró venta presencial {} (ENTREGADO). Total: S/ {}",
+                vendedor.getNombreUsuario(), pedidoGuardado.getCodigoPedido(), montoTotal);
 
         return PedidoDTO.ResponseVendedor.fromEntity(pedidoGuardado);
     }
@@ -306,7 +321,10 @@ public class PedidoService {
         if (pedido.getNumeroComprobantePedido() != null) {
             return;
         }
-        TipoComprobanteEnum tipo = ComprobanteService.resolverTipo(pedido.getCliente(), false);
+        // Venta presencial (sin usuario): siempre boleta. Venta en línea: según el tipo de persona del cliente.
+        TipoComprobanteEnum tipo = pedido.getCliente() == null
+                ? TipoComprobanteEnum.BOLETA_PRODUCTO
+                : ComprobanteService.resolverTipo(pedido.getCliente(), false);
         ComprobanteService.NumeroComprobante numero = comprobanteService.emitir(tipo);
 
         pedido.setSerieComprobantePedido(numero.serie());

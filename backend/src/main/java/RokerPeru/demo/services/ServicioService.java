@@ -2,6 +2,7 @@ package RokerPeru.demo.services;
 
 import RokerPeru.demo.dto.ServicioDTO;
 import RokerPeru.demo.entities.Servicio;
+import RokerPeru.demo.enums.TipoCodigoEnum;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.repository.ServicioRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,16 @@ import java.util.List;
 public class ServicioService {
 
     private final ServicioRepository servicioRepository;
+    private final CodigoService codigoService;
 
     @Transactional
     public ServicioDTO.Response crearServicio(ServicioDTO.Request dto) {
-        Servicio guardado = servicioRepository.save(dto.toEntity());
-        log.info("Servicio creado: id={}, nombre={}", guardado.getIdServicio(), dto.nombreServicio());
+        Servicio servicio = dto.toEntity();
+        // El código (SRV-0001) lo asigna el backend; no viene del formulario
+        servicio.setCodigoServicio(codigoService.generar(TipoCodigoEnum.SERVICIO));
+
+        Servicio guardado = servicioRepository.save(servicio);
+        log.info("Servicio creado: id={}, codigo={}, nombre={}", guardado.getIdServicio(), guardado.getCodigoServicio(), dto.nombreServicio());
         return ServicioDTO.Response.fromEntity(guardado);
     }
 

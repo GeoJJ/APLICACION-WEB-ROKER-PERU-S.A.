@@ -16,7 +16,7 @@ import RegisterPage from '@/pages/auth/RegisterPage';
 import ProfilePage from '@/pages/auth/ProfilePage';
 import RequireRole from '@/components/auth/RequireRole';
 import BackOfficeLayout from '@/components/layout/backoffice/BackOfficeLayout';
-import Dashboard from '@/pages/backoffice/admin/AdminDashboardPage';
+import Dashboard from '@/pages/backoffice/gerente/AdminDashboardPage';
 import Stock from '@/pages/backoffice/warehouse/StockOverviewPage';
 import Orders from '@/pages/backoffice/seller/OrdersManagementPage';
 import ServiceOrdersPage from '@/pages/backoffice/seller/ServiceOrdersPage';
@@ -25,7 +25,7 @@ import Deliveries from '@/pages/backoffice/delivery/DeliveryManagementPage';
 import Management from '@/pages/backoffice/admin/ManagementPage';
 import AdminInventoryPage from '@/pages/backoffice/admin/AdminInventoryPage';
 import Entries from '@/pages/backoffice/warehouse/StockEntriesPage';
-// import Reports from '@/pages/backoffice/admin/Reportes';
+import Reports from '@/pages/backoffice/gerente/Reportes';
 import StaffPage from '@/pages/backoffice/staff/StaffPage';
 export default function AppRouter() {
     return <Routes>
@@ -47,7 +47,7 @@ export default function AppRouter() {
         <Route element={<RequireRole role="manager" />}>
             <Route element={<BackOfficeLayout role="manager" />}>
                 <Route path="/manager" element={<Dashboard />} />
-                <Route path="/manager/inventario" element={<MovementsPage />} />{/* <Route path="/manager/reportes" element={<Reports />} /> */}        </Route></Route>
+                <Route path="/manager/inventario" element={<MovementsPage />} /><Route path="/manager/reportes" element={<Reports />} />        </Route></Route>
         <Route element={<RequireRole role="admin" />}><Route element={<BackOfficeLayout role="admin" />}>
             <Route path="/admin" element={<AdministrationDashboardPage />} />
             <Route path="/admin/trabajadores" element={<Management key="workers" kind="workers" />} />

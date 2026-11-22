@@ -13,12 +13,9 @@ import java.util.Optional;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
-    // crearProducto / actualizarProducto valida código duplicado (idActual = null al crear)
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END " +
-            "FROM Producto p " +
-            "WHERE LOWER(p.codigoProducto) = LOWER(:codigo) " +
-            "AND (:idActual IS NULL OR p.idProducto != :idActual)")
-    boolean existeCodigoDuplicado(@Param("codigo") String codigo, @Param("idActual") Long idActual);
+    // Productos que todavía no tienen código (solo se usa al arrancar, ver CodigosInicialesRunner)
+    @Query("SELECT p FROM Producto p WHERE p.codigoProducto IS NULL OR TRIM(p.codigoProducto) = '' ORDER BY p.idProducto")
+    List<Producto> findSinCodigo();
 
     // buscarProducto por nombre, código o categoría
     @Query("""
@@ -46,4 +43,12 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
             ORDER BY p.stockProducto ASC, p.nombreProducto ASC
             """)
     List<Producto> findProductosConBajoStock();
+
+    // Registro de inventario (reporte Excel): TODOS los productos con su proveedor ya cargado (evita N+1 consultas)
+    @Query("""
+            SELECT p FROM Producto p
+            LEFT JOIN FETCH p.proveedor
+            ORDER BY p.categoriaProducto, p.nombreProducto
+            """)
+    List<Producto> findAllParaInventario();
 }
