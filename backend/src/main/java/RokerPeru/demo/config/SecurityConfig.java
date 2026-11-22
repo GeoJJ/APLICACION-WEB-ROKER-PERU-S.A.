@@ -4,6 +4,8 @@ import RokerPeru.demo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import jakarta.servlet.DispatcherType;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -23,18 +25,25 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final Environment environment;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Login SIEMPRE público
-                        .requestMatchers(HttpMethod.GET, "/cliente/productos/**").permitAll() // las peticiones get en este endpoint pueden entrar sin token
-                        .requestMatchers(HttpMethod.GET, "/cliente/servicios/**").permitAll()
+                .authorizeHttpRequests(auth -> {
+                    if (environment.matchesProfiles("war")) {
+                        auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                                .requestMatchers(HttpMethod.GET, WarWebConfig.RUTAS_REACT).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/index.html", "/assets/**", "/favicon.ico").permitAll();
+                    }
+                    auth.requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/cliente/productos/**", "/api/cliente/productos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/cliente/servicios/**", "/api/cliente/servicios/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated() // CUALQUIER otra ruta EXIGE el Token
+                        .anyRequest().authenticated();
+                }
                 )
                 // Le decimos a Spring que no guarde sesiones, usamos JWT
                 .sessionManagement(session -> session

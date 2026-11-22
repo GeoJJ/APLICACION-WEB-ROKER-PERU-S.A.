@@ -4,6 +4,7 @@
 # =====================================================
 
 # ----- SECRETOS Y CONFIGURACIÓN LOCAL -----
+.local/
 .env
 .env.*
 !.env.example
