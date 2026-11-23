@@ -1,5 +1,8 @@
 import http from './axiosConfig';
 
+export const ASSETS_BASE = 'https://cdn.jsdelivr.net/gh/Gonzalo19-wd/roker-assets@main';
+export const FALLBACK_IMAGE = `${ASSETS_BASE}/placeholder.png`;
+
 export const pending = feature => new Error(feature + ' pendiente de integración con el backend de esta rama.');
 
 // Todas las llamadas al backend pasan por aquí. La conexión (token, sesión vencida) vive en axiosConfig.js;
@@ -19,8 +22,30 @@ export async function request(path, options = {}) {
     }
 }
 
-export function publicProduct(p) { return { id: p.idProducto, name: p.nombreProducto, category: p.categoriaProducto, price: p.precioProducto, stock: p.stockProducto ?? (p.disponible ? null : 0), available: p.disponible !== false }; }
-export function publicService(s) { return { id: s.idServicio ?? s.nombreServicio, name: s.nombreServicio, category: s.categoriaServicio, description: s.descripcionServicio, price: s.precioServicio, duration: s.duracionEstimadaServicio, personnel: s.cantidadPersonalServicio }; }
+export function publicProduct(p) {
+    return {
+        id: p.idProducto,
+        name: p.nombreProducto,
+        category: p.categoriaProducto,
+        price: p.precioProducto,
+        stock: p.stockProducto ?? (p.disponible ? null : 0),
+        available: p.disponible !== false,
+        image: `${ASSETS_BASE}/productos/${p.idProducto}.jpg`,
+    };
+}
+
+export function publicService(s) {
+    return {
+        id: s.idServicio ?? s.nombreServicio,
+        name: s.nombreServicio,
+        category: s.categoriaServicio,
+        description: s.descripcionServicio,
+        price: s.precioServicio,
+        duration: s.duracionEstimadaServicio,
+        personnel: s.cantidadPersonalServicio,
+        image: s.idServicio ? `${ASSETS_BASE}/servicios/${s.idServicio}.jpg` : FALLBACK_IMAGE,
+    };
+}
 
 export async function api(path, options = {}) {
     if (path.startsWith('/checkout')) throw pending('Confirmación de compras');
