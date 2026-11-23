@@ -57,6 +57,8 @@ test-results/
 
 # ----- JAVA / SPRING BOOT / MAVEN / GRADLE -----
 target/
+dest/
+dist/
 *.class
 *.jar
 *.war
