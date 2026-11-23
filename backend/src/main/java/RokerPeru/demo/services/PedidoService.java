@@ -139,6 +139,12 @@ public class PedidoService {
         Pedidos pedido = pedidosRepository.findById(idPedido)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Pedido", idPedido));
 
+        if (!"EN_RUTA".equals(pedido.getEstadoPedido())) {
+            throw new ReglaNegocioException("Solo se puede actualizar un pedido que esté EN_RUTA");
+        }
+        if (!List.of("ENTREGADO", "EN_RUTA").contains(dto.nuevoEstado())) {
+            throw new ReglaNegocioException("Estado no permitido para el repartidor: " + dto.nuevoEstado());
+        }
         // Delegar la actualización de estado e incidentes al DTO
         dto.applyTo(pedido);
 
@@ -160,6 +166,14 @@ public class PedidoService {
         return pedidosRepository.findByCliente_IdUsuarioOrderByFechaPedidoDesc(idCliente)
                 .stream()
                 .map(PedidoDTO.ResponseCliente::fromEntity)
+                .toList();
+    }
+    @Transactional(readOnly = true)
+    public List<PedidoDTO.ResponseRepartidor> listarHistorialRepartidor(Long idRepartidor) {
+        List<String> estadosFinales = List.of("ENTREGADO", "CANCELADO");
+        return pedidosRepository.findByDelivery_IdUsuarioAndEstadoPedidoInOrderByFechaPedidoDesc(idRepartidor, estadosFinales)
+                .stream()
+                .map(PedidoDTO.ResponseRepartidor::fromEntity)
                 .toList();
     }
 
