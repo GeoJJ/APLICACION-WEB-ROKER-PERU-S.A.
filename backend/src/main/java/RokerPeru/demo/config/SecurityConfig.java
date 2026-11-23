@@ -31,6 +31,13 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // Login SIEMPRE público
                         .requestMatchers(HttpMethod.GET, "/cliente/productos/**").permitAll() // las peticiones get en este endpoint pueden entrar sin token
                         .requestMatchers(HttpMethod.GET, "/cliente/servicios/**").permitAll()
+                        // Documentación Swagger/OpenAPI: público solo para desarrollo y pruebas con ZAP.
+                        // Antes de desplegar a producción, quitar estas rutas o desactivar springdoc.
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated() // CUALQUIER otra ruta EXIGE el Token
                 )
                 // Le decimos a Spring que no guarde sesiones, usamos JWT

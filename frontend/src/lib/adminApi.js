@@ -83,10 +83,20 @@ export function deleteResource(kind, id) {
 }
 
 // type: 'ingreso' (suma stock) | 'ajuste' (RESTA stock: el backend lo trata como una salida)
-export function postMovement(type, { productId, cantidad }) {
-    return request(`/admin/inventario/${type}`, {
+export function postMovement(type, { productId, cantidad }, role = 'admin') {
+    const base = role === 'warehouse' ? '/almacenista' : '/admin';
+    return request(`${base}/inventario/${type}`, {
         method: 'POST',
         body: JSON.stringify({ productoId: Number(productId), cantidad: Number(cantidad) }),
+    });
+}
+export function putDeliveryState(idPedido, { estado, observaciones }) {
+    return request(`/repartidor/pedidos/${idPedido}/estado`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            nuevoEstado: estado === 'Entregado' ? 'ENTREGADO' : 'EN_RUTA',
+            incidentePedido: observaciones?.trim() || null,
+        }),
     });
 }
 // Consultar historial completo de movimientos

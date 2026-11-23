@@ -41,4 +41,11 @@ public class RepartidorPedidoController {
             @Valid @RequestBody PedidoDTO.RequestActualizacionRepartidor dto) {
         return ResponseEntity.ok(pedidoService.actualizarEstadoRepartidor(idPedido, idRepartidor, dto));
     }
+
+    // GET /repartidor/pedidos/historial
+    @GetMapping("/historial")
+    public ResponseEntity<List<PedidoDTO.ResponseRepartidor>> listarHistorial(
+            @AuthenticationPrincipal(expression = "idUsuario") Long idRepartidor) {
+        return ResponseEntity.ok(pedidoService.listarHistorialRepartidor(idRepartidor));
+    }
 }
