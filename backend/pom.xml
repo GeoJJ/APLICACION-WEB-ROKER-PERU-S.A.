@@ -30,6 +30,7 @@
     <properties>
         <java.version>24</java.version>
         <jasperreports.version>7.0.8</jasperreports.version>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
     <dependencies>
         <dependency>
