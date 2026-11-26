@@ -35,7 +35,8 @@ export default function AppRouter() {
             <Route element={<RequireRole role="customer" />}>
                 <Route path="/mis-solicitudes" element={<ServiceRequestsPage />} />
             </Route>
-            <Route path="/" element={<HomePage />} /><Route path="/productos" element={<CatalogPage />} />
+            <Route path="/" element={<HomePage />} />
+<Route path="/productos" element={<CatalogPage />} />
             <Route path="/servicios" element={<ServicesPage />} />
             <Route path="/nosotros" element={<AboutPage />} />
             <Route path="/contacto" element={<ContactPage />} />
