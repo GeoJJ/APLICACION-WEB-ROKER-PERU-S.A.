@@ -1,5 +1,6 @@
 package RokerPeru.demo.exception;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -57,13 +58,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // Login con credenciales malas
     @ExceptionHandler(AuthenticationException.class)
-    public ProblemDetail handleAutenticacion(AuthenticationException ex) {
+    public ProblemDetail handleAutenticacion(AuthenticationException ex, WebRequest request) {
+        RegistroOperacion.rechazo(log, "Autenticación rechazada: credenciales inválidas, destino={}", request.getDescription(false));
         return construirDetalle(org.springframework.http.HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
     }
 
     // Rol sin permiso (@PreAuthorize)
     @ExceptionHandler(AccessDeniedException.class)
-    public ProblemDetail handleAccesoDenegado(AccessDeniedException ex) {
+    public ProblemDetail handleAccesoDenegado(AccessDeniedException ex, WebRequest request) {
+        RegistroOperacion.rechazo(log, "Acceso denegado: permisos insuficientes, destino={}", request.getDescription(false));
         return construirDetalle(org.springframework.http.HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta operación");
     }
 

@@ -41,8 +41,18 @@ class DemoApplicationTests {
     }
 
     @Test void lasRutasAdministrativasSiguenProtegidas() throws Exception {
-        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/roker-backend/admin/usuarios")).GET().build();
-        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertThat(response.statusCode()).isIn(401, 403);
+        var logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(RokerPeru.demo.config.SecurityConfig.class);
+        var eventos = new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();
+        eventos.start();
+        logger.addAppender(eventos);
+        try {
+            var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/roker-backend/admin/usuarios")).GET().build();
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isIn(401, 403);
+            assertThat(eventos.list.stream().filter(evento -> evento.getFormattedMessage().contains("Acceso rechazado:")).count()).isEqualTo(1);
+        } finally {
+            logger.detachAppender(eventos);
+            eventos.stop();
+        }
     }
 }

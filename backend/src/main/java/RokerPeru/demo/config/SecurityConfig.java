@@ -1,5 +1,7 @@
 package RokerPeru.demo.config;
 
+import RokerPeru.demo.logging.RegistroOperacion;
+import lombok.extern.slf4j.Slf4j;
 import RokerPeru.demo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -45,6 +48,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, ex) -> {
+                            if (request.getDispatcherType() != jakarta.servlet.DispatcherType.ERROR)
+                                RegistroOperacion.rechazo(log, "Acceso rechazado: autenticación requerida, método={}, ruta={}", request.getMethod(), request.getRequestURI());
+                            new org.springframework.security.web.authentication.Http403ForbiddenEntryPoint().commence(request, response, ex);
+                        })
+                        .accessDeniedHandler((request, response, ex) -> {
+                            if (request.getDispatcherType() != jakarta.servlet.DispatcherType.ERROR)
+                                RegistroOperacion.rechazo(log, "Acceso denegado: método={}, ruta={}", request.getMethod(), request.getRequestURI());
+                            new org.springframework.security.web.access.AccessDeniedHandlerImpl().handle(request, response, ex);
+                        }))
                 .authenticationProvider(authenticationProvider)
                 // Ponemos al guardia JWT en la puerta principal
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
