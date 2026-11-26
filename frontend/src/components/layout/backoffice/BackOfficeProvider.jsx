@@ -12,7 +12,7 @@ export default function BackOfficeProvider({ children }) {
   const [loaded, setLoaded] = useState("");
   const [notice, setNotice] = useState("");
   const [notes, setNotes] = useState([]);
-  const [actorId, setActorId] = useState("");
+  const actorId = "";
   const generation = useRef(0);
   const roleId = role || "",
     key = roleId + ":" + actorId;
@@ -34,7 +34,8 @@ export default function BackOfficeProvider({ children }) {
 
     const { pathname } = useLocation();
     useEffect(() => {
-        setNotice("");
+        const timer = setTimeout(() => setNotice(""), 0);
+        return () => clearTimeout(timer);
     }, [pathname]);
   async function refresh() {
     const token = ++generation.current;

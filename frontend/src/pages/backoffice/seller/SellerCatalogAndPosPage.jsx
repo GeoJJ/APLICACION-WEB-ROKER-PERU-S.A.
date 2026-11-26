@@ -49,8 +49,14 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
         }
     }
 
-    useEffect(() => setTab(initialTab), [initialTab]);
-    useEffect(() => { loadCatalog(); }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => setTab(initialTab), 0);
+        return () => clearTimeout(timer);
+    }, [initialTab]);
+    useEffect(() => {
+        const timer = setTimeout(() => { loadCatalog(); }, 0);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (tab !== 'products') return;
@@ -60,7 +66,9 @@ export default function SellerCatalogAndPosPage({ initialTab = 'pos' }) {
                 const q = search.products.trim();
                 const res = await (q ? searchSellerProducts(q) : fetchSellerProducts());
                 if (active) setProducts(Array.isArray(res) ? res : []);
-            } catch {}
+            } catch (error) {
+                if (active) setMsg({ error: error.message || "No se pudo buscar productos.", ok: "" });
+            }
         }, 300);
         return () => { active = false; clearTimeout(t); };
     }, [search.products, tab]);

@@ -14,8 +14,7 @@ export default function ValuesPanel() {
                 ))}
             </div>
 
-            {/* Aquí irán los logos de certificaciones y aliados */}
-            <h3 className="mt-8 font-semibold text-brand">Certificaciones y Aliados</h3>
+            <a href="#certificaciones" className="mt-8 inline-block text-sm font-semibold text-brand hover:underline">Conoce nuestras certificaciones</a>
         </aside>
     );
 }

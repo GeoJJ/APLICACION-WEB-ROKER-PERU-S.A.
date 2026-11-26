@@ -131,7 +131,7 @@ const delivery = (d) => ({
     evidencia: "",
     firma: "",
 });
-export async function loadPanel(role, actorId) {
+export async function loadPanel(role) {
   const data = emptyPanel(),
     notes = [];
   const jobs = [];

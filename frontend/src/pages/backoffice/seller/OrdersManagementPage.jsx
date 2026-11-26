@@ -286,14 +286,16 @@ export default function OrdersManagementPage({ sales = false }) {
     }
 
     useEffect(() => {
-        setSearch('');
-        setStatus('');
-        setSellerFilter('');
-        setOrders([]); // no mostrar datos de la otra pantalla mientras carga
-        loadInitial();
-        return () => {
-            requestRef.current++; // invalida peticiones en curso al salir / cambiar de modo
-        };
+        const requests = requestRef;
+        const timer = setTimeout(() => {
+            setSearch('');
+            setStatus('');
+            setSellerFilter('');
+            setOrders([]);
+            loadInitial();
+        }, 0);
+        return () => { clearTimeout(timer); requests.current++; };
+        // loadInitial usa el modo sales y el contador para descartar respuestas antiguas.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sales]);
 

@@ -195,11 +195,9 @@ export default function ServiceOrdersPage() {
     }
 
     useEffect(() => {
-        loadInitial();
-        return () => {
-            requestRef.current++; // invalida peticiones en curso al salir
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const requests = requestRef;
+        const timer = setTimeout(() => { loadInitial(); }, 0);
+        return () => { clearTimeout(timer); requests.current++; };
     }, []);
 
     async function openOrderModal(order) {

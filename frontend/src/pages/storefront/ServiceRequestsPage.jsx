@@ -79,7 +79,10 @@ export default function ServiceRequestsPage() {
         } finally { setLoading(false); }
     }
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => { load(); }, 0);
+        return () => clearTimeout(timer);
+    }, []);
 
     const badgeOf = st => BADGES[String(st || 'PENDIENTE').toUpperCase()] || [String(st).replaceAll('_', ' ').toLowerCase(), 'bg-gray-100 text-gray-700 border-gray-200'];
 
