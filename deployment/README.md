@@ -30,8 +30,7 @@ deployment/
 
 Antes de iniciar el despliegue, se requiere:
 
-- Windows de 64 bits.
-- Java JDK 25.
+- Java JDK 24.
 - Apache Tomcat 11 (versión ZIP de 64 bits).
 - PostgreSQL instalado y configurado.
 - Base de datos `roker_bd` previamente creada y preparada.
@@ -93,12 +92,14 @@ Ejemplo de configuración:
 ```bat
 set "JAVA_HOME=C:\Program Files\Java\jdk-25.0.4"
 set "DB_PASSWORD=TU_CONTRASEÑA"
+set "JWT_SECRET=CLAVE_JWT"
 ```
 
 **Importante:**
 
 - Verificar que `JAVA_HOME` corresponda a la ubicación real del JDK instalado.
 - Reemplazar `TU_CONTRASEÑA` por la contraseña correspondiente al usuario de PostgreSQL.
+- JWT_SECRET: clave secreta utilizada para la generación y validación de tokens JWT.
 - Configurar las demás variables requeridas por el backend, si corresponde.
 - No compartir ni subir el archivo `setenv.bat` con credenciales reales al repositorio.
 
@@ -141,12 +142,6 @@ Una vez iniciado correctamente el servidor, abrir el navegador e ingresar a:
 http://localhost:8080/
 ```
 
-**Backend (API REST):**
-
-```text
-http://localhost:8080/api/
-```
-
 Para verificar el backend, utilizar un endpoint existente de la API, ya que la ruta raíz `/api/` no necesariamente devuelve una respuesta válida.
 
 ## 5. Arquitectura del despliegue
@@ -187,18 +182,3 @@ Para comprobar la correcta implementación se realizaron las siguientes verifica
 - Acceso a la aplicación desde el navegador.
 - Verificación del funcionamiento de los servicios del backend.
 - Comprobación de la conexión con la base de datos PostgreSQL.
-
-## 7. Consideraciones de seguridad
-
-- No publicar contraseñas de PostgreSQL ni secretos JWT.
-- No subir archivos `setenv.bat` con credenciales reales.
-- Configurar las variables sensibles directamente en el entorno del servidor.
-- Mantener actualizadas las dependencias y versiones de los componentes utilizados.
-
----
-
-**Proyecto:** ROKER PERU S.A.  
-**Servidor de aplicaciones:** Apache Tomcat 11  
-**Backend:** Java + Spring Boot  
-**Frontend:** React + Vite  
-**Base de datos:** PostgreSQL
