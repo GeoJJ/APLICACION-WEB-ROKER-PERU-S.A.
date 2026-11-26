@@ -22,3 +22,17 @@ export function categoryLabel(list, stored) {
     const found = list.find(option => option.value === normalize(stored));
     return found ? found.label : stored || "-";
 }
+export const catalogCategoryKey = value => String(value ?? "").normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("es");
+
+export function catalogProductCategories(products) {
+    const categories = new Map();
+    for (const product of products) {
+        const value = catalogCategoryKey(product.category);
+        if (!value) continue;
+        const label = value === "epp" ? "EPP" : value.charAt(0).toLocaleUpperCase("es") + value.slice(1);
+        const current = categories.get(value);
+        categories.set(value, { value, label, count: (current?.count || 0) + 1 });
+    }
+    return [...categories.values()].sort((a, b) => a.label.localeCompare(b.label, "es"));
+}

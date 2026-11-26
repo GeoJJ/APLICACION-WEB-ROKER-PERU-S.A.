@@ -48,7 +48,7 @@ export default function ServicesPage() {
             {loading ? <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500">Estamos consultando nuestros servicios.</div> : filtered.length ?
                 <ul className="space-y-5" aria-label="Lista de servicios">{filtered.map(service => <li key={service.id}>
                     <article className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:border-blue-200 hover:shadow-md sm:flex">
-                        <div className="relative flex shrink-0 items-center justify-center border-b border-blue-100 bg-blue-50/60 p-5 sm:w-48 sm:border-b-0 sm:border-r lg:w-56"><img src={service.image || placeholder} onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = placeholder; }} alt={service.name} className="h-32 w-44 object-contain sm:h-40" /></div>
+                        <div className="relative h-52 shrink-0 overflow-hidden border-b border-blue-100 bg-blue-50/60 sm:h-auto sm:min-h-52 sm:w-48 sm:border-b-0 sm:border-r lg:w-56"><img src={service.image || placeholder} onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = placeholder; }} alt={service.name} className="absolute inset-0 h-full w-full object-cover object-center" /></div>
                         <div className="flex min-w-0 flex-1 flex-col gap-5 p-5 md:flex-row md:items-center md:gap-7 lg:p-7">
                             <div className="min-w-0 flex-1">
                                 {service.category && <span className="mb-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-brand">{labelOf(service.category)}</span>}

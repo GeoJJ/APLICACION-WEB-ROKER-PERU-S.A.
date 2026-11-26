@@ -2,7 +2,7 @@ import { useCart } from '@/components/cart/CartProvider';
 import AccountMenu from '@/components/shared/AccountMenu';
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { ShoppingCart, Menu, X } from "lucide-react";
 import logo from "@/assets/logos/logo.png";
 import { NAV_LINKS } from "@/data/navigation";
 
@@ -46,9 +46,7 @@ export default function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-3 md:gap-6">
-          <button aria-label="Buscar" className="hidden sm:block hover:text-brand transition">
-            <Search size={26} />
-          </button>
+
           
           <button type="button" onClick={openCart} aria-label="Carrito" className="relative hover:text-brand transition">
             <ShoppingCart size={26} />

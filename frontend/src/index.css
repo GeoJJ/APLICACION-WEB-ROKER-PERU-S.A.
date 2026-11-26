@@ -12,3 +12,8 @@
   --color-brand-dark: #001526;
   --color-surface: #ffffff;
 }
+
+img[alt*='guantes' i] {
+    clip-path: inset(4px);
+}
+
