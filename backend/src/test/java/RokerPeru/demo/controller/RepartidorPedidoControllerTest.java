@@ -1,4 +1,3 @@
-/*
 package RokerPeru.demo.controller;
 
 import RokerPeru.demo.dto.PedidoDTO;
@@ -7,6 +6,11 @@ import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.security.JwtAuthenticationFilter;
 import RokerPeru.demo.services.PedidoService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import RokerPeru.demo.entities.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -26,9 +30,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import(RokerPeru.demo.config.AuthenticatedControllerTestConfig.class)
 @WebMvcTest(RepartidorPedidoController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class RepartidorPedidoControllerTest {
+    // El filtro se prueba aparte; el controlador recibe un principal autenticado.
+    @BeforeEach
+    void autenticarPrincipal() {
+        Usuario usuario = mock(Usuario.class);
+        when(usuario.getIdUsuario()).thenReturn(5L);
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(usuario, null, List.of()));
+    }
+    @AfterEach
+    void limpiarPrincipal() { SecurityContextHolder.clearContext(); }
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,9 +57,7 @@ class RepartidorPedidoControllerTest {
     private static final String URL = "/repartidor/pedidos";
 
     private PedidoDTO.ResponseRepartidor respuesta(String estado) {
-        return new PedidoDTO.ResponseRepartidor(
-                1L, estado, "Cliente Uno", "Av. Lima 123", "999888777",
-                null, null);
+        return new PedidoDTO.ResponseRepartidor(1L, null, estado, "Cliente Uno", "Av. Lima 123", "999888777", null, null);
     }
 
     private String json(String nuevoEstado) {
@@ -80,19 +93,26 @@ class RepartidorPedidoControllerTest {
     }
 
     @Test
-    void listarPedidosAsignados_sinIdRepartidor_retorna400() throws Exception {
-        mockMvc.perform(get(URL))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(pedidoService);
+    void listarPedidosAsignados_sinParametro_usaPrincipal() throws Exception {
+        when(pedidoService.listarPedidosAsignados(5L)).thenReturn(List.of());
+        mockMvc.perform(get(URL)).andExpect(status().isOk());
+        verify(pedidoService).listarPedidosAsignados(5L);
     }
 
     @Test
-    void listarPedidosAsignados_conIdNoNumerico_retorna400() throws Exception {
-        mockMvc.perform(get(URL).param("idRepartidor", "abc"))
-                .andExpect(status().isBadRequest());
+    void listarPedidosAsignados_ignoraIdEnParametro() throws Exception {
+        when(pedidoService.listarPedidosAsignados(5L)).thenReturn(List.of());
+        mockMvc.perform(get(URL).param("idRepartidor", "abc")).andExpect(status().isOk());
+        verify(pedidoService).listarPedidosAsignados(5L);
+    }
 
-        verifyNoInteractions(pedidoService);
+    @Test
+    void historial_usaElRepartidorAutenticadoAunqueSeEnvieOtroId() throws Exception {
+        when(pedidoService.listarHistorialRepartidor(5L)).thenReturn(List.of(respuesta("ENTREGADO")));
+        mockMvc.perform(get(URL + "/historial").param("idRepartidor", "999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].estadoPedido").value("ENTREGADO"));
+        verify(pedidoService).listarHistorialRepartidor(5L);
     }
 
     // ---------- PUT /repartidor/pedidos/{idPedido}/estado ----------
@@ -170,13 +190,9 @@ class RepartidorPedidoControllerTest {
     }
 
     @Test
-    void actualizarEstado_sinIdRepartidor_retorna400() throws Exception {
-        mockMvc.perform(put(URL + "/1/estado")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json("\"ENTREGADO\"")))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(pedidoService);
+    void actualizarEstado_sinParametro_usaPrincipal() throws Exception {
+        mockMvc.perform(put(URL+"/1/estado").contentType(MediaType.APPLICATION_JSON).content("{\"nuevoEstado\":\"ENTREGADO\"}")).andExpect(status().isOk());
+        verify(pedidoService).actualizarEstadoRepartidor(eq(1L), eq(5L), any());
     }
 
     @Test
@@ -215,7 +231,7 @@ class RepartidorPedidoControllerTest {
 
     @Test
     void actualizarEstado_cuandoElPedidoNoEsSuyo_retornaErrorDeCliente() throws Exception {
-        when(pedidoService.actualizarEstadoRepartidor(eq(1L), eq(9L), any()))
+        when(pedidoService.actualizarEstadoRepartidor(eq(1L), eq(5L), any()))
                 .thenThrow(new OperacionNoPermitidaException("Acceso denegado: Este pedido no está asignado a ti"));
 
         mockMvc.perform(put(URL + "/1/estado")
@@ -236,4 +252,4 @@ class RepartidorPedidoControllerTest {
                         .content(json("\"ENTREGADO\"")))
                 .andExpect(status().isNotFound());
     }
-}*/
+}

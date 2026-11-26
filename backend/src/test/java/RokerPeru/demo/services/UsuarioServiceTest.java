@@ -70,6 +70,7 @@ class UsuarioServiceTest {
     @Test
     void crearUsuario_conCorreoDuplicado_lanzaExcepcionYNoGuarda() {
         UsuarioDTO.Request dto = mock(UsuarioDTO.Request.class);
+        when(dto.passwordUsuario()).thenReturn("12345678");
         when(dto.correoUsuario()).thenReturn(CORREO);
         when(dto.numeroDocumentoUsuario()).thenReturn(DOCUMENTO);
         when(usuarioRepository.existsByCorreoUsuarioIgnoreCase(CORREO)).thenReturn(true);
@@ -84,6 +85,7 @@ class UsuarioServiceTest {
     @Test
     void crearUsuario_conDocumentoDuplicado_lanzaExcepcionYNoGuarda() {
         UsuarioDTO.Request dto = mock(UsuarioDTO.Request.class);
+        when(dto.passwordUsuario()).thenReturn("12345678");
         when(dto.correoUsuario()).thenReturn(CORREO);
         when(dto.numeroDocumentoUsuario()).thenReturn(DOCUMENTO);
         when(usuarioRepository.existsByCorreoUsuarioIgnoreCase(CORREO)).thenReturn(false);
@@ -134,6 +136,7 @@ class UsuarioServiceTest {
         Rol rol = mock(Rol.class);
 
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(dto.passwordUsuario()).thenReturn("12345678");
         when(dto.correoUsuario()).thenReturn(CORREO);
         when(dto.numeroDocumentoUsuario()).thenReturn(DOCUMENTO);
         when(dto.passwordUsuario()).thenReturn("nueva123");
@@ -156,6 +159,7 @@ class UsuarioServiceTest {
         Rol rol = mock(Rol.class);
 
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(dto.passwordUsuario()).thenReturn("12345678");
         when(dto.correoUsuario()).thenReturn(CORREO);
         when(dto.numeroDocumentoUsuario()).thenReturn(DOCUMENTO);
         when(dto.passwordUsuario()).thenReturn("   ");

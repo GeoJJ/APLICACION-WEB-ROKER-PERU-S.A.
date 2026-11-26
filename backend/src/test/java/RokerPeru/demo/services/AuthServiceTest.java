@@ -44,10 +44,13 @@ class AuthServiceTest {
     void login_conCredencialesValidas_retornaToken() {
         // Arrange
         AuthDTO.LoginRequest request = new AuthDTO.LoginRequest(CORREO, PASSWORD);
-        Usuario usuario = mock(Usuario.class);
+        Usuario usuario = mock(Usuario.class, RETURNS_DEEP_STUBS);
 
         when(usuarioRepository.findByCorreoUsuario(CORREO)).thenReturn(Optional.of(usuario));
-        when(jwtService.generateToken(usuario)).thenReturn("token-jwt");
+        when(usuario.getRol().getNombreRol()).thenReturn("CLIENTE");
+        when(usuario.getNombreUsuario()).thenReturn("Cliente");
+        when(usuario.getIdUsuario()).thenReturn(1L);
+        when(jwtService.generateToken(anyMap(), eq(usuario))).thenReturn("token-jwt");
 
         // Act
         AuthDTO.Response response = authService.login(request);
@@ -56,7 +59,7 @@ class AuthServiceTest {
         assertThat(response.token()).isEqualTo("token-jwt");
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(usuarioRepository).findByCorreoUsuario(CORREO);
-        verify(jwtService).generateToken(usuario);
+        verify(jwtService).generateToken(eq(java.util.Map.of("rol", "CLIENTE", "nombre", "Cliente", "idUsuario", 1L, "ver", 0)), eq(usuario));
     }
     // Comprueba que si la contraseña es incorrecta, se lanza BadCredentialsException sin tocar la BD.
     @Test

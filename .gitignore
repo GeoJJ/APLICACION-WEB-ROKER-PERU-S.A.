@@ -153,3 +153,5 @@ $RECYCLE.BIN/
 
 # ----- ARCHIVOS GENERADOS POR IDEs -----
 HELP.md
+# Estado local del cargador de datos
+.local/

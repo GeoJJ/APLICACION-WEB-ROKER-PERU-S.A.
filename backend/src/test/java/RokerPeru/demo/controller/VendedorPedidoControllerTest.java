@@ -7,6 +7,11 @@ import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.security.JwtAuthenticationFilter;
 import RokerPeru.demo.services.PedidoService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import RokerPeru.demo.entities.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -26,9 +31,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import(RokerPeru.demo.config.AuthenticatedControllerTestConfig.class)
 @WebMvcTest(VendedorPedidoController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class VendedorPedidoControllerTest {
+    // El filtro se prueba aparte; el controlador recibe un principal autenticado.
+    @BeforeEach
+    void autenticarPrincipal() {
+        Usuario usuario = mock(Usuario.class);
+        when(usuario.getIdUsuario()).thenReturn(2L);
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(usuario, null, List.of()));
+    }
+    @AfterEach
+    void limpiarPrincipal() { SecurityContextHolder.clearContext(); }
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,13 +62,7 @@ class VendedorPedidoControllerTest {
             """;
 
     private PedidoDTO.ResponseVendedor respuesta(String estado) {
-        return new PedidoDTO.ResponseVendedor(
-                1L, null, "B001", "B001-00000001", null, null, null,
-                estado, 30.0, "EFECTIVO",
-                10L, "Cliente Uno", "Av. Lima 123",
-                2L, "Vendedor Uno",
-                3L, "Repartidor Uno",
-                List.of());
+        return new PedidoDTO.ResponseVendedor(1L, null, null, "B001", "B001-00000001", null, null, null, null, estado, 30.0, "EFECTIVO", 10L, "Cliente Uno", "Av. Lima 123", 2L, "Vendedor Uno", 3L, "Repartidor Uno", List.of());
     }
 
     // ---------- GET /vendedor/pedidos ----------
@@ -148,13 +158,9 @@ class VendedorPedidoControllerTest {
     }
 
     @Test
-    void confirmarYAsignarPedido_sinIdVendedor_retorna400() throws Exception {
-        mockMvc.perform(put(URL + "/1/confirmar")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ASIGNACION_VALIDA))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(pedidoService);
+    void confirmarYAsignarPedido_sinParametro_usaVendedorAutenticado() throws Exception {
+        mockMvc.perform(put(URL+"/1/confirmar").contentType(MediaType.APPLICATION_JSON).content(ASIGNACION_VALIDA)).andExpect(status().isOk());
+        verify(pedidoService).confirmarYAsignarPedido(eq(1L), any(), eq(2L));
     }
 
     @Test

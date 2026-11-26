@@ -108,35 +108,35 @@ class AdminProductoControllerTest {
     }
 
     @Test
-    void crearProducto_sinCodigo_retorna400() throws Exception {
+    void crearProducto_sinCodigoAceptaGeneracionAutomatica() throws Exception {
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json("null", "\"Casco\"", "10.0", "5", "1")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated());
 
-        verifyNoInteractions(productoService);
+        verify(productoService).crearProducto(any(ProductoDTO.Request.class));
     }
 
     @Test
-    void crearProducto_conCodigoEnBlanco_retorna400() throws Exception {
+    void crearProducto_ignoraCodigoManualEnBlanco() throws Exception {
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json("\"   \"", "\"Casco\"", "10.0", "5", "1")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated());
 
-        verifyNoInteractions(productoService);
+        verify(productoService).crearProducto(any(ProductoDTO.Request.class));
     }
 
     @Test
-    void crearProducto_conCodigoMayorA50Caracteres_retorna400() throws Exception {
+    void crearProducto_ignoraCodigoManualFueraDelContrato() throws Exception {
         String codigoLargo = "\"" + "A".repeat(51) + "\"";
 
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(codigoLargo, "\"Casco\"", "10.0", "5", "1")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated());
 
-        verifyNoInteractions(productoService);
+        verify(productoService).crearProducto(any(ProductoDTO.Request.class));
     }
 
     @Test

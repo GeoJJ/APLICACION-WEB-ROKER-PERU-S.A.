@@ -7,6 +7,11 @@ import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.security.JwtAuthenticationFilter;
 import RokerPeru.demo.services.OrdenServicioService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import RokerPeru.demo.entities.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -25,9 +30,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@org.springframework.context.annotation.Import(RokerPeru.demo.config.AuthenticatedControllerTestConfig.class)
 @WebMvcTest(VendedorOrdenServicioController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class VendedorOrdenServicioControllerTest {
+    // El filtro se prueba aparte; el controlador recibe un principal autenticado.
+    @BeforeEach
+    void autenticarPrincipal() {
+        Usuario usuario = mock(Usuario.class);
+        when(usuario.getIdUsuario()).thenReturn(2L);
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(usuario, null, List.of()));
+    }
+    @AfterEach
+    void limpiarPrincipal() { SecurityContextHolder.clearContext(); }
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,14 +57,7 @@ class VendedorOrdenServicioControllerTest {
     private static final String URL = "/vendedor/ordenes-servicio";
 
     private OrdenServicioDTO.ResponseVendedor respuesta(String estado) {
-        return new OrdenServicioDTO.ResponseVendedor(
-                1L, null, null, "B002", "B002-00000001",
-                estado, 150.0, "YAPE", null,
-                "Limpieza general",
-                2, 2,
-                10L, "Cliente Uno",
-                20L, "Vendedor Uno",
-                30L, "Auxiliar Uno");
+        return new OrdenServicioDTO.ResponseVendedor(1L, null, null, null, "B002", "B002-00000001", null, estado, 150.0, "YAPE", null, "Limpieza general", 2, 2, 10L, "Cliente Uno", "999999999", 20L, "Vendedor Uno", 30L, "Auxiliar Uno", "Av. Los Proceres 245", null);
     }
 
     // ---------- GET /vendedor/ordenes-servicio ----------
@@ -108,7 +117,7 @@ class VendedorOrdenServicioControllerTest {
 
     @Test
     void confirmarOrdenServicio_sinIncidencia_retorna200YEnviaEstadoConfirmado() throws Exception {
-        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class)))
+        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class), eq(2L)))
                 .thenReturn(respuesta("CONFIRMADO"));
 
         mockMvc.perform(put(URL + "/1/confirmar"))
@@ -117,14 +126,14 @@ class VendedorOrdenServicioControllerTest {
 
         ArgumentCaptor<OrdenServicioDTO.RequestGestionVendedor> captor =
                 ArgumentCaptor.forClass(OrdenServicioDTO.RequestGestionVendedor.class);
-        verify(ordenServicioService).confirmarOrdenServicio(eq(1L), captor.capture());
+        verify(ordenServicioService).confirmarOrdenServicio(eq(1L), captor.capture(), eq(2L));
         assertThat(captor.getValue().nuevoEstado()).isEqualTo("CONFIRMADO");
         assertThat(captor.getValue().incidenciaServicio()).isNull();
     }
 
     @Test
     void confirmarOrdenServicio_conIncidencia_laEnviaAlServiceSinEspacios() throws Exception {
-        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class)))
+        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class), eq(2L)))
                 .thenReturn(respuesta("CONFIRMADO"));
 
         mockMvc.perform(put(URL + "/1/confirmar").param("incidencia", "  Cliente pidió cambio de hora  "))
@@ -132,13 +141,13 @@ class VendedorOrdenServicioControllerTest {
 
         ArgumentCaptor<OrdenServicioDTO.RequestGestionVendedor> captor =
                 ArgumentCaptor.forClass(OrdenServicioDTO.RequestGestionVendedor.class);
-        verify(ordenServicioService).confirmarOrdenServicio(eq(1L), captor.capture());
+        verify(ordenServicioService).confirmarOrdenServicio(eq(1L), captor.capture(), eq(2L));
         assertThat(captor.getValue().incidenciaServicio()).isEqualTo("Cliente pidió cambio de hora");
     }
 
     @Test
     void confirmarOrdenServicio_cuandoNoExiste_retorna404() throws Exception {
-        when(ordenServicioService.confirmarOrdenServicio(eq(99L), any()))
+        when(ordenServicioService.confirmarOrdenServicio(eq(99L), any(), eq(2L)))
                 .thenThrow(new RecursoNoEncontradoException("Orden de servicio", 99L));
 
         mockMvc.perform(put(URL + "/99/confirmar"))
@@ -147,7 +156,7 @@ class VendedorOrdenServicioControllerTest {
 
     @Test
     void confirmarOrdenServicio_conPersonalInsuficiente_retornaErrorDeCliente() throws Exception {
-        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any()))
+        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(), eq(2L)))
                 .thenThrow(new ReglaNegocioException(
                         "No se puede confirmar la orden. El servicio requiere 3 personas, pero solo se han asignado 1."));
 
@@ -157,7 +166,7 @@ class VendedorOrdenServicioControllerTest {
 
     @Test
     void confirmarOrdenServicio_cuandoNoEstaPendiente_retornaErrorDeCliente() throws Exception {
-        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any()))
+        when(ordenServicioService.confirmarOrdenServicio(eq(1L), any(), eq(2L)))
                 .thenThrow(new OperacionNoPermitidaException(
                         "Solo se pueden confirmar órdenes en estado PENDIENTE"));
 
@@ -177,7 +186,7 @@ class VendedorOrdenServicioControllerTest {
 
     @Test
     void cancelarOrdenServicio_sinIncidencia_retorna200YEnviaEstadoCancelado() throws Exception {
-        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class)))
+        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class), eq(2L)))
                 .thenReturn(respuesta("CANCELADO"));
 
         mockMvc.perform(put(URL + "/1/cancelar"))
@@ -186,14 +195,14 @@ class VendedorOrdenServicioControllerTest {
 
         ArgumentCaptor<OrdenServicioDTO.RequestGestionVendedor> captor =
                 ArgumentCaptor.forClass(OrdenServicioDTO.RequestGestionVendedor.class);
-        verify(ordenServicioService).cancelarOrdenServicio(eq(1L), captor.capture());
+        verify(ordenServicioService).cancelarOrdenServicio(eq(1L), captor.capture(), eq(2L));
         assertThat(captor.getValue().nuevoEstado()).isEqualTo("CANCELADO");
         assertThat(captor.getValue().incidenciaServicio()).isNull();
     }
 
     @Test
     void cancelarOrdenServicio_conIncidencia_laEnviaAlService() throws Exception {
-        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class)))
+        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any(OrdenServicioDTO.RequestGestionVendedor.class), eq(2L)))
                 .thenReturn(respuesta("CANCELADO"));
 
         mockMvc.perform(put(URL + "/1/cancelar").param("incidencia", "Cliente no responde"))
@@ -201,13 +210,13 @@ class VendedorOrdenServicioControllerTest {
 
         ArgumentCaptor<OrdenServicioDTO.RequestGestionVendedor> captor =
                 ArgumentCaptor.forClass(OrdenServicioDTO.RequestGestionVendedor.class);
-        verify(ordenServicioService).cancelarOrdenServicio(eq(1L), captor.capture());
+        verify(ordenServicioService).cancelarOrdenServicio(eq(1L), captor.capture(), eq(2L));
         assertThat(captor.getValue().incidenciaServicio()).isEqualTo("Cliente no responde");
     }
 
     @Test
     void cancelarOrdenServicio_cuandoNoExiste_retorna404() throws Exception {
-        when(ordenServicioService.cancelarOrdenServicio(eq(99L), any()))
+        when(ordenServicioService.cancelarOrdenServicio(eq(99L), any(), eq(2L)))
                 .thenThrow(new RecursoNoEncontradoException("Orden de servicio", 99L));
 
         mockMvc.perform(put(URL + "/99/cancelar"))
@@ -216,7 +225,7 @@ class VendedorOrdenServicioControllerTest {
 
     @Test
     void cancelarOrdenServicio_cuandoYaEstaCompletada_retornaErrorDeCliente() throws Exception {
-        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any()))
+        when(ordenServicioService.cancelarOrdenServicio(eq(1L), any(), eq(2L)))
                 .thenThrow(new OperacionNoPermitidaException("No se puede cancelar una orden ya completada"));
 
         mockMvc.perform(put(URL + "/1/cancelar"))

@@ -3,7 +3,6 @@ package RokerPeru.demo.services;
 import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Proveedores;
-import RokerPeru.demo.exception.ConflictoException;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
 import RokerPeru.demo.exception.ReglaNegocioException;
 import RokerPeru.demo.repository.ProductoRepository;
@@ -32,6 +31,9 @@ class ProductoServiceTest {
     @Mock
     private ProveedoresRepository proveedoresRepository;
 
+    @Mock
+    private CodigoService codigoService;
+
     @InjectMocks
     private ProductoService productoService;
 
@@ -49,39 +51,25 @@ class ProductoServiceTest {
         Proveedores proveedor = mock(Proveedores.class);
         Producto producto = productoMock();
 
-        when(dto.codigoProducto()).thenReturn(CODIGO);
         when(dto.idProveedor()).thenReturn(1L);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, null)).thenReturn(false);
         when(proveedoresRepository.findById(1L)).thenReturn(Optional.of(proveedor));
         when(dto.toEntity(proveedor)).thenReturn(producto);
+        when(codigoService.generar(RokerPeru.demo.enums.TipoCodigoEnum.PRODUCTO)).thenReturn("PRD-0001");
         when(productoRepository.save(producto)).thenReturn(producto);
 
         ProductoDTO.Response response = productoService.crearProducto(dto);
 
         assertThat(response).isNotNull();
         verify(productoRepository).save(producto);
+        verify(producto).setCodigoProducto("PRD-0001");
     }
 
-    @Test
-    void crearProducto_conCodigoDuplicado_lanzaConflictoYNoGuarda() {
-        ProductoDTO.Request dto = mock(ProductoDTO.Request.class);
-        when(dto.codigoProducto()).thenReturn(CODIGO);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, null)).thenReturn(true);
 
-        assertThatThrownBy(() -> productoService.crearProducto(dto))
-                .isInstanceOf(ConflictoException.class)
-                .hasMessageContaining(CODIGO);
-
-        verifyNoInteractions(proveedoresRepository);
-        verify(productoRepository, never()).save(any());
-    }
 
     @Test
     void crearProducto_conProveedorInexistente_lanzaRecursoNoEncontrado() {
         ProductoDTO.Request dto = mock(ProductoDTO.Request.class);
-        when(dto.codigoProducto()).thenReturn(CODIGO);
         when(dto.idProveedor()).thenReturn(99L);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, null)).thenReturn(false);
         when(proveedoresRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productoService.crearProducto(dto))
@@ -144,9 +132,7 @@ class ProductoServiceTest {
         Proveedores proveedor = mock(Proveedores.class);
 
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(dto.codigoProducto()).thenReturn(CODIGO);
         when(dto.idProveedor()).thenReturn(2L);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, 1L)).thenReturn(false);
         when(proveedoresRepository.findById(2L)).thenReturn(Optional.of(proveedor));
 
         ProductoDTO.Response response = productoService.actualizarProducto(1L, dto);
@@ -155,19 +141,7 @@ class ProductoServiceTest {
         verify(dto).applyTo(producto, proveedor);
     }
 
-    @Test
-    void actualizarProducto_conCodigoDeOtroProducto_lanzaConflicto() {
-        ProductoDTO.Request dto = mock(ProductoDTO.Request.class);
-        when(productoRepository.findById(1L)).thenReturn(Optional.of(productoMock()));
-        when(dto.codigoProducto()).thenReturn(CODIGO);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, 1L)).thenReturn(true);
 
-        assertThatThrownBy(() -> productoService.actualizarProducto(1L, dto))
-                .isInstanceOf(ConflictoException.class)
-                .hasMessageContaining(CODIGO);
-
-        verify(dto, never()).applyTo(any(), any());
-    }
 
     @Test
     void actualizarProducto_cuandoNoExiste_lanzaRecursoNoEncontrado() {
@@ -177,16 +151,13 @@ class ProductoServiceTest {
         assertThatThrownBy(() -> productoService.actualizarProducto(99L, dto))
                 .isInstanceOf(RecursoNoEncontradoException.class);
 
-        verify(productoRepository, never()).existeCodigoDuplicado(any(), any());
     }
 
     @Test
     void actualizarProducto_conProveedorInexistente_lanzaRecursoNoEncontrado() {
         ProductoDTO.Request dto = mock(ProductoDTO.Request.class);
         when(productoRepository.findById(1L)).thenReturn(Optional.of(productoMock()));
-        when(dto.codigoProducto()).thenReturn(CODIGO);
         when(dto.idProveedor()).thenReturn(99L);
-        when(productoRepository.existeCodigoDuplicado(CODIGO, 1L)).thenReturn(false);
         when(proveedoresRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productoService.actualizarProducto(1L, dto))

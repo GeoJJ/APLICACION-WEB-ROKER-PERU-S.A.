@@ -25,6 +25,9 @@ class ServicioServiceTest {
     @Mock
     private ServicioRepository servicioRepository;
 
+    @Mock
+    private CodigoService codigoService;
+
     @InjectMocks
     private ServicioService servicioService;
 
