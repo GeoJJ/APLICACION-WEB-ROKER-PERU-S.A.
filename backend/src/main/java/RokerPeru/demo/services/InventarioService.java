@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.MovimientoDTO;
 import RokerPeru.demo.entities.MovimientosProducto;
 import RokerPeru.demo.entities.Producto;
@@ -65,7 +66,7 @@ public class InventarioService {
         movimiento.setFechaMovimientoProducto(LocalDateTime.now());
         movimientoRepository.save(movimiento);
 
-        log.info("{} registrado: producto id={}, cantidad={}, stock {} -> {}",
+        RegistroOperacion.infoConfirmada(log, "{} registrado: producto id={}, cantidad={}, stock {} -> {}",
                 tipo, producto.getIdProducto(), request.cantidad(), stockAnterior, nuevoStock);
 
         return MovimientoDTO.Response.fromEntity(movimiento, nuevoStock, tipo + " registrado exitosamente");

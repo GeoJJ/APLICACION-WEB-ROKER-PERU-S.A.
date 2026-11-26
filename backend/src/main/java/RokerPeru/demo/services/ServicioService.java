@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.ServicioDTO;
 import RokerPeru.demo.entities.Servicio;
 import RokerPeru.demo.enums.TipoCodigoEnum;
@@ -28,7 +29,7 @@ public class ServicioService {
         servicio.setCodigoServicio(codigoService.generar(TipoCodigoEnum.SERVICIO));
 
         Servicio guardado = servicioRepository.save(servicio);
-        log.info("Servicio creado: id={}, codigo={}, nombre={}", guardado.getIdServicio(), guardado.getCodigoServicio(), dto.nombreServicio());
+        RegistroOperacion.infoConfirmada(log, "Servicio creado: id={}, codigo={}, nombre={}", guardado.getIdServicio(), guardado.getCodigoServicio(), dto.nombreServicio());
         return ServicioDTO.Response.fromEntity(guardado);
     }
 
@@ -51,7 +52,7 @@ public class ServicioService {
 
         dto.applyTo(servicio);
 
-        log.info("Servicio actualizado: id={}, nombre={}", id, dto.nombreServicio());
+        RegistroOperacion.infoConfirmada(log, "Servicio actualizado: id={}, nombre={}", id, dto.nombreServicio());
         return ServicioDTO.Response.fromEntity(servicio); // Hibernate hace el UPDATE
     }
 
@@ -59,7 +60,7 @@ public class ServicioService {
     public void eliminarServicio(Long id) {
         Servicio servicio = obtenerServicio(id);
         servicioRepository.delete(servicio);
-        log.info("Servicio eliminado: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Servicio eliminado: id={}", id);
     }
 
     // Métodos específicos para la Vista del Cliente

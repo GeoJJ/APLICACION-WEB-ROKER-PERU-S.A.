@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.OrdenServicioDTO;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Servicio;
@@ -46,7 +47,7 @@ public class OrdenServicioService {
         orden.setCodigoOrdenServicio(codigoService.generar(TipoCodigoEnum.ORDEN_SERVICIO));
 
         OrdenesServicio guardado = ordenesRepository.save(orden);
-        log.info("Cliente {} creó la orden de servicio {} (pendiente de confirmación) para {}",
+        RegistroOperacion.infoConfirmada(log, "Cliente {} creó la orden de servicio {} (pendiente de confirmación) para {}",
                 cliente.getNombreUsuario(), guardado.getCodigoOrdenServicio(), servicio.getNombreServicio());
 
         return OrdenServicioDTO.ResponseCliente.fromEntity(guardado);
@@ -55,7 +56,7 @@ public class OrdenServicioService {
     @Transactional
     public OrdenServicioDTO.ResponseVendedor confirmarOrdenServicio(Long idOrden, OrdenServicioDTO.RequestGestionVendedor dto, Long idVendedor) {
         // Traemos la orden CON sus asignaciones (gracias al EntityGraph del repositorio)
-        OrdenesServicio orden = obtenerOrdenConDetalles(idOrden);
+        OrdenesServicio orden = obtenerOrden(idOrden);
 
         String estadoActual = orden.getEstadoServicio();
         if (!"PENDIENTE".equals(estadoActual)) {
@@ -85,7 +86,7 @@ public class OrdenServicioService {
         emitirComprobante(orden);
         OrdenesServicio actualizado = ordenesRepository.save(orden);
 
-        log.info("Vendedor confirmó la orden de servicio #{}. Personal asignado: {}/{}",
+        RegistroOperacion.infoConfirmada(log, "Vendedor confirmó la orden de servicio #{}. Personal asignado: {}/{}",
                 idOrden, personalAsignado, personalRequerido);
 
         return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
@@ -113,7 +114,7 @@ public class OrdenServicioService {
         dto.applyTo(orden);
         OrdenesServicio actualizado = ordenesRepository.save(orden);
 
-        log.info("Orden de servicio #{} cancelada", idOrden);
+        RegistroOperacion.infoConfirmada(log, "Orden de servicio #{} cancelada", idOrden);
         return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
@@ -158,11 +159,6 @@ public class OrdenServicioService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", id));
     }
 
-    private OrdenesServicio obtenerOrdenConDetalles(Long id) {
-        return ordenesRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Orden de servicio", id));
-    }
-
     private Usuario obtenerUsuario(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
@@ -200,7 +196,7 @@ public class OrdenServicioService {
         dto.applyTo(orden); // estado = COMPLETADO y, si viene, la observación
         OrdenesServicio actualizado = ordenesRepository.save(orden);
 
-        log.info("Orden de servicio #{} completada", idOrden);
+        RegistroOperacion.infoConfirmada(log, "Orden de servicio #{} completada", idOrden);
         return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
 }

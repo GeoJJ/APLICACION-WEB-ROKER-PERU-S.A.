@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.ProductoDTO;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.entities.Proveedores;
@@ -34,7 +35,7 @@ public class ProductoService {
         producto.setCodigoProducto(codigoService.generar(TipoCodigoEnum.PRODUCTO));
 
         Producto guardado = productoRepository.save(producto);
-        log.info("Producto creado: id={}, codigo={}", guardado.getIdProducto(), guardado.getCodigoProducto());
+        RegistroOperacion.infoConfirmada(log, "Producto creado: id={}, codigo={}", guardado.getIdProducto(), guardado.getCodigoProducto());
 
         return ProductoDTO.Response.fromEntity(guardado);
     }
@@ -62,7 +63,7 @@ public class ProductoService {
 
         // El código nunca cambia al editar: applyTo no lo toca
         dto.applyTo(producto, obtenerProveedor(dto.idProveedor()));
-        log.info("Producto actualizado: id={}, codigo={}", id, producto.getCodigoProducto());
+        RegistroOperacion.infoConfirmada(log, "Producto actualizado: id={}, codigo={}", id, producto.getCodigoProducto());
 
         return ProductoDTO.Response.fromEntity(producto);
     }
@@ -71,7 +72,7 @@ public class ProductoService {
     public void eliminarProducto(Long id) {
         Producto producto = obtenerProducto(id);
         productoRepository.delete(producto);
-        log.info("Producto eliminado: id={}, codigo={}", id, producto.getCodigoProducto());
+        RegistroOperacion.infoConfirmada(log, "Producto eliminado: id={}, codigo={}", id, producto.getCodigoProducto());
     }
 
     @Transactional
@@ -83,7 +84,7 @@ public class ProductoService {
 
         Producto producto = obtenerProducto(id);
         producto.setEstadoProducto(nuevoEstado);
-        log.info("Estado de producto id={} cambió a {}", id, nuevoEstado);
+        RegistroOperacion.infoConfirmada(log, "Estado de producto id={} cambió a {}", id, nuevoEstado);
 
         return ProductoDTO.Response.fromEntity(producto);
     }

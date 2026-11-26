@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.RolDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.exception.ConflictoException;
@@ -26,7 +27,7 @@ public class RolService {
             throw new ConflictoException("Ya existe un rol con el nombre: " + dto.nombreRol());
         }
         Rol guardado = rolRepository.save(dto.toEntity());
-        log.info("Rol creado: id={}, nombre={}", guardado.getIdRol(), dto.nombreRol());
+        RegistroOperacion.infoConfirmada(log, "Rol creado: id={}, nombre={}", guardado.getIdRol(), dto.nombreRol());
         return RolDTO.Response.fromEntity(guardado);
     }
 
@@ -51,7 +52,7 @@ public class RolService {
         String nombreAnterior = rol.getNombreRol();
         dto.applyTo(rol);
 
-        log.info("Rol actualizado: id={}, '{}' -> '{}'", id, nombreAnterior, dto.nombreRol());
+        RegistroOperacion.infoConfirmada(log, "Rol actualizado: id={}, '{}' -> '{}'", id, nombreAnterior, dto.nombreRol());
         return RolDTO.Response.fromEntity(rol);
     }
 

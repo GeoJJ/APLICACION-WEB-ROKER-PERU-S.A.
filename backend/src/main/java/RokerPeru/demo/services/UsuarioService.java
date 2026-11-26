@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.UsuarioDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.entities.Usuario;
@@ -36,7 +37,7 @@ public class UsuarioService {
         usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
 
         Usuario guardado = usuarioRepository.save(usuario);
-        log.info("Usuario creado exitosamente: {}", guardado.getCorreoUsuario());
+        RegistroOperacion.infoConfirmada(log, "Usuario creado exitosamente: {}", guardado.getCorreoUsuario());
 
         return UsuarioDTO.Response.fromEntity(guardado);
     }
@@ -69,7 +70,7 @@ public class UsuarioService {
             usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
         }
 
-        log.info("Usuario actualizado exitosamente: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Usuario actualizado exitosamente: id={}", id);
         return UsuarioDTO.Response.fromEntity(usuario);
     }
 
@@ -78,7 +79,7 @@ public class UsuarioService {
         Usuario usuario = obtenerUsuario(id);
         // TODO: validar aquí que el usuario no tenga pedidos ni órdenes asociadas
         usuarioRepository.delete(usuario);
-        log.info("Usuario eliminado: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Usuario eliminado: id={}", id);
     }
 
     @Transactional(readOnly = true)
@@ -149,7 +150,7 @@ public class UsuarioService {
             usuario.setPasswordUsuario(passwordEncoder.encode(dto.passwordUsuario()));
         }
 
-        log.info("Perfil actualizado: idUsuario={}", idUsuario);
+        RegistroOperacion.infoConfirmada(log, "Perfil actualizado: idUsuario={}", idUsuario);
         return UsuarioDTO.PerfilResponse.fromEntity(usuario);
     }
 }

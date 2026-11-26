@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.DetallePedidoDTO;
 import RokerPeru.demo.dto.PedidoDTO;
 import RokerPeru.demo.entities.ClientePresencial;
@@ -75,7 +76,7 @@ public class PedidoService {
 
         // Guardar y retornar
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Cliente {} creó el pedido {} (pendiente de confirmación). Total: S/ {}",
+        RegistroOperacion.infoConfirmada(log, "Cliente {} creó el pedido {} (pendiente de confirmación). Total: S/ {}",
                 cliente.getNombreUsuario(), pedidoGuardado.getCodigoPedido(), montoTotal);
 
         return PedidoDTO.ResponseCliente.fromEntity(pedidoGuardado);
@@ -121,7 +122,7 @@ public class PedidoService {
         emitirComprobante(pedido);
         // Guardar y retornar la vista COMPLETA para el vendedor
         Pedidos pedidoActualizado = pedidosRepository.save(pedido);
-        log.info("Vendedor {} confirmó el pedido #{} y lo asignó al repartidor {}", vendedor.getNombreUsuario(), idPedido, delivery.getNombreUsuario());
+        RegistroOperacion.infoConfirmada(log, "Vendedor {} confirmó el pedido #{} y lo asignó al repartidor {}", vendedor.getNombreUsuario(), idPedido, delivery.getNombreUsuario());
 
         return PedidoDTO.ResponseVendedor.fromEntity(pedidoActualizado);
     }
@@ -155,7 +156,7 @@ public class PedidoService {
 
         // Guardar y retornar la vista limitada para el repartidor
         Pedidos pedidoActualizado = pedidosRepository.save(pedido);
-        log.info("Repartidor actualizó el pedido #{} al estado: {}", idPedido, dto.nuevoEstado());
+        RegistroOperacion.infoConfirmada(log, "Repartidor actualizó el pedido #{} al estado: {}", idPedido, dto.nuevoEstado());
 
         return PedidoDTO.ResponseRepartidor.fromEntity(pedidoActualizado);
     }
@@ -256,7 +257,7 @@ public class PedidoService {
         }
 
         Pedidos actualizado = pedidosRepository.save(pedido);
-        log.info("Vendedor {} editó el pedido #{} (repartidor: {})", idVendedorLogueado, idPedido, delivery.getNombreUsuario());
+        RegistroOperacion.infoConfirmada(log, "Vendedor {} editó el pedido #{} (repartidor: {})", idVendedorLogueado, idPedido, delivery.getNombreUsuario());
         return PedidoDTO.ResponseVendedor.fromEntity(actualizado);
     }
 
@@ -315,7 +316,7 @@ public class PedidoService {
         emitirComprobante(pedido);
 
         Pedidos pedidoGuardado = pedidosRepository.save(pedido);
-        log.info("Vendedor {} registró venta presencial {} (ENTREGADO). Total: S/ {}",
+        RegistroOperacion.infoConfirmada(log, "Vendedor {} registró venta presencial {} (ENTREGADO). Total: S/ {}",
                 vendedor.getNombreUsuario(), pedidoGuardado.getCodigoPedido(), montoTotal);
 
         return PedidoDTO.ResponseVendedor.fromEntity(pedidoGuardado);

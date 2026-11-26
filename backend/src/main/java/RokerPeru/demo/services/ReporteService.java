@@ -1,6 +1,7 @@
 
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
@@ -32,12 +33,11 @@ public class ReporteService {
             try (InputStream input =
                          new ClassPathResource(ruta).getInputStream()) {
 
-                log.info("Compilando plantilla Jasper: {}", ruta);
+                RegistroOperacion.infoConfirmada(log, "Compilando plantilla Jasper: {}", ruta);
 
                 return JasperCompileManager.compileReport(input);
 
             } catch (Exception e) {
-                log.error("ERROR DETALLADO AL CARGAR JRXML:", e);
 
                 throw new IllegalStateException(
                         "No se pudo compilar la plantilla: " + ruta, e
@@ -69,12 +69,6 @@ public class ReporteService {
             return JasperExportManager.exportReportToPdf(print);
 
         } catch (Exception e) {
-
-            log.error(
-                    "Error al generar PDF de la plantilla: {}",
-                    plantilla,
-                    e
-            );
 
             throw new IllegalStateException(
                     "No se pudo generar el reporte: " + plantilla,

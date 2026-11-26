@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.AsignacionDTO;
 import RokerPeru.demo.entities.Asignaciones;
 import RokerPeru.demo.entities.EmpleadosServicio;
@@ -43,7 +44,7 @@ public class AsignacionService {
         Asignaciones asignacion = dto.toEntity(orden, empleado);
         Asignaciones guardada = asignacionesRepository.save(asignacion);
 
-        log.info("Vendedor asignó al empleado {} a la orden #{}", empleado.getNombreEmpleadoServicio(), orden.getIdOrdenServicio());
+        RegistroOperacion.infoConfirmada(log, "Vendedor asignó al empleado {} a la orden #{}", empleado.getNombreEmpleadoServicio(), orden.getIdOrdenServicio());
 
         return AsignacionDTO.Response.fromEntity(guardada);
     }

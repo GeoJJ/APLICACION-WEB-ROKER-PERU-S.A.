@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.ComprobanteDTO;
 import RokerPeru.demo.entities.ClientePresencial;
 import RokerPeru.demo.entities.DetallePedido;
@@ -92,7 +93,9 @@ public class ComprobantePdfService {
         p.put("formaPago", textoODash(pedido.getMetodoPagoPedido()));
         p.put("atendidoPor", pedido.getVendedor() != null ? pedido.getVendedor().getNombreUsuario() : "-");
 
-        return new ComprobantePdf(nombreArchivo(numero), reporteService.generarPdf("comprobante", p, filas));
+        byte[] contenido = reporteService.generarPdf("comprobante", p, filas);
+        RegistroOperacion.infoConfirmada(log, "Comprobante PDF generado: pedido={}, comprobante={}, bytes={}", idPedido, numero, contenido.length);
+        return new ComprobantePdf(nombreArchivo(numero), contenido);
     }
 
     // ÓRDENES DE SERVICIO
@@ -124,7 +127,9 @@ public class ComprobantePdfService {
         p.put("formaPago", textoODash(orden.getMetodoPagoServicio()));
         p.put("atendidoPor", orden.getVendedor() != null ? orden.getVendedor().getNombreUsuario() : "-");
 
-        return new ComprobantePdf(nombreArchivo(numero), reporteService.generarPdf("comprobante", p, filas));
+        byte[] contenido = reporteService.generarPdf("comprobante", p, filas);
+        RegistroOperacion.infoConfirmada(log, "Comprobante PDF generado: ordenServicio={}, comprobante={}, bytes={}", idOrden, numero, contenido.length);
+        return new ComprobantePdf(nombreArchivo(numero), contenido);
     }
     // Parámetros del reporte
 

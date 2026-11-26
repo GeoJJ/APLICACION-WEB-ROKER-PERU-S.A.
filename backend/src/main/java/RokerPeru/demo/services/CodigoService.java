@@ -1,5 +1,7 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
+import lombok.extern.slf4j.Slf4j;
 import RokerPeru.demo.enums.TipoCodigoEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 //Genera los códigos cortos (PRD-0001, PED-0001, SRV-0001, ORD-0001)
 
+@Slf4j
 @Service
 public class CodigoService {
 
@@ -32,6 +35,8 @@ public class CodigoService {
                 + "from " + tipo.getTabla() + " where " + tipo.getColumna() + " ~ '^" + prefijo + "-[0-9]+$'";
         Number ultimo = (Number) entityManager.createNativeQuery(sql).getSingleResult();
 
-        return String.format("%s-%04d", prefijo, ultimo.longValue() + 1);
+        String codigo = String.format("%s-%04d", prefijo, ultimo.longValue() + 1);
+        RegistroOperacion.debugConfirmado(log, "Código generado: tipo={}, código={}", tipo, codigo);
+        return codigo;
     }
 }

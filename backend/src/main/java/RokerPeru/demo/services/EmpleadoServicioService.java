@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.EmpleadoServicioDTO;
 import RokerPeru.demo.entities.EmpleadosServicio;
 import RokerPeru.demo.exception.RecursoNoEncontradoException;
@@ -24,7 +25,7 @@ public class EmpleadoServicioService {
         EmpleadosServicio empleado = dto.toEntity();
         EmpleadosServicio guardado = empleadosRepository.save(empleado);
 
-        log.info("Empleado de servicio creado: {} {}", guardado.getNombreEmpleadoServicio(), guardado.getApellidoEmpleadoServicio());
+        RegistroOperacion.infoConfirmada(log, "Empleado de servicio creado: {} {}", guardado.getNombreEmpleadoServicio(), guardado.getApellidoEmpleadoServicio());
         return EmpleadoServicioDTO.Response.fromEntity(guardado);
     }
 
@@ -50,7 +51,7 @@ public class EmpleadoServicioService {
 
         dto.applyTo(empleado);
 
-        log.info("Empleado de servicio actualizado: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Empleado de servicio actualizado: id={}", id);
         return EmpleadoServicioDTO.Response.fromEntity(empleado);
     }
 
@@ -58,7 +59,7 @@ public class EmpleadoServicioService {
     public void eliminarEmpleadoServicio(Long id) {
         EmpleadosServicio empleado = obtenerEmpleadoServicio(id);
         empleadosRepository.delete(empleado);
-        log.info("Empleado de servicio eliminado: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Empleado de servicio eliminado: id={}", id);
     }
 
     private EmpleadosServicio obtenerEmpleadoServicio(Long id) {

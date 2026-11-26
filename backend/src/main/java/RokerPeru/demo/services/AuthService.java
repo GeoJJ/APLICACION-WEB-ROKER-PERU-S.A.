@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.AuthDTO;
 import RokerPeru.demo.entities.Rol;
 import RokerPeru.demo.entities.Usuario;
@@ -35,7 +36,7 @@ public class AuthService {
     private static final String ROL_CLIENTE = "CLIENTE";
 
     public AuthDTO.Response login(AuthDTO.LoginRequest request) {
-        log.info("Intentando iniciar sesión para el usuario: {}", request.correoUsuario());
+        RegistroOperacion.infoConfirmada(log, "Intentando iniciar sesión para el usuario: {}", request.correoUsuario());
         // 1. El AuthenticationManager verifica que el correo y password (desencriptado) coincidan en la BD.
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.correoUsuario(), request.passwordUsuario())
@@ -51,14 +52,14 @@ public class AuthService {
                         "idUsuario", usuario.getIdUsuario(),
                         "ver", usuario.getVersionSesion()),
                 usuario);
-        log.info("Inicio de sesión exitoso para el usuario: {} con rol: {}", usuario.getCorreoUsuario(), usuario.getRol().getNombreRol());
+        RegistroOperacion.infoConfirmada(log, "Inicio de sesión exitoso: idUsuario={}, rol={}", usuario.getIdUsuario(), usuario.getRol().getNombreRol());
         // 4. Devolvemos el token envuelto en el DTO
         return new AuthDTO.Response(token);
     }
 
     @Transactional
     public void register(AuthDTO.RegisterRequest request) {
-        log.info("Registrando nuevo cliente: {}", request.correoUsuario());
+        RegistroOperacion.infoConfirmada(log, "Registrando nuevo cliente: {}", request.correoUsuario());
 
         // DNI (8) para NATURAL, RUC (11) para JURIDICA
         int largoEsperado = request.tipoPersonaUsuario().equals("NATURAL") ? 8 : 11;
@@ -91,7 +92,7 @@ public class AuthService {
         usuario.setRol(rolCliente);
 
         usuarioRepository.save(usuario);
-        log.info("Cliente registrado correctamente: {}", usuario.getCorreoUsuario());
+        RegistroOperacion.infoConfirmada(log, "Cliente registrado correctamente: {}", usuario.getCorreoUsuario());
     }
 
     // Cierra la sesión: sube la versión de sesión del usuario y todos sus tokens anteriores dejan de valer.
@@ -112,11 +113,11 @@ public class AuthService {
             if (usuario != null && jwtService.isTokenValid(token, usuario)) {
                 usuario.setVersionSesion(usuario.getVersionSesion() + 1);
                 usuarioRepository.save(usuario);
-                log.info("Sesión cerrada correctamente para el usuario: {}", correo);
+                RegistroOperacion.infoConfirmada(log, "Sesión cerrada correctamente para el usuario: {}", correo);
             }
         } catch (JwtException | IllegalArgumentException e) {
             // Un token vencido o inválido ya no da acceso: no hay nada que cerrar
-            log.info("Logout ignorado: el token ya no es válido ({})", e.getMessage());
+            RegistroOperacion.infoConfirmada(log, "Logout ignorado: el token ya no es válido ({})", e.getMessage());
         }
     }
 }

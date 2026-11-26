@@ -1,5 +1,6 @@
 package RokerPeru.demo.config;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Pedidos;
 import RokerPeru.demo.entities.Producto;
@@ -55,6 +56,6 @@ public class CodigosInicialesRunner implements ApplicationRunner {
         for (T registro : pendientes) {
             setter.accept(registro, codigoService.generar(tipo));
         }
-        log.info("Códigos {} asignados a {} registros existentes", tipo.getPrefijo(), pendientes.size());
+        RegistroOperacion.infoConfirmada(log, "Códigos {} asignados a {} registros existentes", tipo.getPrefijo(), pendientes.size());
     }
 }

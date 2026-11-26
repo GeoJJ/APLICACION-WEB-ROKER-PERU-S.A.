@@ -1,5 +1,7 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
+import lombok.extern.slf4j.Slf4j;
 import RokerPeru.demo.entities.Usuario;
 import RokerPeru.demo.enums.TipoComprobanteEnum;
 import RokerPeru.demo.repository.OrdenesServicioRepository;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ComprobanteService {
@@ -60,6 +63,8 @@ public class ComprobanteService {
                 : pedidosRepository.ultimoNumeroComprobante(serie);
 
         int siguiente = (ultimo == null ? 0 : Integer.parseInt(ultimo)) + 1;
-        return new NumeroComprobante(serie, String.format("%08d", siguiente));
+        NumeroComprobante numero = new NumeroComprobante(serie, String.format("%08d", siguiente));
+        RegistroOperacion.infoConfirmada(log, "Comprobante emitido: serie={}, número={}", numero.serie(), numero.numero());
+        return numero;
     }
 }

@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.entities.Producto;
 import RokerPeru.demo.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
@@ -121,7 +122,7 @@ public class ReporteExcelService {
             configurarImpresion(hoja);
             wb.write(out);
             String nombre = "inventario-" + ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".xlsx";
-            log.info("AUDITORÍA: registro de inventario generado ({} productos)", productos.size());
+            RegistroOperacion.infoConfirmada(log, "AUDITORÍA: registro de inventario generado ({} productos)", productos.size());
             return new ReporteExcel(nombre, out.toByteArray());
         } catch (IOException e) {
             throw new IllegalStateException("Error al generar el reporte de inventario: " + e.getMessage(), e);

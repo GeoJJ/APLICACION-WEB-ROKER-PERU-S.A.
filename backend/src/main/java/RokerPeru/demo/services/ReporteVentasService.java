@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.VentaReporteDTO;
 import RokerPeru.demo.entities.OrdenesServicio;
 import RokerPeru.demo.entities.Pedidos;
@@ -139,7 +140,7 @@ public class ReporteVentasService {
         p.put("totalServicios", totalServicios);
         p.put("totalGeneral", totalProductos.add(totalServicios));
 
-        log.info("AUDITORÍA: registro de ventas generado ({}, {}): {} comprobantes", periodo, filtro, detalle.size());
+        RegistroOperacion.infoConfirmada(log, "AUDITORÍA: registro de ventas generado ({}, {}): {} comprobantes", periodo, filtro, detalle.size());
 
         String nombre = "registro-ventas-" + anio + (mes == null ? "" : "-" + String.format("%02d", mes)) + ".pdf";
         return new ReportePdf(nombre, reporteService.generarPdf("registro_ventas", p, detalle));

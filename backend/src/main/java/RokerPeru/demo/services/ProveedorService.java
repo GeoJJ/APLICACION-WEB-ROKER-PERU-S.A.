@@ -1,5 +1,6 @@
 package RokerPeru.demo.services;
 
+import RokerPeru.demo.logging.RegistroOperacion;
 import RokerPeru.demo.dto.ProveedorDTO;
 import RokerPeru.demo.entities.Proveedores;
 import RokerPeru.demo.exception.ConflictoException;
@@ -27,7 +28,7 @@ public class ProveedorService {
         }
 
         Proveedores guardado = proveedoresRepository.save(dto.toEntity());
-        log.info("Proveedor creado: id={}, ruc={}", guardado.getIdProveedor(), dto.rucProveedor());
+        RegistroOperacion.infoConfirmada(log, "Proveedor creado: id={}, ruc={}", guardado.getIdProveedor(), dto.rucProveedor());
 
         return ProveedorDTO.Response.fromEntity(guardado);
     }
@@ -57,7 +58,7 @@ public class ProveedorService {
         }
 
         dto.applyTo(proveedor);
-        log.info("Proveedor actualizado: id={}, ruc={}", id, dto.rucProveedor());
+        RegistroOperacion.infoConfirmada(log, "Proveedor actualizado: id={}, ruc={}", id, dto.rucProveedor());
 
         return ProveedorDTO.Response.fromEntity(proveedor);
     }
@@ -66,7 +67,7 @@ public class ProveedorService {
     public void eliminarProveedor(Long id) {
         Proveedores proveedor = obtenerProveedor(id);
         proveedoresRepository.delete(proveedor);
-        log.info("Proveedor eliminado: id={}", id);
+        RegistroOperacion.infoConfirmada(log, "Proveedor eliminado: id={}", id);
     }
 
     // Métodos privados
