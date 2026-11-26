@@ -26,10 +26,6 @@ export function fetchClientServiceOrders() {
     return api('/cliente/ordenes-servicio');
 }
 
-export function fetchClientServiceOrderById(idOrden) {
-    return api(`/cliente/ordenes-servicio/${idOrden}`);
-}
-
 export function createClientServiceOrder(payload) {
     return api('/cliente/ordenes-servicio', {
         method: 'POST',

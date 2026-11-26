@@ -8,7 +8,6 @@ import RokerPeru.demo.entities.Pedidos;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface PedidosRepository extends JpaRepository<Pedidos, Long> {
     boolean existsByIdPedidoAndDelivery_IdUsuario(Long idPedido, Long idDelivery);
