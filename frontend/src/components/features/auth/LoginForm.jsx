@@ -30,7 +30,7 @@ export default function LoginForm() {
     };
 
     return (
-        <Card className="w-full max-w-md p-8 shadow-lg">
+        <Card className="w-full max-w-xl p-8 shadow-lg sm:p-10">
             <div className="mb-6 text-center">
                 <h2 className="text-2xl font-bold text-gray-900">Bienvenido de nuevo</h2>
                 <p className="mt-2 text-sm text-gray-500">
