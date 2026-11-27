@@ -1,8 +1,8 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import logo from "@/assets/logos/logo.png";
-import desinfeccion from "@/assets/auth/desinfeccion_espacios.png";
-import limpieza from "@/assets/auth/servicio_limpieza.png";
+import desinfeccion from "@/assets/auth/imagen-login.png";
+import limpieza from "@/assets/auth/imagen-registro.png";
 
 export default function AuthLayout() {
     const registro = useLocation().pathname.replace(/\/$/, "") === "/register";
