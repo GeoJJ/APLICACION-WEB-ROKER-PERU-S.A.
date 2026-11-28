@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Package, ShoppingCart, ShieldCheck, UserCog, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Users, Package, ShoppingCart, ShieldCheck, UserCog, Plus, Pencil, Trash2, UserX, UserCheck } from 'lucide-react';
 import { useBackOffice } from '@/components/layout/backoffice/BackOfficeProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLES } from '@/lib/auth';
@@ -14,7 +14,9 @@ import Select from '@/components/ui/Select';
 const configs = {
     workers: {
         title: 'Gestión de Trabajadores', singular: 'trabajador', icon: Users, canDelete: true,
-        columns: ['nombre', 'email', 'telefono', 'idRol'],
+        // Los trabajadores no se borran, se desactivan para conservar su historial
+        softDelete: true,
+        columns: ['nombre', 'email', 'telefono', 'idRol', 'activo'],
         fields: [
             { key: 'nombre', label: 'Nombre completo' },
             { key: 'email', label: 'Correo electrónico', type: 'email' },
@@ -83,7 +85,7 @@ const configs = {
     },
 };
 
-const COLUMN_LABELS = { nombre: 'Nombre', apellido: 'Apellido', telefono: 'Teléfono', email: 'Correo', idRol: 'Rol', panel: 'Acceso al panel', codigo: 'Código', producto: 'Producto', categoria: 'Categoría', precio: 'Precio', umbral: 'Umbral de stock', estado: 'Estado', personal: 'Personal requerido', ruc: 'RUC' };
+const COLUMN_LABELS = { nombre: 'Nombre', apellido: 'Apellido', telefono: 'Teléfono', email: 'Correo', idRol: 'Rol', panel: 'Acceso al panel', codigo: 'Código', producto: 'Producto', categoria: 'Categoría', precio: 'Precio', umbral: 'Umbral de stock', estado: 'Estado', activo: 'Estado', personal: 'Personal requerido', ruc: 'RUC' };
 const roleLabel = name => ROLES.find(r => r.code === name)?.label ?? name;
 const itemName = r => r.nombre ?? r.producto ?? '';
 const extractHours = val => {
@@ -93,11 +95,17 @@ const extractHours = val => {
 };
 
 export default function ManagementPage({ kind, readonly = false }) {
-    const { data, save, remove } = useBackOffice();
+    const { data, save, remove, reactivate } = useBackOffice();
     const { user } = useAuth();
     const config = configs[kind];
+
+    // Verbo y texto de espera que se muestran según si se borra o se desactiva
+    const deleteVerb = config.softDelete ? 'Desactivar' : 'Eliminar';
+    const deletingText = config.softDelete ? 'Desactivando…' : 'Eliminando…';
+
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('');
+    const [showInactive, setShowInactive] = useState(true);
     const [draft, setDraft] = useState(null);
     const [toDelete, setToDelete] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -105,6 +113,9 @@ export default function ManagementPage({ kind, readonly = false }) {
     const visibleFields = draft ? config.fields.filter(f => !f.onlyNew || !draft.id) : [];
 
     const categoryList = kind === 'products' ? PRODUCT_CATEGORIES : SERVICE_CATEGORIES;
+
+    // Un registro está desactivado solo si el backend lo manda con activo=false
+    const isInactive = r => config.softDelete && r.activo === false;
 
     const getSelectOptions = type => {
         if (type === 'category') {
@@ -133,28 +144,40 @@ export default function ManagementPage({ kind, readonly = false }) {
     const cell = (key, r) => key === 'idRol' ? roleLabel(r.nombreRol)
         : key === 'codigo' ? <span className="font-normal text-gray-700">{r.codigo || '-'}</span>
             : key === 'categoria' ? categoryLabel(categoryList, r.categoria)
-        : key === 'estado' ? <Badge variant={r.estado === 'Activo' ? 'success' : 'warning'}>{r.estado}</Badge>
-            : key === 'panel' ? (ROLES.some(x => x.code === r.nombre) ? <Badge variant="success">Reconocido</Badge> : <Badge variant="warning">Sin panel</Badge>)
-                : key === 'precio' ? money(r.precio)
-                    : r[key];
+                : key === 'estado' ? <Badge variant={r.estado === 'Activo' ? 'success' : 'warning'}>{r.estado}</Badge>
+                    : key === 'activo' ? <Badge variant={isInactive(r) ? 'warning' : 'success'}>{isInactive(r) ? 'Desactivado' : 'Activo'}</Badge>
+                        : key === 'panel' ? (ROLES.some(x => x.code === r.nombre) ? <Badge variant="success">Reconocido</Badge> : <Badge variant="warning">Sin panel</Badge>)
+                            : key === 'precio' ? money(r.precio)
+                                : r[key];
 
     const columns = config.columns.map(key => ({ key, label: COLUMN_LABELS[key], render: r => cell(key, r) }));
     if (kind === 'products') columns.push({ key: 'stock', label: 'Stock', render: r => <>{r.stock}<p className="text-xs text-gray-500">{stockState(r)}</p></> });
     if (!readonly) columns.push({
-        key: 'action', label: 'Acción', render: r => <div className="flex justify-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setDraft({
-                ...r,
-                ...(kind === 'services' ? { duracion: extractHours(r.duracion) } : {}),
-                ...(kind === 'products' || kind === 'services' ? { categoria: categoryValue(categoryList, r.categoria) } : {}),
-            })}><Pencil size={15} className="mr-2" />Editar</Button>
-            {config.canDelete && r.email !== user?.email && <button type="button" onClick={() => setToDelete(r)} aria-label={`Eliminar ${itemName(r)}`}
-                className="inline-flex cursor-pointer items-center rounded-xl border-2 border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"><Trash2 size={15} /></button>}
-        </div>,
+        key: 'action', label: 'Acción', render: r => isInactive(r)
+            // Trabajador desactivado: solo se puede volver a activar
+            ? <div className="flex justify-center gap-2">
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => handleReactivate(r)}>
+                    <UserCheck size={15} className="mr-2" />Reactivar
+                </Button>
+            </div>
+            : <div className="flex justify-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setDraft({
+                    ...r,
+                    ...(kind === 'services' ? { duracion: extractHours(r.duracion) } : {}),
+                    ...(kind === 'products' || kind === 'services' ? { categoria: categoryValue(categoryList, r.categoria) } : {}),
+                })}><Pencil size={15} className="mr-2" />Editar</Button>
+                {config.canDelete && r.email !== user?.email && <button type="button" onClick={() => setToDelete(r)} aria-label={`${deleteVerb} ${itemName(r)}`} title={deleteVerb}
+                    className="inline-flex cursor-pointer items-center rounded-xl border-2 border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white">
+                    {config.softDelete ? <UserX size={15} /> : <Trash2 size={15} />}
+                </button>}
+            </div>,
     });
 
     const rows = data[kind].filter(r =>
         Object.values(r).join(' ').toLowerCase().includes(search.toLowerCase()) &&
-        (filter === '' || !filters || filters.test(r, filter))
+        (filter === '' || !filters || filters.test(r, filter)) &&
+        // Los desactivados solo se ven si se marca "Mostrar desactivados"
+        (!config.softDelete || showInactive || !isInactive(r))
     );
 
     const newRecord = () => setDraft(kind === 'products' ? { estado: 'Activo', stock: 0 } : {});
@@ -180,6 +203,13 @@ export default function ManagementPage({ kind, readonly = false }) {
         if (ok) setToDelete(null);
     }
 
+    // Vuelve a activar a un trabajador desactivado
+    async function handleReactivate(r) {
+        setBusy(true);
+        await reactivate(kind, r.id);
+        setBusy(false);
+    }
+
     return <>
         <SectionHeader
             icon={config.icon}
@@ -189,7 +219,7 @@ export default function ManagementPage({ kind, readonly = false }) {
         />
         <Panel>
             {config.note && !readonly && <p className="mb-5 rounded-lg bg-amber-50 p-4 text-sm leading-6 text-amber-800">{config.note}</p>}
-            <div className="mb-6 flex flex-wrap gap-3">
+            <div className="mb-6 flex flex-wrap items-center gap-3">
                 <SearchBox value={search} onChange={setSearch} placeholder={kind === 'products' || kind === 'services' ? `Buscar ${config.singular} por código, nombre o categoría...` : `Buscar ${config.singular}...`} />
                 {filters && (
                     <Select
@@ -200,6 +230,12 @@ export default function ManagementPage({ kind, readonly = false }) {
                         onChange={e => setFilter(e.target.value)}
                         options={filters.options}
                     />
+                )}
+                {config.softDelete && !readonly && (
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" className="h-4 w-4 cursor-pointer" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />
+                        Mostrar desactivados
+                    </label>
                 )}
             </div>
             <DataTable columns={columns} rows={rows} />
@@ -255,12 +291,16 @@ export default function ManagementPage({ kind, readonly = false }) {
             </form>
         </Modal>}
 
-        {toDelete && <Modal title={`Eliminar ${config.singular}`} onClose={() => setToDelete(null)}>
-            <p className="text-sm leading-6 text-gray-600">¿Seguro que quieres eliminar <strong>{itemName(toDelete)}</strong>? Esta acción no se puede deshacer.</p>
+        {toDelete && <Modal title={`${deleteVerb} ${config.singular}`} onClose={() => setToDelete(null)}>
+            {config.softDelete
+                ? <p className="text-sm leading-6 text-gray-600">¿Seguro que quieres desactivar a <strong>{itemName(toDelete)}</strong>? Ya no podrá iniciar sesión, pero se conservará su historial de pedidos, órdenes y comprobantes. Podrás reactivarlo cuando quieras.</p>
+                : <p className="text-sm leading-6 text-gray-600">¿Seguro que quieres eliminar <strong>{itemName(toDelete)}</strong>? Esta acción no se puede deshacer.</p>}
             <div className="mt-6 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setToDelete(null)}>Cancelar</Button>
                 <button type="button" disabled={busy} onClick={confirmDelete}
-                    className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-red-600 px-6 py-2.5 font-semibold text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Eliminando…' : 'Eliminar'}</button>
+                    className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-red-600 px-6 py-2.5 font-semibold text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                    {busy ? deletingText : deleteVerb}
+                </button>
             </div>
         </Modal>}
     </>;

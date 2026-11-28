@@ -82,6 +82,11 @@ export function deleteResource(kind, id) {
     return request(`${ADMIN_RESOURCES[kind].path}/${id}`, { method: 'DELETE' });
 }
 
+// Vuelve a activar un registro desactivado (por ahora solo trabajadores)
+export function reactivateResource(kind, id) {
+    return request(`${ADMIN_RESOURCES[kind].path}/${id}/reactivar`, { method: 'PUT' });
+}
+
 // type: 'ingreso' (suma stock) | 'ajuste' (RESTA stock: el backend lo trata como una salida)
 export function postMovement(type, { productId, cantidad }, role = 'admin') {
     const base = role === 'warehouse' ? '/almacenista' : '/admin';

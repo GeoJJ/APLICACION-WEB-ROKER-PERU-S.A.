@@ -63,6 +63,7 @@ const worker = (u) => ({
   idRol: u.idRol,
   nombreRol: u.nombreRol,
   rol: ROLES.find((r) => r.code === u.nombreRol)?.id || u.nombreRol,
+  activo: u.activo,
   estado: "Sin información",
 });
 const roleRecord = (r) => ({ id: r.idRol, nombre: r.nombreRol });

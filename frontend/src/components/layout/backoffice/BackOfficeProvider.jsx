@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { emptyPanel, loadPanel } from "@/lib/backofficeApi";
 import { useLocation } from 'react-router-dom';
-import { saveResource, deleteResource, postMovement, putDeliveryState } from "@/lib/adminApi";
+import { saveResource, deleteResource, reactivateResource, postMovement, putDeliveryState } from "@/lib/adminApi";
 
 const Context = createContext(null);
 export default function BackOfficeProvider({ children }) {
@@ -69,14 +69,21 @@ export default function BackOfficeProvider({ children }) {
         ? "Registro creado correctamente."
         : "Cambios guardados correctamente.",
     );
+  // Los trabajadores se desactivan (no se borran); el resto de registros sí se eliminan
   const remove = (kind, id) =>
     mutate(
       () => deleteResource(kind, id),
-      "Registro eliminado.",
+      kind === "workers" ? "Trabajador desactivado." : "Registro eliminado.",
       (e) =>
         e.message.includes("restricción de datos")
           ? "No se puede eliminar: el registro está en uso (pedidos, movimientos u otros datos asociados)."
           : e.message,
+    );
+  // Vuelve a activar un trabajador desactivado
+  const reactivate = (kind, id) =>
+    mutate(
+      () => reactivateResource(kind, id),
+      "Trabajador reactivado correctamente.",
     );
     const registerMovement = (type, form) =>
         mutate(
@@ -108,6 +115,7 @@ export default function BackOfficeProvider({ children }) {
         update,
         save,
         remove,
+        reactivate,
         registerMovement,
         saveDelivery,
         readOnly: !["admin", "warehouse", "delivery"].includes(roleId),
