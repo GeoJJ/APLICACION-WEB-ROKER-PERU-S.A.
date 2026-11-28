@@ -99,7 +99,7 @@ class UsuarioServiceTest {
     }
 
     // ---------- listar / buscar ----------
-    // Verifica que se retorne la lista completa de usuarios ordenada por nombre.
+    // Verifica que se retorne la lista de usuarios activos ordenada por nombre.
     @Test
     void listarUsuarios_retornaTodosLosUsuarios() {
         when(usuarioRepository.findAllByOrderByNombreUsuarioAsc())
@@ -109,7 +109,7 @@ class UsuarioServiceTest {
 
         assertThat(resultado).hasSize(2);
     }
-    // Comprueba que si no existen usuarios registrados, se retorna una lista vacía.
+    // Comprueba que si no existen usuarios activos, se retorna una lista vacía.
     @Test
     void listarUsuarios_cuandoNoHayUsuarios_retornaListaVacia() {
         when(usuarioRepository.findAllByOrderByNombreUsuarioAsc()).thenReturn(List.of());
@@ -200,17 +200,21 @@ class UsuarioServiceTest {
     }
 
     // ---------- eliminarUsuario ----------
-    // Verifica que un usuario existente sea eliminado correctamente de la base de datos.
+    // Verifica que al eliminar un usuario existente solo se desactiva y no se borra de la base de datos.
     @Test
-    void eliminarUsuario_cuandoExiste_loElimina() {
+    void eliminarUsuario_cuandoExiste_loDesactivaSinBorrarlo() {
         Usuario usuario = nuevoUsuarioMock();
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
 
         usuarioService.eliminarUsuario(1L);
 
-        verify(usuarioRepository).delete(usuario);
+        // Queda desactivado y con la sesión invalidada (la versión sube de 0 a 1)
+        verify(usuario).setActivo(false);
+        verify(usuario).setVersionSesion(1);
+        verify(usuarioRepository).save(usuario);
+        verify(usuarioRepository, never()).delete(any());
     }
-    // Valida que al intentar eliminar un usuario con un ID inexistente se lance RecursoNoEncontradoException
+    // Valida que al desactivar un ID inexistente se lance RecursoNoEncontradoException y no se guarde nada.
     @Test
     void eliminarUsuario_cuandoNoExiste_lanzaRecursoNoEncontrado() {
         when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
@@ -218,19 +222,30 @@ class UsuarioServiceTest {
         assertThatThrownBy(() -> usuarioService.eliminarUsuario(99L))
                 .isInstanceOf(RecursoNoEncontradoException.class);
 
-        verify(usuarioRepository, never()).delete(any());
+        verify(usuarioRepository, never()).save(any());
     }
 
     // ---------- repartidores ----------
-    // Comprueba que se consulten correctamente los usuarios que tienen el rol de repartidor.
+    // Comprueba que se consulten correctamente los usuarios activos que tienen el rol de repartidor.
     @Test
     void listarRepartidoresDisponibles_consultaPorRolRepartidor() {
-        when(usuarioRepository.findByRol_NombreRolIgnoreCase("REPARTIDOR"))
+        when(usuarioRepository.findByRol_NombreRolIgnoreCaseAndActivoTrue("REPARTIDOR"))
                 .thenReturn(List.of(nuevoUsuarioMock()));
 
         List<UsuarioDTO.Response> resultado = usuarioService.listarRepartidoresDisponibles();
 
         assertThat(resultado).hasSize(1);
-        verify(usuarioRepository).findByRol_NombreRolIgnoreCase("REPARTIDOR");
+        verify(usuarioRepository).findByRol_NombreRolIgnoreCaseAndActivoTrue("REPARTIDOR");
+    }
+    // Verifica que al reactivar un usuario existente queda activo de nuevo
+    @Test
+    void reactivarUsuario_cuandoExiste_loDejaActivo() {
+        Usuario usuario = nuevoUsuarioMock();
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+
+        usuarioService.reactivarUsuario(1L);
+
+        verify(usuario).setActivo(true);
+        verify(usuarioRepository).save(usuario);
     }
 }

@@ -6,46 +6,59 @@ Este directorio contiene los archivos necesarios para desplegar la aplicación w
 
 La implementación integra los dos componentes principales del sistema:
 
-- **Frontend:** aplicación desarrollada con React y Vite, compilada y desplegada bajo el contexto raíz (`ROOT`).
-- **Backend:** API REST desarrollada con Java y Spring Boot, empaquetada en formato WAR y desplegada como `api.war`.
+* **Frontend:** aplicación desarrollada con React y Vite, compilada y desplegada bajo el contexto raíz (`ROOT`).
+
+* **Backend:** API REST desarrollada con Java y Spring Boot, empaquetada en formato WAR y desplegada como `api.war`.
 
 La aplicación utiliza PostgreSQL como sistema gestor de base de datos.
 
 ## 2. Estructura de los archivos
 
-```text
+```
 deployment/
 ├── README.md
 ├── api.war
 └── ROOT/
     ├── index.html
     └── assets/
+
 ```
 
-- `api.war`: archivo empaquetado del backend.
-- `ROOT/`: archivos compilados del frontend.
-- `README.md`: instrucciones de instalación y despliegue.
+* `api.war`: archivo empaquetado del backend.
+
+* `ROOT/`: archivos compilados del frontend.
+
+* `README.md`: instrucciones de instalación y despliegue.
 
 ## 3. Requisitos previos
 
 Antes de iniciar el despliegue, se requiere:
 
-- Java JDK 24.
-- Apache Tomcat 11 (versión ZIP de 64 bits).
-- PostgreSQL instalado y configurado.
-- Base de datos `roker_bd` previamente creada y preparada.
-- Archivos `ROOT/` y `api.war` incluidos en este directorio.
+* Java JDK 24.
+
+* Apache Tomcat 11 (versión ZIP de 64 bits).
+
+* PostgreSQL instalado y configurado.
+
+* Base de datos `roker_bd` previamente creada y preparada.
+
+* Cuenta de Gmail con **verificación en 2 pasos** activada y una **contraseña de aplicación** de 16 caracteres (para el envío automático de comprobantes en PDF).
+
+* Archivos `ROOT/` y `api.war` incluidos en este directorio.
 
 ## 4. Procedimiento de despliegue
 
 ### 4.1. Descargar e instalar Apache Tomcat
 
 1. Descargar Apache Tomcat 11 desde su [página oficial](https://tomcat.apache.org/download-11.cgi).
+
 2. Seleccionar la distribución ZIP de 64 bits para Windows.
+
 3. Descomprimir el archivo en una ubicación de fácil acceso, por ejemplo:
 
-```text
+```
 C:\tomcat11
+
 ```
 
 Se recomienda utilizar la distribución ZIP para gestionar el servidor mediante sus scripts de ejecución.
@@ -54,25 +67,28 @@ Se recomienda utilizar la distribución ZIP para gestionar el servidor mediante 
 
 Ingresar al directorio:
 
-```text
+```
 C:\tomcat11\webapps
+
 ```
 
 Eliminar la aplicación ROOT predeterminada de Tomcat y las versiones anteriores de la aplicación, si existen.
 
 Copiar los siguientes elementos desde este directorio de despliegue:
 
-```text
+```
 ROOT/
 api.war
+
 ```
 
 La estructura final debe quedar así:
 
-```text
+```
 C:\tomcat11\webapps\
 ├── ROOT\
 └── api.war
+
 ```
 
 Tomcat desplegará el frontend en el contexto raíz y el backend bajo el contexto `/api`.
@@ -81,43 +97,58 @@ Tomcat desplegará el frontend en el contexto raíz y el backend bajo el context
 
 Ingresar al directorio:
 
-```text
+```
 C:\tomcat11\bin
+
 ```
 
 Crear un archivo denominado `setenv.bat` y configurar las variables de entorno necesarias.
 
 Ejemplo de configuración:
 
-```bat
+```
 set "JAVA_HOME=C:\Program Files\Java\jdk-25.0.4"
 set "DB_PASSWORD=TU_CONTRASEÑA"
 set "JWT_SECRET=CLAVE_JWT"
+set "MAIL_USERNAME=TU_CORREO@gmail.com"
+set "MAIL_PASSWORD=TU_CONTRASEÑA_DE_APLICACION"
+
 ```
 
 **Importante:**
 
-- Verificar que `JAVA_HOME` corresponda a la ubicación real del JDK instalado.
-- Reemplazar `TU_CONTRASEÑA` por la contraseña correspondiente al usuario de PostgreSQL.
-- JWT_SECRET: clave secreta utilizada para la generación y validación de tokens JWT.
-- Configurar las demás variables requeridas por el backend, si corresponde.
-- No compartir ni subir el archivo `setenv.bat` con credenciales reales al repositorio.
+* Verificar que `JAVA_HOME` corresponda a la ubicación real del JDK instalado.
+
+* Reemplazar `TU_CONTRASEÑA` por la contraseña correspondiente al usuario de PostgreSQL.
+
+* `JWT_SECRET`: clave secreta utilizada para la generación y validación de tokens JWT.
+
+* `MAIL_USERNAME`: dirección de Gmail desde la cual el sistema enviará los correos con comprobantes.
+
+* `MAIL_PASSWORD`: **contraseña de aplicación** de 16 letras (sin espacios) generada desde la cuenta de Google con la verificación en 2 pasos activada (`myaccount.google.com/apppasswords`). La contraseña habitual de Gmail no funciona.
+
+* Configurar las demás variables requeridas por el backend, si corresponde.
+
+* No compartir ni subir el archivo `setenv.bat` con credenciales reales al repositorio.
 
 ### 4.4. Iniciar el servidor Apache Tomcat
 
 Para iniciar el servidor y visualizar los registros de ejecución, se utiliza el script `catalina.bat` en modo consola.
 
 1. Abrir el Símbolo del sistema (CMD).
+
 2. Acceder al directorio `bin` de Apache Tomcat mediante el siguiente comando:
 
-```cmd
+```
 cd "C:\Program Files\Apache Software Foundation\Tomcat 11.0\bin"
+
 ```
 
 3. Ejecutar el servidor mediante:
 
-```cmd
+```
 catalina.bat run
+
 ```
 
 4. Esperar a que Tomcat complete el proceso de inicio y despliegue de las aplicaciones.
@@ -138,8 +169,9 @@ Una vez iniciado correctamente el servidor, abrir el navegador e ingresar a:
 
 **Aplicación web (Frontend):**
 
-```text
+```
 http://localhost:8080/
+
 ```
 
 Para verificar el backend, utilizar un endpoint existente de la API, ya que la ruta raíz `/api/` no necesariamente devuelve una respuesta válida.
@@ -148,7 +180,7 @@ Para verificar el backend, utilizar un endpoint existente de la API, ya que la r
 
 La implementación utiliza Apache Tomcat como servidor de aplicaciones, alojando tanto el frontend compilado como el backend empaquetado en formato WAR.
 
-```text
+```
               USUARIO
                  |
                  v
@@ -170,15 +202,23 @@ La implementación utiliza Apache Tomcat como servidor de aplicaciones, alojando
           |          roker_bd
           |             |
           +-------------+
+
 ```
 
 ## 6. Verificación del despliegue
 
 Para comprobar la correcta implementación se realizaron las siguientes verificaciones:
 
-- Inicio del servidor Apache Tomcat 11.
-- Despliegue del frontend mediante el contexto raíz `ROOT`.
-- Despliegue del backend mediante el archivo `api.war`.
-- Acceso a la aplicación desde el navegador.
-- Verificación del funcionamiento de los servicios del backend.
-- Comprobación de la conexión con la base de datos PostgreSQL.
+* Inicio del servidor Apache Tomcat 11.
+
+* Despliegue del frontend mediante el contexto raíz `ROOT`.
+
+* Despliegue del backend mediante el archivo `api.war`.
+
+* Acceso a la aplicación desde el navegador.
+
+* Verificación del funcionamiento de los servicios del backend.
+
+* Comprobación de la conexión con la base de datos PostgreSQL.
+
+* Comprobación del envío de correos con comprobantes en PDF mediante Gmail SMTP.

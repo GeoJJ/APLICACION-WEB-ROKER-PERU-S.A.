@@ -61,6 +61,10 @@ public class Usuario implements UserDetails{
     @OneToMany(mappedBy = "vendedor")
     private List<Pedidos> pedidosComoVendedor = new ArrayList<>();
 
+    // Indica si el usuario está activo; en vez de borrarlo se desactiva para conservar su historial
+    @Column(name = "activo", nullable = false, columnDefinition = "boolean default true")
+    private boolean activo = true;
+
     // metodos de seguridad de Spring Security junto JWT
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -92,6 +96,7 @@ public class Usuario implements UserDetails{
     @Override
     public boolean isCredentialsNonExpired() { return true; }
 
+    // Spring Security rechaza el login si el usuario está desactivado
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return activo; }
 }

@@ -25,20 +25,30 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByNumeroDocumentoUsuarioAndIdUsuarioNot(String numeroDocumentoUsuario, Long idUsuario);
 
-    @EntityGraph(attributePaths = "rol")
-    List<Usuario> findAllByOrderByNombreUsuarioAsc();
-
-    @Query("""
-            SELECT u FROM Usuario u JOIN FETCH u.rol
-            WHERE LOWER(u.nombreUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))
-               OR LOWER(u.correoUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))
-               OR u.numeroDocumentoUsuario LIKE CONCAT('%', :texto, '%')
-            ORDER BY u.nombreUsuario
-            """)
-    List<Usuario> buscarUsuario(@Param("texto") String texto);
-
     boolean existsByRol_IdRol(Long idRol);
 
     @EntityGraph(attributePaths = "rol")
     List<Usuario> findByRol_NombreRolIgnoreCase(String nombreRol);
+
+    // Solo lista los usuarios activos
+    @EntityGraph(attributePaths = "rol")
+    List<Usuario> findByActivoTrueOrderByNombreUsuarioAsc();
+
+    // Solo repartidores activos, para que no se asigne uno desactivado
+    @EntityGraph(attributePaths = "rol")
+    List<Usuario> findByRol_NombreRolIgnoreCaseAndActivoTrue(String nombreRol);
+
+    // Lista a todos los usuarios, activos y desactivados
+    @EntityGraph(attributePaths = "rol")
+    List<Usuario> findAllByOrderByNombreUsuarioAsc();
+
+    // Busca entre todos los usuarios
+    @Query("""
+        SELECT u FROM Usuario u JOIN FETCH u.rol
+        WHERE LOWER(u.nombreUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))
+           OR LOWER(u.correoUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))
+           OR u.numeroDocumentoUsuario LIKE CONCAT('%', :texto, '%')
+        ORDER BY u.nombreUsuario
+        """)
+    List<Usuario> buscarUsuario(@Param("texto") String texto);
 }

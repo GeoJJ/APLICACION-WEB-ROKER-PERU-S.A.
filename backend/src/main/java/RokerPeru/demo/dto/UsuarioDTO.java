@@ -85,7 +85,9 @@ public final class UsuarioDTO {
             String telefonoUsuario,
             String direccionUsuario,
             Long idRol,
-            String nombreRol
+            String nombreRol,
+            // Indica si el usuario está activo (false = desactivado)
+            boolean activo
     ) {
         public static Response fromEntity(Usuario u) {
             return new Response(
@@ -97,7 +99,8 @@ public final class UsuarioDTO {
                     u.getTelefonoUsuario(),
                     u.getDireccionUsuario(),
                     u.getRol().getIdRol(),
-                    u.getRol().getNombreRol()
+                    u.getRol().getNombreRol(),
+                    u.isActivo()
             );
         }
     }

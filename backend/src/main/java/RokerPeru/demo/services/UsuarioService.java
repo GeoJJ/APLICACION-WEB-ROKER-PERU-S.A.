@@ -44,8 +44,7 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public List<UsuarioDTO.Response> listarUsuarios() {
-        return usuarioRepository.findAllByOrderByNombreUsuarioAsc()
-                .stream()
+        return usuarioRepository.findAllByOrderByNombreUsuarioAsc().stream()
                 .map(UsuarioDTO.Response::fromEntity)
                 .toList();
     }
@@ -77,23 +76,36 @@ public class UsuarioService {
     @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = obtenerUsuario(id);
-        // TODO: validar aquí que el usuario no tenga pedidos ni órdenes asociadas
-        usuarioRepository.delete(usuario);
-        RegistroOperacion.infoConfirmada(log, "Usuario eliminado: id={}", id);
+        // En vez de borrarlo, se desactiva para no perder sus pedidos, órdenes y comprobantes
+        usuario.setActivo(false);
+        // Se sube la versión de sesión para que su token actual deje de valer al instante
+        usuario.setVersionSesion(usuario.getVersionSesion() + 1);
+        usuarioRepository.save(usuario);
+        RegistroOperacion.infoConfirmada(log, "Usuario desactivado: id={}", id);
     }
 
     @Transactional(readOnly = true)
     public List<UsuarioDTO.Response> listarRepartidoresDisponibles() {
         // Llamamos al método del repositorio que acabamos de crear
-        List<Usuario> repartidores = usuarioRepository.findByRol_NombreRolIgnoreCase("REPARTIDOR");
-
+        List<Usuario> repartidores = usuarioRepository.findByRol_NombreRolIgnoreCaseAndActivoTrue("REPARTIDOR");
         // Mapeamos a DTO para enviar solo ID y Nombre al frontend (seguridad y limpieza)
         return repartidores.stream()
                 .map(UsuarioDTO.Response::fromEntity)
                 .toList();
     }
-    // Métodos privados
 
+    @Transactional
+    public void reactivarUsuario(Long id) {
+        Usuario usuario = obtenerUsuario(id);
+
+        // Vuelve a estar activo y puede iniciar sesión de nuevo
+        usuario.setActivo(true);
+
+        usuarioRepository.save(usuario);
+        RegistroOperacion.infoConfirmada(log, "Usuario reactivado: id={}", id);
+    }
+
+    // Métodos privados
     private void validarDuplicados(String correo, String documento, Long idIgnorado) {
         boolean correoExiste = (idIgnorado == null)
                 ? usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo)

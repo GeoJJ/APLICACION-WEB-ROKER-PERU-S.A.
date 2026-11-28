@@ -73,6 +73,14 @@ class OrdenServicioServiceTest {
     @Mock
     private CodigoService codigoService;
 
+    // Mock del servicio de correo para que el test no envíe correos reales
+    @Mock
+    private EmailService emailService;
+
+    // Mock del generador de PDF para que el test no genere PDFs reales
+    @Mock
+    private ComprobantePdfService comprobantePdfService;
+
     @InjectMocks
 
     private OrdenServicioService ordenServicioService;

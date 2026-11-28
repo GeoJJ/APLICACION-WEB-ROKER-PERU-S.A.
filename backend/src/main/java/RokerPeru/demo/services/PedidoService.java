@@ -37,6 +37,8 @@ public class PedidoService {
     private final ComprobanteService comprobanteService;
     private final CodigoService codigoService;
     private final ClientePresencialRepository clientePresencialRepository;
+    private final EmailService emailService;
+    private final ComprobantePdfService comprobantePdfService;
 
     // Crear un nuevo pedido del cliente
     @Transactional
@@ -123,6 +125,18 @@ public class PedidoService {
         // Guardar y retornar la vista COMPLETA para el vendedor
         Pedidos pedidoActualizado = pedidosRepository.save(pedido);
         RegistroOperacion.infoConfirmada(log, "Vendedor {} confirmó el pedido #{} y lo asignó al repartidor {}", vendedor.getNombreUsuario(), idPedido, delivery.getNombreUsuario());
+
+        // Solo se envía correo si el pedido es de un usuario registrado
+        Usuario cliente = pedidoActualizado.getCliente();
+        if (cliente != null) {
+            // Se envía al cliente el aviso de aprobación con su PDF adjunto
+            emailService.enviarComprobante(
+                    cliente.getCorreoUsuario(),
+                    cliente.getNombreUsuario(),
+                    "pedido",
+                    pedidoActualizado.getSerieComprobantePedido() + "-" + pedidoActualizado.getNumeroComprobantePedido(),
+                    comprobantePdfService.generarDePedido(pedidoActualizado.getIdPedido()));
+        }
 
         return PedidoDTO.ResponseVendedor.fromEntity(pedidoActualizado);
     }

@@ -52,4 +52,11 @@ public class AdminUsuarioController {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build();
     }
+
+    // PUT /admin/usuarios/{id}/reactivar
+    @PutMapping("/{id}/reactivar")
+    public ResponseEntity<Void> reactivarUsuario(@PathVariable Long id) {
+        usuarioService.reactivarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
 }

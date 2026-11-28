@@ -31,6 +31,8 @@ public class OrdenServicioService {
     private final UsuarioRepository usuarioRepository;
     private final ComprobanteService comprobanteService;
     private final CodigoService codigoService;
+    private final EmailService emailService;
+    private final ComprobantePdfService comprobantePdfService;
 
     // Flujo del cliente para crear orden de servicio
     @Transactional
@@ -89,9 +91,19 @@ public class OrdenServicioService {
         RegistroOperacion.infoConfirmada(log, "Vendedor confirmó la orden de servicio #{}. Personal asignado: {}/{}",
                 idOrden, personalAsignado, personalRequerido);
 
+        // Se toma al cliente dueño de la orden
+        Usuario cliente = actualizado.getCliente();
+        if (cliente != null) {
+            // Se envía al cliente el aviso de aprobación con su PDF adjunto
+            emailService.enviarComprobante(
+                    cliente.getCorreoUsuario(),
+                    cliente.getNombreUsuario(),
+                    "servicio",
+                    actualizado.getSerieComprobanteServicio() + "-" + actualizado.getNumeroComprobanteServicio(),
+                    comprobantePdfService.generarDeOrdenServicio(actualizado.getIdOrdenServicio()));
+        }
         return OrdenServicioDTO.ResponseVendedor.fromEntity(actualizado);
     }
-
 
     // Flujo del vendedor para cancelar orden
     @Transactional
